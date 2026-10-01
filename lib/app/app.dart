@@ -2,12 +2,15 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../features/settings/presentation/providers/locale_provider.dart';
+import '../features/settings/presentation/providers/theme_provider.dart';
+import '../l10n/app_localizations.dart';
 import 'router.dart';
 import 'theme.dart';
 
 /// Root widget of the Shell-Mind application.
 ///
-/// Wraps [MaterialApp.router] with the Terminal-Noir theme and the
+/// Wraps [MaterialApp.router] with light/dark themes and the
 /// Riverpod-driven [GoRouter] configured in `router.dart`.
 class ShellMindApp extends ConsumerWidget {
   const ShellMindApp({super.key});
@@ -15,20 +18,21 @@ class ShellMindApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
       title: 'Shell-Mind',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      highContrastTheme: AppTheme.darkTheme,
-      highContrastDarkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
+      themeMode: themeMode,
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
       scrollBehavior: const _ShellMindScrollBehavior(),
       builder: (context, child) {
-        // Slightly dampen text scale so the dense terminal UI stays legible
-        // without collapsing at large system font sizes.
         final MediaQueryData mq = MediaQuery.of(context);
         return MediaQuery(
           data: mq.copyWith(

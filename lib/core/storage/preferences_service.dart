@@ -61,11 +61,11 @@ class PreferencesService {
     switch (_p.getString(AppConstants.prefKeyThemeMode)) {
       case 'light':
         return ThemeMode.light;
-      case 'system':
-        return ThemeMode.system;
       case 'dark':
-      default:
         return ThemeMode.dark;
+      case 'system':
+      default:
+        return ThemeMode.system;
     }
   }
 
@@ -105,17 +105,38 @@ class PreferencesService {
 
   // ─── AI preferences ─────────────────────────────────────────────────────
 
+  /// Id of the currently selected AI provider (see `AiProviders`).
+  String get selectedProviderId => getStringOr(
+        AppConstants.prefKeyAiSelectedProvider,
+        AppConstants.defaultAiProviderId,
+      );
+
+  Future<void> setSelectedProviderId(String providerId) =>
+      setString(AppConstants.prefKeyAiSelectedProvider, providerId);
+
+  /// Model id remembered for [providerId], or `null` when unset. Callers fall
+  /// back to the provider's default model so `core` stays free of feature
+  /// dependencies.
+  String? getSelectedModel(String providerId) {
+    final String? perProvider = _p.getString(AppConstants.aiModelKey(providerId));
+    if (perProvider != null && perProvider.isNotEmpty) return perProvider;
+    // Backward compatibility: the legacy single model pref maps to OpenAI.
+    if (providerId == AppConstants.defaultAiProviderId) {
+      final String? legacy = _p.getString(AppConstants.prefKeyAiModel);
+      if (legacy != null && legacy.isNotEmpty) return legacy;
+    }
+    return null;
+  }
+
+  Future<void> setSelectedModel(String providerId, String modelId) =>
+      setString(AppConstants.aiModelKey(providerId), modelId);
+
+  /// Legacy provider/model accessors retained for backward compatibility.
   String get aiProvider =>
-      getStringOr(AppConstants.prefKeyAiProvider, 'openai');
+      getStringOr(AppConstants.prefKeyAiProvider, AppConstants.defaultAiProviderId);
 
   Future<void> setAiProvider(String provider) =>
       setString(AppConstants.prefKeyAiProvider, provider);
-
-  String get aiModel =>
-      getStringOr(AppConstants.prefKeyAiModel, AppConstants.defaultChatModel);
-
-  Future<void> setAiModel(String model) =>
-      setString(AppConstants.prefKeyAiModel, model);
 
   double get aiTemperature => getDoubleOr(
         AppConstants.prefKeyAiTemperature,
@@ -126,6 +147,21 @@ class PreferencesService {
       setDouble(AppConstants.prefKeyAiTemperature, t.clamp(0.0, 2.0));
 
   // ─── Session state ──────────────────────────────────────────────────────
+
+  /// Returns the user-selected locale, or `null` to follow the system.
+  Locale? get locale {
+    final String? code = _p.getString(AppConstants.prefKeyLocale);
+    if (code == null || code.isEmpty) return null;
+    return Locale(code);
+  }
+
+  /// Persists the locale preference. Pass `null` to follow the system.
+  Future<void> setLocale(Locale? locale) {
+    if (locale == null) {
+      return _p.remove(AppConstants.prefKeyLocale);
+    }
+    return _p.setString(AppConstants.prefKeyLocale, locale.languageCode);
+  }
 
   String? get lastOpenedServerId =>
       _p.getString(AppConstants.prefKeyLastOpenedServerId);

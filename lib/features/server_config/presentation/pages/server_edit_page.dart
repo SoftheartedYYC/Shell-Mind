@@ -10,6 +10,7 @@ import '../../../../app/theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../core/widgets/common_widgets.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/server_config.dart';
 import '../providers/server_config_providers.dart';
 
@@ -92,7 +93,7 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
     if (config == null) {
       setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('server not found')),
+        SnackBar(content: Text(AppLocalizations.of(context).serverNotFound)),
       );
       return;
     }
@@ -117,35 +118,42 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
   // ─── Validation ─────────────────────────────────────────────────────────
 
   String? _validateName(String? v) =>
-      (v == null || v.trim().isEmpty) ? 'name required' : null;
+      (v == null || v.trim().isEmpty)
+          ? AppLocalizations.of(context).serverValidationNameRequired
+          : null;
 
   String? _validateHost(String? v) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final String s = v?.trim() ?? '';
-    if (s.isEmpty) return 'host required';
-    if (s.contains(' ')) return 'no spaces allowed';
+    if (s.isEmpty) return l10n.serverValidationHostRequired;
+    if (s.contains(' ')) return l10n.serverValidationNoSpaces;
     return null;
   }
 
   String? _validatePort(String? v) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final String s = v?.trim() ?? '';
-    if (s.isEmpty) return 'required';
+    if (s.isEmpty) return l10n.serverValidationRequired;
     final int? n = int.tryParse(s);
-    if (n == null) return 'numeric';
-    if (n < 1 || n > 65535) return '1–65535';
+    if (n == null) return l10n.serverValidationNumeric;
+    if (n < 1 || n > 65535) return l10n.serverValidationPortRange;
     return null;
   }
 
   String? _validateUsername(String? v) =>
-      (v == null || v.trim().isEmpty) ? 'username required' : null;
+      (v == null || v.trim().isEmpty)
+          ? AppLocalizations.of(context).serverValidationUsernameRequired
+          : null;
 
   String? _validateSecret(String? v) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final bool blank = v == null || v.trim().isEmpty;
     // In edit mode a stored secret may be left untouched.
     if (blank && _isEditing && _hasStoredCredential) return null;
     if (blank) {
       return _authType == AuthType.password
-          ? 'password required'
-          : 'private key required';
+          ? l10n.serverValidationPasswordRequired
+          : l10n.serverValidationPrivateKeyRequired;
     }
     return null;
   }
@@ -202,37 +210,39 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
     setState(() => _saving = false);
 
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
     if (result.isSuccess) {
       messenger.showSnackBar(
         SnackBar(
           content: Text(
             existing == null
-                ? 'registered · ${config.identity}:${config.port}'
-                : 'saved · ${config.identity}:${config.port}',
+                ? l10n.serverAdded(config.identity, config.port)
+                : l10n.serverSaved(config.identity, config.port),
           ),
         ),
       );
       context.pop();
     } else {
       final AppFailure failure = result.failureOrNull?.failure ??
-          AppFailure.storage('Could not persist server.');
+          AppFailure.storage(l10n.aiChatError);
       messenger.showSnackBar(
         SnackBar(
-          content: Text('save failed · ${failure.message}'),
-          backgroundColor: AppTheme.coral,
+          content: Text(l10n.serverSaveFailed(failure.message)),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
   }
 
   Future<void> _testConnection() async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final String host = _host.text.trim();
     final int port =
         int.tryParse(_port.text.trim()) ?? AppConstants.defaultSshPort;
     if (host.isEmpty) {
       setState(() {
         _testStatus = _TestStatus.failure;
-        _testMessage = 'enter a host address first';
+        _testMessage = l10n.serverTestEnterHost;
       });
       return;
     }
@@ -241,7 +251,7 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
     setState(() {
       _testing = true;
       _testStatus = _TestStatus.testing;
-      _testMessage = 'probing $host:$port …';
+      _testMessage = l10n.serverTestProbing(host, port);
     });
 
     try {
@@ -255,101 +265,75 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
       setState(() {
         _testing = false;
         _testStatus = _TestStatus.success;
-        _testMessage = '$host:$port · tcp reachable';
+        _testMessage = l10n.serverTestReachable(host, port);
       });
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _testing = false;
         _testStatus = _TestStatus.failure;
-        _testMessage = _describeError(error, host, port);
+        _testMessage = _describeError(l10n, error, host, port);
       });
     }
   }
 
-  static String _describeError(Object error, String host, int port) {
-    if (error is TimeoutException) return '$host:$port · timed out';
-    if (error is SocketException) return '$host:$port · refused / unreachable';
-    return '$host:$port · probe failed';
+  static String _describeError(
+      AppLocalizations l10n, Object error, String host, int port) {
+    if (error is TimeoutException) return l10n.serverTestTimedOut(host, port);
+    if (error is SocketException) return l10n.serverTestRefused(host, port);
+    return l10n.serverTestProbeFailed(host, port);
   }
 
   // ─── Build ──────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.inkVoid,
-      body: Stack(
-        children: <Widget>[
-          const Positioned(
-            top: -120,
-            left: -60,
-            right: -60,
-            height: 260,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment(0, -0.6),
-                  radius: 1.1,
-                  colors: <Color>[Color(0x1A4FC3F7), Color(0x004FC3F7)],
-                ),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                _EditHeader(
-                  path: _isEditing ? '~/servers/edit' : '~/servers/new',
-                  title: _isEditing ? 'edit host' : 'register host',
-                  onCancel: () => context.canPop()
-                      ? context.pop()
-                      : context.go('/servers'),
-                ),
-                Expanded(
-                  child: _loading
-                      ? const Center(
-                          child: PhosphorLoader(label: 'loading', compact: true),
-                        )
-                      : _buildForm(),
-                ),
-                _EditActionBar(
-                  saving: _saving,
-                  testing: _testing,
-                  canSave: !_loading,
-                  saveLabel: _isEditing ? 'save changes' : 'register host',
-                  onTest: _testConnection,
-                  onSave: _submit,
-                ),
-              ],
-            ),
-          ),
-        ],
+      appBar: AppBar(
+        title: Text(_isEditing ? l10n.serverEditTitleEdit : l10n.serverEditTitle),
+        leading: IconButton(
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go('/servers'),
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
+      ),
+      body: _loading
+          ? Center(child: AppLoader(label: l10n.serverLoading))
+          : _buildForm(),
+      bottomNavigationBar: _EditActionBar(
+        saving: _saving,
+        testing: _testing,
+        canSave: !_loading,
+        saveLabel: _isEditing ? l10n.serverSaveChanges : l10n.serverEditTitle,
+        onTest: _testConnection,
+        onSave: _submit,
       ),
     );
   }
 
   Widget _buildForm() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Form(
       key: _formKey,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         children: <Widget>[
-          const SectionHeader(label: 'identity'),
+          SectionHeader(label: l10n.serverSectionIdentity),
           _nameField(),
           const SizedBox(height: 14),
           _groupField(),
 
-          const SectionHeader(label: 'connection'),
+          SectionHeader(label: l10n.serverSectionConnection),
           _hostPortRow(),
           const SizedBox(height: 14),
           _usernameField(),
           const SizedBox(height: 16),
           _TestReadout(status: _testStatus, message: _testMessage),
 
-          const SectionHeader(label: 'authentication'),
+          SectionHeader(label: l10n.serverSectionAuthentication),
           _AuthTypeToggle(
             value: _authType,
             onChanged: (AuthType t) => setState(() => _authType = t),
@@ -372,32 +356,35 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
   // ─── Fields ─────────────────────────────────────────────────────────────
 
   Widget _nameField() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return TextFormField(
       controller: _name,
       validator: _validateName,
       textInputAction: TextInputAction.next,
       textCapitalization: TextCapitalization.words,
-      decoration: const InputDecoration(
-        labelText: 'Label',
-        hintText: 'prod-web-01',
-        prefixIcon: Icon(Icons.bookmark_border_rounded, size: 18),
+      decoration: InputDecoration(
+        labelText: l10n.serverFieldLabel,
+        hintText: l10n.serverFieldLabelHint,
+        prefixIcon: const Icon(Icons.bookmark_border_rounded, size: 20),
       ),
     );
   }
 
   Widget _groupField() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return TextFormField(
       controller: _group,
       textInputAction: TextInputAction.next,
-      decoration: const InputDecoration(
-        labelText: 'Group (optional)',
-        hintText: 'production',
-        prefixIcon: Icon(Icons.folder_outlined, size: 18),
+      decoration: InputDecoration(
+        labelText: l10n.serverFieldGroup,
+        hintText: l10n.serverFieldGroupHint,
+        prefixIcon: const Icon(Icons.folder_outlined, size: 20),
       ),
     );
   }
 
   Widget _hostPortRow() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -409,11 +396,11 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
             keyboardType: TextInputType.url,
             textInputAction: TextInputAction.next,
             autocorrect: false,
-            style: AppTheme.monoStyle(context, size: 13.5),
-            decoration: const InputDecoration(
-              labelText: 'Host',
-              hintText: '10.0.0.5',
-              prefixIcon: Icon(Icons.dns_outlined, size: 18),
+            style: AppTheme.monoStyle(context, size: 14),
+            decoration: InputDecoration(
+              labelText: l10n.serverFieldHost,
+              hintText: l10n.serverFieldHostHint,
+              prefixIcon: const Icon(Icons.dns_outlined, size: 20),
             ),
           ),
         ),
@@ -429,9 +416,9 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
             inputFormatters: <TextInputFormatter>[
               FilteringTextInputFormatter.digitsOnly,
             ],
-            style: AppTheme.monoStyle(context, size: 13.5),
-            decoration: const InputDecoration(
-              labelText: 'Port',
+            style: AppTheme.monoStyle(context, size: 14),
+            decoration: InputDecoration(
+              labelText: l10n.serverFieldPort,
               counterText: '',
             ),
           ),
@@ -441,21 +428,23 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
   }
 
   Widget _usernameField() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return TextFormField(
       controller: _user,
       validator: _validateUsername,
       textInputAction: TextInputAction.next,
       autocorrect: false,
-      style: AppTheme.monoStyle(context, size: 13.5),
-      decoration: const InputDecoration(
-        labelText: 'Username',
-        hintText: 'root',
-        prefixIcon: Icon(Icons.person_outline_rounded, size: 18),
+      style: AppTheme.monoStyle(context, size: 14),
+      decoration: InputDecoration(
+        labelText: l10n.serverFieldUsername,
+        hintText: l10n.serverFieldUsernameHint,
+        prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
       ),
     );
   }
 
   Widget _passwordField() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final bool keepExisting = _isEditing && _hasStoredCredential;
     return TextFormField(
       controller: _password,
@@ -463,11 +452,11 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
       obscureText: _obscurePassword,
       autocorrect: false,
       enableSuggestions: false,
-      style: AppTheme.monoStyle(context, size: 13.5),
+      style: AppTheme.monoStyle(context, size: 14),
       decoration: InputDecoration(
-        labelText: 'Password',
-        hintText: keepExisting ? 'stored · leave blank to keep' : '••••••••',
-        prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18),
+        labelText: l10n.serverFieldPassword,
+        hintText: keepExisting ? l10n.serverFieldPasswordStored : null,
+        prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
         suffixIcon: IconButton(
           onPressed: () =>
               setState(() => _obscurePassword = !_obscurePassword),
@@ -475,7 +464,7 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
             _obscurePassword
                 ? Icons.visibility_off_outlined
                 : Icons.visibility_outlined,
-            size: 18,
+            size: 20,
           ),
         ),
       ),
@@ -483,6 +472,7 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
   }
 
   Widget _privateKeyField() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final bool keepExisting = _isEditing && _hasStoredCredential;
     return TextFormField(
       controller: _privateKey,
@@ -492,11 +482,11 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
       autocorrect: false,
       enableSuggestions: false,
       keyboardType: TextInputType.multiline,
-      style: AppTheme.monoStyle(context, size: 11.5),
+      style: AppTheme.monoStyle(context, size: 12),
       decoration: InputDecoration(
-        labelText: 'Private key (PEM)',
+        labelText: l10n.serverFieldPrivateKey,
         hintText: keepExisting
-            ? 'stored · leave blank to keep'
+            ? l10n.serverFieldPasswordStored
             : '-----BEGIN OPENSSH PRIVATE KEY-----',
         alignLabelWithHint: true,
       ),
@@ -504,15 +494,16 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
   }
 
   Widget _passphraseField() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return TextFormField(
       controller: _passphrase,
       obscureText: _obscurePassphrase,
       autocorrect: false,
       enableSuggestions: false,
-      style: AppTheme.monoStyle(context, size: 13.5),
+      style: AppTheme.monoStyle(context, size: 14),
       decoration: InputDecoration(
-        labelText: 'Key passphrase (optional)',
-        prefixIcon: const Icon(Icons.shield_outlined, size: 18),
+        labelText: l10n.serverFieldPassphrase,
+        prefixIcon: const Icon(Icons.shield_outlined, size: 20),
         suffixIcon: IconButton(
           onPressed: () =>
               setState(() => _obscurePassphrase = !_obscurePassphrase),
@@ -520,77 +511,9 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
             _obscurePassphrase
                 ? Icons.visibility_off_outlined
                 : Icons.visibility_outlined,
-            size: 18,
+            size: 20,
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ─── Header ───────────────────────────────────────────────────────────────
-
-class _EditHeader extends StatelessWidget {
-  const _EditHeader({
-    required this.path,
-    required this.title,
-    required this.onCancel,
-  });
-
-  final String path;
-  final String title;
-  final VoidCallback onCancel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(6, 4, 16, 10),
-      decoration: const BoxDecoration(
-        color: Color(0xFF0C1120),
-        border: Border(bottom: BorderSide(color: AppTheme.inkBorderSoft)),
-      ),
-      child: Row(
-        children: <Widget>[
-          IconButton(
-            onPressed: onCancel,
-            tooltip: 'Back',
-            icon: const Icon(Icons.arrow_back_rounded,
-                size: 19, color: AppTheme.textSecondary),
-          ),
-          const SizedBox(width: 2),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text(
-                  path,
-                  style: const TextStyle(
-                    fontFamily: AppTheme.monoFont,
-                    fontFamilyFallback: <String>[
-                      'JetBrains Mono',
-                      'Menlo',
-                      'monospace',
-                    ],
-                    fontSize: 9.5,
-                    letterSpacing: 1.4,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.phosphorDim,
-                  ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  title,
-                  style: context.text.titleLarge?.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -606,77 +529,23 @@ class _AuthTypeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: _option(
-            context,
-            AuthType.password,
-            Icons.lock_rounded,
-            'Password',
-          ),
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return SegmentedButton<AuthType>(
+      segments: <ButtonSegment<AuthType>>[
+        ButtonSegment<AuthType>(
+          value: AuthType.password,
+          icon: const Icon(Icons.lock_rounded, size: 18),
+          label: Text(l10n.serverAuthPassword),
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _option(
-            context,
-            AuthType.privateKey,
-            Icons.vpn_key_rounded,
-            'Private key',
-          ),
+        ButtonSegment<AuthType>(
+          value: AuthType.privateKey,
+          icon: const Icon(Icons.vpn_key_rounded, size: 18),
+          label: Text(l10n.serverAuthPrivateKey),
         ),
       ],
-    );
-  }
-
-  Widget _option(
-    BuildContext context,
-    AuthType type,
-    IconData icon,
-    String label,
-  ) {
-    final bool selected = type == value;
-    final Color tint = selected ? AppTheme.phosphor : AppTheme.textTertiary;
-    return Material(
-      color: selected
-          ? AppTheme.phosphor.withValues(alpha: 0.1)
-          : const Color(0xFF0E1322),
-      borderRadius: BorderRadius.circular(9),
-      child: InkWell(
-        onTap: () => onChanged(type),
-        borderRadius: BorderRadius.circular(9),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(9),
-            border: Border.all(
-              color: selected ? AppTheme.phosphor : AppTheme.inkBorder,
-              width: selected ? 1.3 : 1,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(icon, size: 15, color: tint),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    color: selected
-                        ? AppTheme.phosphor
-                        : AppTheme.textSecondary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      selected: <AuthType>{value},
+      onSelectionChanged: (Set<AuthType> selection) => onChanged(selection.first),
+      showSelectedIcon: false,
     );
   }
 }
@@ -691,11 +560,12 @@ class _TestReadout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     final Color color = switch (status) {
-      _TestStatus.idle => AppTheme.textTertiary,
-      _TestStatus.testing => AppTheme.phosphor,
-      _TestStatus.success => AppTheme.mint,
-      _TestStatus.failure => AppTheme.coral,
+      _TestStatus.idle => colors.onSurfaceVariant,
+      _TestStatus.testing => colors.primary,
+      _TestStatus.success => context.sem.success,
+      _TestStatus.failure => colors.error,
     };
     final IconData icon = switch (status) {
       _TestStatus.idle => Icons.circle_outlined,
@@ -705,45 +575,32 @@ class _TestReadout extends StatelessWidget {
     };
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF0C1120),
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.inkBorderSoft),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Row(
         children: <Widget>[
           if (status == _TestStatus.testing)
-            const PhosphorSpinner(size: 13, strokeWidth: 1.4)
+            SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(strokeWidth: 2, color: color),
+            )
           else
-            Icon(icon, size: 13, color: color),
-          const SizedBox(width: 9),
-          const Text(
-            '\$',
-            style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.phosphor,
-            ),
-          ),
-          const SizedBox(width: 8),
+            Icon(icon, size: 16, color: color),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               status == _TestStatus.idle
-                  ? 'nc -vz <host> <port>   # tap test'
+                  ? AppLocalizations.of(context).serverTestIdle
                   : message,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontFamily: AppTheme.monoFont,
-                fontFamilyFallback: const <String>[
-                  'JetBrains Mono',
-                  'Menlo',
-                  'monospace',
-                ],
-                fontSize: 11,
-                letterSpacing: 0.2,
+                fontSize: 13,
                 color: color,
               ),
             ),
@@ -761,18 +618,18 @@ class _SecurityNote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Icon(Icons.enhanced_encryption_outlined,
-            size: 13, color: AppTheme.phosphorDim),
+        Icon(Icons.enhanced_encryption_outlined,
+            size: 16, color: colors.onSurfaceVariant),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            'Credentials are encrypted in the device keystore — they never '
-            'touch the Hive metadata store or leave this device.',
+            AppLocalizations.of(context).serverSecurityNote,
             style: context.text.bodySmall?.copyWith(
-              color: AppTheme.textTertiary,
+              color: colors.onSurfaceVariant,
               height: 1.45,
             ),
           ),
@@ -801,65 +658,48 @@ class _EditActionBar extends StatelessWidget {
   final VoidCallback onTest;
   final VoidCallback onSave;
 
-  static const TextStyle _monoLabel = TextStyle(
-    fontFamily: AppTheme.monoFont,
-    fontFamilyFallback: <String>['JetBrains Mono', 'Menlo', 'monospace'],
-    fontSize: 11.5,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 1.1,
-  );
-
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-      decoration: const BoxDecoration(
-        color: Color(0xFF0C1120),
-        border: Border(top: BorderSide(color: AppTheme.inkBorderSoft)),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+        ),
       ),
-      child: Row(
-        children: <Widget>[
-          OutlinedButton.icon(
-            onPressed: testing ? null : onTest,
-            icon: testing
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: PhosphorSpinner(size: 14, strokeWidth: 1.6),
-                  )
-                : const Icon(Icons.wifi_tethering_rounded, size: 15),
-            label: Text(
-              (testing ? 'probing' : 'test').toUpperCase(),
-              style: _monoLabel,
-            ),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: FilledButton.icon(
-              onPressed: (saving || !canSave) ? null : onSave,
-              icon: saving
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: <Widget>[
+            OutlinedButton.icon(
+              onPressed: testing ? null : onTest,
+              icon: testing
                   ? const SizedBox(
-                      width: 15,
-                      height: 15,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(AppTheme.inkVoid),
-                      ),
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.save_rounded, size: 16),
-              label: Text(
-                (saving ? 'saving…' : saveLabel).toUpperCase(),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: _monoLabel,
+                  : const Icon(Icons.wifi_tethering_rounded, size: 18),
+              label: Text(testing ? l10n.serverTesting : l10n.serverTest),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: (saving || !canSave) ? null : onSave,
+                icon: saving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save_rounded, size: 18),
+                label: Text(saving ? l10n.serverSaving : saveLabel),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

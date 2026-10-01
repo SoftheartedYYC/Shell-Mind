@@ -6,47 +6,72 @@ import '../../../../core/network/dio_client.dart';
 import '../../../../core/storage/preferences_service.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/utils/result.dart';
+import '../../data/ai_service.dart';
 import '../../data/chat_repository_impl.dart';
-import '../../data/openai_service.dart';
+import '../../domain/entities/ai_provider.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/repositories/chat_repository.dart';
 
+// ─── Provider / model selection ─────────────────────────────────────────
+
+/// The provider the user picked in Settings. Non-autoDispose: [PreferencesService]
+/// is a silent singleton, so this is recomputed only when a settings change
+/// explicitly invalidates it (see `ai_settings_provider.dart`).
+final Provider<AiProvider> selectedProviderProvider = Provider<AiProvider>((Ref ref) {
+  final PreferencesService prefs = ref.watch(preferencesServiceProvider);
+  return AiProviders.getById(prefs.selectedProviderId);
+});
+
+/// The model chosen for the current provider, resolved against its catalogue
+/// (falls back to the provider default when the stored id is stale).
+final Provider<AiModel> selectedModelProvider = Provider<AiModel>((Ref ref) {
+  final PreferencesService prefs = ref.watch(preferencesServiceProvider);
+  final AiProvider provider = ref.watch(selectedProviderProvider);
+  final String? stored = prefs.getSelectedModel(provider.id);
+  return stored == null ? provider.defaultModel : provider.modelById(stored);
+});
+
+/// The API key for the current provider (async — secure storage). `null` when
+/// unconfigured. Invalidated whenever a key is saved/cleared.
+final FutureProvider<String?> apiKeyProvider = FutureProvider<String?>((Ref ref) async {
+  final SecureStorageService secure = ref.watch(secureStorageServiceProvider);
+  final AiProvider provider = ref.watch(selectedProviderProvider);
+  return secure.getProviderApiKey(provider.id);
+});
+
 // ─── Service / repository wiring ────────────────────────────────────────
 
-/// Builds the [OpenAiService] from the shared Dio client + storage services.
-final Provider<OpenAiService> openaiServiceProvider =
-    Provider<OpenAiService>((Ref ref) {
+/// Builds the [AiService] for the currently selected provider + credential.
+/// Rebuilds whenever the provider, model, key, or temperature changes.
+final Provider<AiService> aiServiceProvider = Provider<AiService>((Ref ref) {
   final DioClient client = ref.watch(dioClientProvider);
-  final SecureStorageService secure = ref.watch(secureStorageServiceProvider);
+  final AiProvider provider = ref.watch(selectedProviderProvider);
+  final AiModel model = ref.watch(selectedModelProvider);
   final PreferencesService prefs = ref.watch(preferencesServiceProvider);
-  return OpenAiService(
+  final String apiKey = ref.watch(apiKeyProvider).valueOrNull ?? '';
+  return AiService(
     client: client,
-    secureStorage: secure,
-    preferences: prefs,
+    provider: provider,
+    apiKey: apiKey,
+    model: model.id,
+    temperature: prefs.aiTemperature,
   );
 });
 
 /// Concrete [ChatRepository] used across the feature.
 final Provider<ChatRepository> chatRepositoryProvider =
     Provider<ChatRepository>((Ref ref) {
-  return ChatRepositoryImpl(ref.watch(openaiServiceProvider));
+  return ChatRepositoryImpl(ref.watch(aiServiceProvider));
 });
 
-/// True when a non-empty API key is present in secure storage.
+/// True when a non-empty API key is present for the current provider.
 ///
 /// Watched by the chat page to decide between the setup guide and the
 /// transcript. Invalidate after saving/clearing a key in Settings.
 final FutureProvider<bool> apiKeyConfiguredProvider =
     FutureProvider<bool>((Ref ref) async {
-  final SecureStorageService secure = ref.watch(secureStorageServiceProvider);
-  final String? key = await secure.getApiKey();
+  final String? key = await ref.watch(apiKeyProvider.future);
   return key != null && key.trim().isNotEmpty;
-});
-
-/// Currently selected model name (from preferences) — surfaced in the header.
-final Provider<String> activeModelProvider = Provider<String>((Ref ref) {
-  final PreferencesService prefs = ref.watch(preferencesServiceProvider);
-  return prefs.aiModel;
 });
 
 // ─── Chat state ─────────────────────────────────────────────────────────

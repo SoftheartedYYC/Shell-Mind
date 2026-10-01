@@ -34,10 +34,14 @@ abstract final class AppConstants {
   static const String defaultTermType = 'xterm-256color';
 
   // ─── AI / LLM defaults ──────────────────────────────────────────────────
-  static const String openAiBaseUrl = 'https://api.openai.com/v1';
-  static const String openAiChatPath = '/chat/completions';
-  static const String openAiModelsPath = '/models';
-  static const String defaultChatModel = 'gpt-4o-mini';
+  /// Chat Completions path appended to every provider's base URL. All built-in
+  /// providers (OpenAI, DeepSeek, Qwen, GLM, MiMo) are OpenAI-compatible and
+  /// share this endpoint shape.
+  static const String aiChatCompletionsPath = '/chat/completions';
+
+  /// Provider used before the user makes an explicit choice.
+  static const String defaultAiProviderId = 'openai';
+
   static const Duration chatRequestTimeout = Duration(seconds: 60);
   static const Duration sseIdleTimeout = Duration(seconds: 120);
 
@@ -70,11 +74,15 @@ abstract final class AppConstants {
   /// Prefix for per-server key passphrases: `ssh_pass::<serverId>`.
   static const String secureKeyPassphrasePrefix = 'ssh_pass::';
 
-  /// AI provider API key.
+  /// Legacy single-provider AI API key (pre multi-provider). Retained so keys
+  /// saved by earlier builds keep working; migrated to the OpenAI namespace.
   static const String secureKeyApiKey = 'ai_api_key';
 
-  /// Optional custom base URL for OpenAI-compatible providers.
+  /// Optional custom base URL for OpenAI-compatible providers (legacy).
   static const String secureKeyApiBaseUrl = 'ai_api_base_url';
+
+  /// Per-provider API key namespace: `ai_api_key_<providerId>`.
+  static String aiApiKey(String providerId) => 'ai_api_key_$providerId';
 
   static String passwordKey(String serverId) =>
       '$secureKeyPasswordPrefix$serverId';
@@ -88,11 +96,19 @@ abstract final class AppConstants {
   static const String prefKeyTerminalFontSize = 'pref.terminal_font_size';
   static const String prefKeyTerminalFontFamily = 'pref.terminal_font_family';
   static const String prefKeyHapticFeedback = 'pref.haptic_feedback';
+  /// Legacy provider/model keys — kept for backward-compatible migration.
   static const String prefKeyAiProvider = 'pref.ai_provider';
   static const String prefKeyAiModel = 'pref.ai_model';
   static const String prefKeyAiTemperature = 'pref.ai_temperature';
+
+  /// Currently selected AI provider id.
+  static const String prefKeyAiSelectedProvider = 'pref.ai_selected_provider';
+
+  /// Per-provider remembered model: `pref.ai_model_<providerId>`.
+  static String aiModelKey(String providerId) => 'pref.ai_model_$providerId';
   static const String prefKeyLastOpenedServerId = 'pref.last_server_id';
   static const String prefKeyOnboardingComplete = 'pref.onboarding_complete';
+  static const String prefKeyLocale = 'pref.locale';
 
   // ─── Defaults (used as fallbacks when prefs are absent) ─────────────────
   static const double defaultTerminalFontSize = 13.5;

@@ -78,6 +78,33 @@ class SecureStorageService {
 
   // ─── AI provider secrets ────────────────────────────────────────────────
 
+  /// Saves an API key namespaced to a specific provider
+  /// (`ai_api_key_<providerId>`).
+  Future<void> saveProviderApiKey(String providerId, String apiKey) =>
+      write(AppConstants.aiApiKey(providerId), apiKey);
+
+  /// Reads the API key for [providerId]. Falls back to the legacy
+  /// single-provider key for `openai` so users upgrading from an older build
+  /// keep working without re-entering their credential.
+  Future<String?> getProviderApiKey(String providerId) async {
+    final String? key = await read(AppConstants.aiApiKey(providerId));
+    if (key != null && key.trim().isNotEmpty) return key;
+    if (providerId == AppConstants.defaultAiProviderId) {
+      return read(AppConstants.secureKeyApiKey);
+    }
+    return null;
+  }
+
+  /// Deletes the key for [providerId]; for `openai` also clears the legacy key.
+  Future<void> deleteProviderApiKey(String providerId) async {
+    await delete(AppConstants.aiApiKey(providerId));
+    if (providerId == AppConstants.defaultAiProviderId) {
+      await delete(AppConstants.secureKeyApiKey);
+    }
+  }
+
+  // ─── Legacy single-provider API (kept for backward compatibility) ───────
+
   Future<void> saveApiKey(String apiKey) =>
       write(AppConstants.secureKeyApiKey, apiKey);
 

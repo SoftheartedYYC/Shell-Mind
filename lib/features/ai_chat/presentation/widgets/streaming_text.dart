@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme.dart';
 import 'markdown_view.dart';
 
-/// Renders assistant text as it streams in, with a blinking block cursor at
+/// Renders assistant text as it streams in, with a blinking cursor at
 /// the tail while [isStreaming] is true.
 ///
 /// The "typewriter" feel comes for free from the token stream growing the
-/// [text]; this widget layers the caret and a subtle fade-in on top so the
-/// live edge reads as *active* rather than static.
+/// [text]; this widget layers the caret on top so the live edge reads as
+/// *active* rather than static.
 class StreamingText extends StatelessWidget {
   const StreamingText({
     super.key,
@@ -46,7 +45,7 @@ class StreamingText extends StatelessWidget {
   }
 }
 
-/// The phosphor "▊" caret that pulses while the model is still emitting.
+/// A simple blinking block cursor shown while the model is still emitting.
 class _BlinkingCursor extends StatefulWidget {
   const _BlinkingCursor({this.scale = 1.0});
 
@@ -60,7 +59,7 @@ class _BlinkingCursorState extends State<_BlinkingCursor>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 900),
+    duration: const Duration(milliseconds: 800),
   )..repeat(reverse: true);
 
   @override
@@ -71,41 +70,20 @@ class _BlinkingCursorState extends State<_BlinkingCursor>
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return AnimatedBuilder(
       animation: _c,
       builder: (BuildContext context, Widget? child) {
-        // Hold near-full opacity, dip quickly — reads as a hard terminal blink.
-        final double t = Curves.easeInOut.transform(_c.value);
-        final double opacity = 0.25 + 0.75 * t;
-        return Opacity(
-          opacity: opacity,
-          child: child,
-        );
+        final double opacity = 0.2 + 0.8 * _c.value;
+        return Opacity(opacity: opacity, child: child);
       },
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            '▊',
-            style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontFamilyFallback: const <String>[
-                'JetBrains Mono',
-                'Menlo',
-                'monospace',
-              ],
-              fontSize: 14 * widget.scale,
-              height: 1.2,
-              color: AppTheme.phosphorGlow,
-              shadows: <Shadow>[
-                Shadow(
-                  color: AppTheme.phosphorGlow.withValues(alpha: 0.6),
-                  blurRadius: 6,
-                ),
-              ],
-            ),
-          ),
-        ],
+      child: Container(
+        width: 8 * widget.scale,
+        height: 16 * widget.scale,
+        decoration: BoxDecoration(
+          color: colors.primary,
+          borderRadius: BorderRadius.circular(2),
+        ),
       ),
     );
   }

@@ -1,0 +1,1574 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_en.dart';
+import 'app_localizations_zh.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('zh'),
+  ];
+
+  /// No description provided for @appTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shell-Mind'**
+  String get appTitle;
+
+  /// No description provided for @navServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers'**
+  String get navServers;
+
+  /// No description provided for @navAiChat.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Chat'**
+  String get navAiChat;
+
+  /// No description provided for @navSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get navSettings;
+
+  /// No description provided for @pageNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Page not found'**
+  String get pageNotFound;
+
+  /// No description provided for @backToServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Servers'**
+  String get backToServers;
+
+  /// No description provided for @serversTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers'**
+  String get serversTitle;
+
+  /// No description provided for @serversHostCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 host} other{{count} hosts}}'**
+  String serversHostCount(int count);
+
+  /// No description provided for @serversSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search servers…'**
+  String get serversSearch;
+
+  /// No description provided for @serversAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add server'**
+  String get serversAdd;
+
+  /// No description provided for @serversEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No servers yet'**
+  String get serversEmpty;
+
+  /// No description provided for @serversEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first SSH server to get started.'**
+  String get serversEmptyHint;
+
+  /// No description provided for @serversDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete server'**
+  String get serversDeleteConfirmTitle;
+
+  /// No description provided for @serversDeleteConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?\n\n{identity}:{port} and its stored credentials will be permanently removed.'**
+  String serversDeleteConfirmMessage(String name, String identity, int port);
+
+  /// No description provided for @serversDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed {identity}'**
+  String serversDeleted(String identity);
+
+  /// No description provided for @serversDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete failed: {message}'**
+  String serversDeleteFailed(String message);
+
+  /// No description provided for @serversLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading servers'**
+  String get serversLoading;
+
+  /// No description provided for @serversUngrouped.
+  ///
+  /// In en, this message translates to:
+  /// **'Ungrouped'**
+  String get serversUngrouped;
+
+  /// No description provided for @serversSortName.
+  ///
+  /// In en, this message translates to:
+  /// **'a–z'**
+  String get serversSortName;
+
+  /// No description provided for @serversSortRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'recent'**
+  String get serversSortRecent;
+
+  /// No description provided for @serversQuickStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick start'**
+  String get serversQuickStart;
+
+  /// No description provided for @serversQuickStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a host'**
+  String get serversQuickStep1Title;
+
+  /// No description provided for @serversQuickStep1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Register an SSH endpoint with password or key auth.'**
+  String get serversQuickStep1Desc;
+
+  /// No description provided for @serversQuickStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get serversQuickStep2Title;
+
+  /// No description provided for @serversQuickStep2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Probe the port before committing — catches typos fast.'**
+  String get serversQuickStep2Desc;
+
+  /// No description provided for @serversQuickStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get serversQuickStep3Title;
+
+  /// No description provided for @serversQuickStep3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a terminal session — full PTY, colours, and vim.'**
+  String get serversQuickStep3Desc;
+
+  /// No description provided for @serversNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No match: \"{query}\"'**
+  String serversNoMatch(String query);
+
+  /// No description provided for @serversClearFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get serversClearFilter;
+
+  /// No description provided for @serversReadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the server list.'**
+  String get serversReadError;
+
+  /// No description provided for @serverEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add server'**
+  String get serverEditTitle;
+
+  /// No description provided for @serverEditTitleEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit server'**
+  String get serverEditTitleEdit;
+
+  /// No description provided for @serverNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Server not found'**
+  String get serverNotFound;
+
+  /// No description provided for @serverValidationNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Name required'**
+  String get serverValidationNameRequired;
+
+  /// No description provided for @serverValidationHostRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Host required'**
+  String get serverValidationHostRequired;
+
+  /// No description provided for @serverValidationNoSpaces.
+  ///
+  /// In en, this message translates to:
+  /// **'No spaces allowed'**
+  String get serverValidationNoSpaces;
+
+  /// No description provided for @serverValidationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get serverValidationRequired;
+
+  /// No description provided for @serverValidationNumeric.
+  ///
+  /// In en, this message translates to:
+  /// **'Numeric'**
+  String get serverValidationNumeric;
+
+  /// No description provided for @serverValidationPortRange.
+  ///
+  /// In en, this message translates to:
+  /// **'1–65535'**
+  String get serverValidationPortRange;
+
+  /// No description provided for @serverValidationUsernameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Username required'**
+  String get serverValidationUsernameRequired;
+
+  /// No description provided for @serverValidationPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Password required'**
+  String get serverValidationPasswordRequired;
+
+  /// No description provided for @serverValidationPrivateKeyRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Private key required'**
+  String get serverValidationPrivateKeyRequired;
+
+  /// No description provided for @serverAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Server added: {identity}:{port}'**
+  String serverAdded(String identity, int port);
+
+  /// No description provided for @serverSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved: {identity}:{port}'**
+  String serverSaved(String identity, int port);
+
+  /// No description provided for @serverSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Save failed: {message}'**
+  String serverSaveFailed(String message);
+
+  /// No description provided for @serverTestEnterHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a host address first'**
+  String get serverTestEnterHost;
+
+  /// No description provided for @serverTestProbing.
+  ///
+  /// In en, this message translates to:
+  /// **'Probing {host}:{port}…'**
+  String serverTestProbing(String host, int port);
+
+  /// No description provided for @serverTestReachable.
+  ///
+  /// In en, this message translates to:
+  /// **'{host}:{port} — reachable'**
+  String serverTestReachable(String host, int port);
+
+  /// No description provided for @serverTestTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'{host}:{port} — timed out'**
+  String serverTestTimedOut(String host, int port);
+
+  /// No description provided for @serverTestRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'{host}:{port} — refused / unreachable'**
+  String serverTestRefused(String host, int port);
+
+  /// No description provided for @serverTestProbeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{host}:{port} — probe failed'**
+  String serverTestProbeFailed(String host, int port);
+
+  /// No description provided for @serverLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get serverLoading;
+
+  /// No description provided for @serverSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get serverSaveChanges;
+
+  /// No description provided for @serverSectionIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity'**
+  String get serverSectionIdentity;
+
+  /// No description provided for @serverSectionConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection'**
+  String get serverSectionConnection;
+
+  /// No description provided for @serverSectionAuthentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication'**
+  String get serverSectionAuthentication;
+
+  /// No description provided for @serverFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get serverFieldLabel;
+
+  /// No description provided for @serverFieldLabelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'prod-web-01'**
+  String get serverFieldLabelHint;
+
+  /// No description provided for @serverFieldGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Group (optional)'**
+  String get serverFieldGroup;
+
+  /// No description provided for @serverFieldGroupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'production'**
+  String get serverFieldGroupHint;
+
+  /// No description provided for @serverFieldHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Host'**
+  String get serverFieldHost;
+
+  /// No description provided for @serverFieldHostHint.
+  ///
+  /// In en, this message translates to:
+  /// **'10.0.0.5'**
+  String get serverFieldHostHint;
+
+  /// No description provided for @serverFieldPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get serverFieldPort;
+
+  /// No description provided for @serverFieldUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get serverFieldUsername;
+
+  /// No description provided for @serverFieldUsernameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'root'**
+  String get serverFieldUsernameHint;
+
+  /// No description provided for @serverFieldPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get serverFieldPassword;
+
+  /// No description provided for @serverFieldPasswordStored.
+  ///
+  /// In en, this message translates to:
+  /// **'Stored — leave blank to keep'**
+  String get serverFieldPasswordStored;
+
+  /// No description provided for @serverFieldPrivateKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Private key (PEM)'**
+  String get serverFieldPrivateKey;
+
+  /// No description provided for @serverFieldPassphrase.
+  ///
+  /// In en, this message translates to:
+  /// **'Key passphrase (optional)'**
+  String get serverFieldPassphrase;
+
+  /// No description provided for @serverAuthPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get serverAuthPassword;
+
+  /// No description provided for @serverAuthPrivateKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Private key'**
+  String get serverAuthPrivateKey;
+
+  /// No description provided for @serverTestIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap \"Test\" to probe the connection'**
+  String get serverTestIdle;
+
+  /// No description provided for @serverSecurityNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Credentials are encrypted in the device keystore — they never touch the Hive metadata store or leave this device.'**
+  String get serverSecurityNote;
+
+  /// No description provided for @serverTesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing…'**
+  String get serverTesting;
+
+  /// No description provided for @serverTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Test'**
+  String get serverTest;
+
+  /// No description provided for @serverSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get serverSaving;
+
+  /// No description provided for @serverCopiedAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied {address}'**
+  String serverCopiedAddress(String address);
+
+  /// No description provided for @serverActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Server actions'**
+  String get serverActions;
+
+  /// No description provided for @serverActionConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get serverActionConnect;
+
+  /// No description provided for @serverActionEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get serverActionEdit;
+
+  /// No description provided for @serverActionEditDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit details'**
+  String get serverActionEditDetails;
+
+  /// No description provided for @serverActionCopySsh.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy SSH command'**
+  String get serverActionCopySsh;
+
+  /// No description provided for @serverActionDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get serverActionDelete;
+
+  /// No description provided for @serverActionDeleteServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete server'**
+  String get serverActionDeleteServer;
+
+  /// No description provided for @serverOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get serverOnline;
+
+  /// No description provided for @serverNeverConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Never connected'**
+  String get serverNeverConnected;
+
+  /// No description provided for @serverJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get serverJustNow;
+
+  /// No description provided for @serverMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m ago'**
+  String serverMinutesAgo(int minutes);
+
+  /// No description provided for @serverHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h ago'**
+  String serverHoursAgo(int hours);
+
+  /// No description provided for @serverDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d ago'**
+  String serverDaysAgo(int days);
+
+  /// No description provided for @terminalHostNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Host not found'**
+  String get terminalHostNotFound;
+
+  /// No description provided for @terminalHostNotFoundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved server matches id \"{id}\". It may have been deleted.'**
+  String terminalHostNotFoundMessage(String id);
+
+  /// No description provided for @terminalBackToServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to servers'**
+  String get terminalBackToServers;
+
+  /// No description provided for @terminalConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed.'**
+  String get terminalConnectionFailed;
+
+  /// No description provided for @terminalSessionClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Session closed'**
+  String get terminalSessionClosed;
+
+  /// No description provided for @terminalSessionClosedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The connection to {name} was terminated.'**
+  String terminalSessionClosedMessage(String name);
+
+  /// No description provided for @terminalReconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect'**
+  String get terminalReconnect;
+
+  /// No description provided for @terminalAuthenticating.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticating'**
+  String get terminalAuthenticating;
+
+  /// No description provided for @terminalConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting'**
+  String get terminalConnecting;
+
+  /// No description provided for @terminalResolvingHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolving host…'**
+  String get terminalResolvingHost;
+
+  /// No description provided for @terminalTooltipDisconnectBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect & back'**
+  String get terminalTooltipDisconnectBack;
+
+  /// No description provided for @terminalTooltipSmallerText.
+  ///
+  /// In en, this message translates to:
+  /// **'Smaller text'**
+  String get terminalTooltipSmallerText;
+
+  /// No description provided for @terminalTooltipLargerText.
+  ///
+  /// In en, this message translates to:
+  /// **'Larger text'**
+  String get terminalTooltipLargerText;
+
+  /// No description provided for @terminalTooltipDisconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get terminalTooltipDisconnect;
+
+  /// No description provided for @terminalRetryAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry available'**
+  String get terminalRetryAvailable;
+
+  /// No description provided for @terminalStatusConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'CONNECTED'**
+  String get terminalStatusConnected;
+
+  /// No description provided for @terminalStatusOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'OFFLINE'**
+  String get terminalStatusOffline;
+
+  /// No description provided for @terminalStatusError.
+  ///
+  /// In en, this message translates to:
+  /// **'ERROR'**
+  String get terminalStatusError;
+
+  /// No description provided for @aiChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Assistant'**
+  String get aiChatTitle;
+
+  /// No description provided for @aiChatStatusSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'SETUP'**
+  String get aiChatStatusSetup;
+
+  /// No description provided for @aiChatStatusStreaming.
+  ///
+  /// In en, this message translates to:
+  /// **'STREAMING'**
+  String get aiChatStatusStreaming;
+
+  /// No description provided for @aiChatStatusReady.
+  ///
+  /// In en, this message translates to:
+  /// **'READY'**
+  String get aiChatStatusReady;
+
+  /// No description provided for @aiChatClearConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear conversation'**
+  String get aiChatClearConversation;
+
+  /// No description provided for @aiChatSuggestion1.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain what ls -la output means'**
+  String get aiChatSuggestion1;
+
+  /// No description provided for @aiChatSuggestion2.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I find which process is using a port?'**
+  String get aiChatSuggestion2;
+
+  /// No description provided for @aiChatSuggestion3.
+  ///
+  /// In en, this message translates to:
+  /// **'Show me how to tail logs and grep for errors'**
+  String get aiChatSuggestion3;
+
+  /// No description provided for @aiChatSuggestion4.
+  ///
+  /// In en, this message translates to:
+  /// **'Write an awk one-liner to sum a CSV column'**
+  String get aiChatSuggestion4;
+
+  /// No description provided for @aiChatTryAsking.
+  ///
+  /// In en, this message translates to:
+  /// **'Try asking'**
+  String get aiChatTryAsking;
+
+  /// No description provided for @aiChatIntroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your terminal companion'**
+  String get aiChatIntroTitle;
+
+  /// No description provided for @aiChatIntroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a command, an error, or a chunk of log output. Shell-Mind explains what happened, suggests the next move, and writes the commands so you don\'t have to.'**
+  String get aiChatIntroBody;
+
+  /// No description provided for @aiChatNoKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No API key configured'**
+  String get aiChatNoKeyTitle;
+
+  /// No description provided for @aiChatNoKeyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your {provider} API key to wake the assistant. It\'s stored encrypted on this device and never leaves it except to call the model.'**
+  String aiChatNoKeyMessage(String provider);
+
+  /// No description provided for @aiChatOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open AI settings'**
+  String get aiChatOpenSettings;
+
+  /// No description provided for @aiChatCheckingCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking credentials'**
+  String get aiChatCheckingCredentials;
+
+  /// No description provided for @aiChatInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask anything…'**
+  String get aiChatInputHint;
+
+  /// No description provided for @aiChatInputDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Set an API key to begin'**
+  String get aiChatInputDisabled;
+
+  /// No description provided for @aiChatError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get aiChatError;
+
+  /// No description provided for @aiChatAssistantName.
+  ///
+  /// In en, this message translates to:
+  /// **'Shell-Mind'**
+  String get aiChatAssistantName;
+
+  /// No description provided for @aiChatCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get aiChatCopied;
+
+  /// No description provided for @aiChatCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get aiChatCopy;
+
+  /// No description provided for @aiChatThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking…'**
+  String get aiChatThinking;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsSearchTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Search settings'**
+  String get settingsSearchTooltip;
+
+  /// No description provided for @settingsStable.
+  ///
+  /// In en, this message translates to:
+  /// **'STABLE'**
+  String get settingsStable;
+
+  /// No description provided for @settingsSectionAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsSectionAppearance;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsThemeSystem;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsSectionLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsSectionLanguage;
+
+  /// No description provided for @settingsLanguageSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsLanguageSystem;
+
+  /// No description provided for @settingsLanguageZh.
+  ///
+  /// In en, this message translates to:
+  /// **'中文'**
+  String get settingsLanguageZh;
+
+  /// No description provided for @settingsLanguageEn.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEn;
+
+  /// No description provided for @settingsSectionAiProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Provider'**
+  String get settingsSectionAiProvider;
+
+  /// No description provided for @settingsSectionAboutUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'About & Update'**
+  String get settingsSectionAboutUpdate;
+
+  /// No description provided for @settingsSectionStoragePrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage & Privacy'**
+  String get settingsSectionStoragePrivacy;
+
+  /// No description provided for @settingsSectionResources.
+  ///
+  /// In en, this message translates to:
+  /// **'Resources'**
+  String get settingsSectionResources;
+
+  /// No description provided for @settingsTileSecrets.
+  ///
+  /// In en, this message translates to:
+  /// **'Secrets'**
+  String get settingsTileSecrets;
+
+  /// No description provided for @settingsTileEncrypted.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted'**
+  String get settingsTileEncrypted;
+
+  /// No description provided for @settingsTileLocalCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Local cache'**
+  String get settingsTileLocalCache;
+
+  /// No description provided for @settingsTileClearData.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all data'**
+  String get settingsTileClearData;
+
+  /// No description provided for @settingsTileLicenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source licences'**
+  String get settingsTileLicenses;
+
+  /// No description provided for @settingsTileReportIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Report an issue'**
+  String get settingsTileReportIssue;
+
+  /// No description provided for @settingsFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH + AI Assistant for modern workflows'**
+  String get settingsFooter;
+
+  /// No description provided for @aiSettingsApiKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} API key'**
+  String aiSettingsApiKeyTitle(String provider);
+
+  /// No description provided for @aiSettingsKeySet.
+  ///
+  /// In en, this message translates to:
+  /// **'set'**
+  String get aiSettingsKeySet;
+
+  /// No description provided for @aiSettingsKeyNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'not configured'**
+  String get aiSettingsKeyNotConfigured;
+
+  /// No description provided for @aiSettingsGetApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Get an API key'**
+  String get aiSettingsGetApiKey;
+
+  /// No description provided for @aiSettingsTemperature.
+  ///
+  /// In en, this message translates to:
+  /// **'Temperature'**
+  String get aiSettingsTemperature;
+
+  /// No description provided for @aiSettingsRemoveKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove key'**
+  String get aiSettingsRemoveKey;
+
+  /// No description provided for @aiSettingsKeySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} API key saved securely.'**
+  String aiSettingsKeySaved(String provider);
+
+  /// No description provided for @aiSettingsRemoveKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {provider} key?'**
+  String aiSettingsRemoveKeyTitle(String provider);
+
+  /// No description provided for @aiSettingsRemoveKeyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The assistant will stop working for this provider until a new key is added.'**
+  String get aiSettingsRemoveKeyMessage;
+
+  /// No description provided for @aiSettingsRemoveKeyConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get aiSettingsRemoveKeyConfirm;
+
+  /// No description provided for @aiSettingsGetKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a {provider} key'**
+  String aiSettingsGetKeyTitle(String provider);
+
+  /// No description provided for @aiSettingsGetKeyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the provider console in your browser to create an API key, then paste it back here.'**
+  String get aiSettingsGetKeyMessage;
+
+  /// No description provided for @aiSettingsClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get aiSettingsClose;
+
+  /// No description provided for @aiSettingsLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied to clipboard.'**
+  String get aiSettingsLinkCopied;
+
+  /// No description provided for @aiSettingsCopyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get aiSettingsCopyLink;
+
+  /// No description provided for @aiSettingsKeyConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Key configured'**
+  String get aiSettingsKeyConfigured;
+
+  /// No description provided for @aiSettingsNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Not configured'**
+  String get aiSettingsNotConfigured;
+
+  /// No description provided for @aiSettingsUpdateKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update {provider} key'**
+  String aiSettingsUpdateKeyTitle(String provider);
+
+  /// No description provided for @aiSettingsAddKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {provider} key'**
+  String aiSettingsAddKeyTitle(String provider);
+
+  /// No description provided for @aiSettingsKeyStorageNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Stored encrypted on this device. Used only to call the AI provider.'**
+  String get aiSettingsKeyStorageNote;
+
+  /// No description provided for @aiSettingsApiKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'API key…'**
+  String get aiSettingsApiKeyHint;
+
+  /// No description provided for @aiSettingsSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get aiSettingsSave;
+
+  /// No description provided for @modelDescFastAffordable.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast & affordable'**
+  String get modelDescFastAffordable;
+
+  /// No description provided for @modelDescMostCapable.
+  ///
+  /// In en, this message translates to:
+  /// **'Most capable'**
+  String get modelDescMostCapable;
+
+  /// No description provided for @modelDescLegacyFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Legacy fast'**
+  String get modelDescLegacyFast;
+
+  /// No description provided for @modelDescGeneralConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'General conversation'**
+  String get modelDescGeneralConversation;
+
+  /// No description provided for @modelDescAdvancedReasoning.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced reasoning'**
+  String get modelDescAdvancedReasoning;
+
+  /// No description provided for @modelDescFastResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast response'**
+  String get modelDescFastResponse;
+
+  /// No description provided for @modelDescBalanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced'**
+  String get modelDescBalanced;
+
+  /// No description provided for @modelDescFreeFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Free & fast'**
+  String get modelDescFreeFast;
+
+  /// No description provided for @modelDescEnhanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Enhanced'**
+  String get modelDescEnhanced;
+
+  /// No description provided for @modelDescStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get modelDescStandard;
+
+  /// No description provided for @modelDescLightweight.
+  ///
+  /// In en, this message translates to:
+  /// **'Lightweight'**
+  String get modelDescLightweight;
+
+  /// No description provided for @modelDescRlEnhanced.
+  ///
+  /// In en, this message translates to:
+  /// **'RL enhanced'**
+  String get modelDescRlEnhanced;
+
+  /// No description provided for @updateVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get updateVersion;
+
+  /// No description provided for @updateSoftwareUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Software update'**
+  String get updateSoftwareUpdate;
+
+  /// No description provided for @updateChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'CHECKING'**
+  String get updateChecking;
+
+  /// No description provided for @updateUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'UP TO DATE'**
+  String get updateUpToDate;
+
+  /// No description provided for @updateCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get updateCheckAgain;
+
+  /// No description provided for @updateReady.
+  ///
+  /// In en, this message translates to:
+  /// **'READY'**
+  String get updateReady;
+
+  /// No description provided for @updateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW'**
+  String get updateNew;
+
+  /// No description provided for @updateCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'CHECK'**
+  String get updateCheck;
+
+  /// No description provided for @updateAwaitingResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting response'**
+  String get updateAwaitingResponse;
+
+  /// No description provided for @updateAlreadyLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Already on the latest build'**
+  String get updateAlreadyLatest;
+
+  /// No description provided for @updateCurrentVersionLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'v{version} is the newest release published on GitHub.'**
+  String updateCurrentVersionLatest(String version);
+
+  /// No description provided for @updateRunningVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Running v{current} — remote head is v{latest}.'**
+  String updateRunningVersion(String current, String latest);
+
+  /// No description provided for @updateCheckedAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked {timeAgo}'**
+  String updateCheckedAgo(String timeAgo);
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get updateAvailable;
+
+  /// No description provided for @updatePre.
+  ///
+  /// In en, this message translates to:
+  /// **'PRE'**
+  String get updatePre;
+
+  /// No description provided for @updateDownloadInstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Download & Install'**
+  String get updateDownloadInstall;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateLater;
+
+  /// No description provided for @updateApkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'APK installation is only supported on Android. The file can still be downloaded here.'**
+  String get updateApkHint;
+
+  /// No description provided for @updateDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading {tag}'**
+  String updateDownloading(String tag);
+
+  /// No description provided for @updateSize.
+  ///
+  /// In en, this message translates to:
+  /// **'size'**
+  String get updateSize;
+
+  /// No description provided for @updateRate.
+  ///
+  /// In en, this message translates to:
+  /// **'rate'**
+  String get updateRate;
+
+  /// No description provided for @updateEta.
+  ///
+  /// In en, this message translates to:
+  /// **'eta'**
+  String get updateEta;
+
+  /// No description provided for @updateElapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'elapsed'**
+  String get updateElapsed;
+
+  /// No description provided for @updateCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get updateCancel;
+
+  /// No description provided for @updateKeepForeground.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the app in the foreground'**
+  String get updateKeepForeground;
+
+  /// No description provided for @updateDownloadComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Download complete'**
+  String get updateDownloadComplete;
+
+  /// No description provided for @updateInstallHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Android will ask you to confirm. Shell-Mind closes while the installer runs; your servers and history are preserved.'**
+  String get updateInstallHint;
+
+  /// No description provided for @updateLaunching.
+  ///
+  /// In en, this message translates to:
+  /// **'Launching...'**
+  String get updateLaunching;
+
+  /// No description provided for @updateInstallNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Now'**
+  String get updateInstallNow;
+
+  /// No description provided for @updateDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get updateDelete;
+
+  /// No description provided for @updateInstallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Install {tag}?'**
+  String updateInstallTitle(String tag);
+
+  /// No description provided for @updateInstallMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The system package installer will open. Shell-Mind closes during installation and reopens on the new version.'**
+  String get updateInstallMessage;
+
+  /// No description provided for @updateNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get updateNotNow;
+
+  /// No description provided for @updateInstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Install'**
+  String get updateInstall;
+
+  /// No description provided for @updateCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The update check failed.'**
+  String get updateCheckFailed;
+
+  /// No description provided for @updateRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get updateRetry;
+
+  /// No description provided for @updateDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get updateDismiss;
+
+  /// No description provided for @updateReleaseNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Release {tag}'**
+  String updateReleaseNotes(String tag);
+
+  /// No description provided for @updateNotesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'notes'**
+  String get updateNotesLabel;
+
+  /// No description provided for @updateNewVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'New version available'**
+  String get updateNewVersionAvailable;
+
+  /// No description provided for @updateRemindLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind me later'**
+  String get updateRemindLater;
+
+  /// No description provided for @updateCancelDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Download'**
+  String get updateCancelDownload;
+
+  /// No description provided for @updateInstallTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Install {tag}'**
+  String updateInstallTag(String tag);
+
+  /// No description provided for @updateInstallLaterFromSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Install later from settings'**
+  String get updateInstallLaterFromSettings;
+
+  /// No description provided for @updateCouldNotComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'The update could not be completed.'**
+  String get updateCouldNotComplete;
+
+  /// No description provided for @updateClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get updateClose;
+
+  /// No description provided for @updatePromptInstallHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Android closes Shell-Mind while the installer runs. Servers, keys and chat history are preserved.'**
+  String get updatePromptInstallHint;
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get commonCancel;
+
+  /// No description provided for @commonDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get commonDelete;
+
+  /// No description provided for @commonRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get commonRetry;
+
+  /// No description provided for @commonLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get commonLoading;
+
+  /// No description provided for @commonNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data'**
+  String get commonNoData;
+
+  /// No description provided for @commonNothingToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to show here yet.'**
+  String get commonNothingToShow;
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['en', 'zh'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+    case 'zh':
+      return AppLocalizationsZh();
+  }
+
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}

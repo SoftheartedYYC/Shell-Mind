@@ -10,14 +10,10 @@ import 'features/server_config/data/models/server_config_model.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Native UI chrome tuned to match the app's dark shell.
+  // Transparent status bar — colour adapts to the active theme.
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Color(0xFF0A0E1A),
-      systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
   await SystemChrome.setPreferredOrientations([

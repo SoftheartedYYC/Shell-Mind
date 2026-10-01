@@ -1,87 +1,54 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
 import '../../app/theme.dart';
+import '../../l10n/app_localizations.dart';
 import '../utils/result.dart';
 
 // ─── Loading ──────────────────────────────────────────────────────────────
 
-/// Horizontal phosphor scanline — a slim bar with a bright cyan segment
-/// sweeping across it, evoking a CRT refresh rather than a Material spinner.
-///
-/// Use as a drop-in replacement for [LinearProgressIndicator] when the
-/// indeterminate state should feel "alive" instead of generic.
-class PhosphorLoader extends StatefulWidget {
-  const PhosphorLoader({
+/// Simple linear progress indicator with optional label.
+class AppLoader extends StatelessWidget {
+  const AppLoader({
     super.key,
-    this.height = 2,
+    this.height = 4,
     this.label,
     this.compact = false,
   });
 
-  /// Track height in logical pixels.
   final double height;
-
-  /// Optional monospace caption rendered beneath the bar.
   final String? label;
-
-  /// When true, the label sits inline to the right instead of below.
   final bool compact;
 
   @override
-  State<PhosphorLoader> createState() => _PhosphorLoaderState();
-}
-
-class _PhosphorLoaderState extends State<PhosphorLoader>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1600),
-  )..repeat();
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final Widget bar = AnimatedBuilder(
-      animation: _c,
-      builder: (context, _) => CustomPaint(
-        size: Size.infinite,
-        painter: _ScanlinePainter(progress: _c.value, height: widget.height),
+    final ColorScheme colors = Theme.of(context).colorScheme;
+
+    final Widget bar = ClipRRect(
+      borderRadius: BorderRadius.circular(height / 2),
+      child: SizedBox(
+        height: height,
+        child: LinearProgressIndicator(
+          color: colors.primary,
+          backgroundColor: colors.surfaceContainerHighest,
+        ),
       ),
     );
 
-    final Widget sized = SizedBox(
-      height: widget.height,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(widget.height / 2),
-        child: bar,
-      ),
-    );
+    if (label == null) return bar;
 
-    if (widget.label == null) return sized;
+    final TextStyle labelStyle = Theme.of(context).textTheme.bodySmall!.copyWith(
+          color: colors.onSurfaceVariant,
+        );
 
-    final TextStyle labelStyle = TextStyle(
-      fontFamily: AppTheme.monoFont,
-      fontFamilyFallback: const <String>['JetBrains Mono', 'Menlo', 'monospace'],
-      fontSize: 10,
-      letterSpacing: 1.2,
-      color: AppTheme.textTertiary,
-    );
-
-    if (widget.compact) {
+    if (compact) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          SizedBox(width: 60, child: sized),
-          const SizedBox(width: 10),
-          Text(widget.label!.toUpperCase(), style: labelStyle),
+          SizedBox(width: 80, child: bar),
+          const SizedBox(width: 12),
+          Text(label!, style: labelStyle),
         ],
       );
     }
@@ -90,59 +57,17 @@ class _PhosphorLoaderState extends State<PhosphorLoader>
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        sized,
+        bar,
         const SizedBox(height: 8),
-        Text(widget.label!.toUpperCase(), style: labelStyle),
+        Text(label!, style: labelStyle),
       ],
     );
   }
 }
 
-class _ScanlinePainter extends CustomPainter {
-  _ScanlinePainter({required this.progress, required this.height});
-  final double progress;
-  final double height;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Base track.
-    final Paint track = Paint()
-      ..color = AppTheme.inkElevated
-      ..style = PaintingStyle.fill;
-    canvas.drawRect(Offset.zero & size, track);
-
-    // Sweeping bright segment (~28% of the track).
-    final double span = size.width * 0.28;
-    // Eased: fast in the middle, slow at edges — feels like a real scan.
-    final double t = _easeInOutSine(progress);
-    final double left = (size.width + span) * t - span;
-
-    final Paint head = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: <Color>[
-          AppTheme.phosphor.withValues(alpha: 0.0),
-          AppTheme.phosphor,
-          AppTheme.phosphorGlow,
-          AppTheme.phosphor.withValues(alpha: 0.0),
-        ],
-        stops: const <double>[0.0, 0.35, 0.55, 1.0],
-      ).createShader(Rect.fromLTWH(left, 0, span, size.height));
-    canvas.drawRect(Rect.fromLTWH(left, 0, span, size.height), head);
-  }
-
-  static double _easeInOutSine(double t) =>
-      -(math.cos(math.pi * t) - 1) / 2;
-
-  @override
-  bool shouldRepaint(_ScanlinePainter old) =>
-      old.progress != progress || old.height != height;
-}
-
-/// Small circular loader with a phosphor glow — for buttons and inline use.
-class PhosphorSpinner extends StatelessWidget {
-  const PhosphorSpinner({super.key, this.size = 18, this.strokeWidth = 1.6});
+/// Small circular progress indicator for inline use.
+class AppSpinner extends StatelessWidget {
+  const AppSpinner({super.key, this.size = 20, this.strokeWidth = 2.0});
 
   final double size;
   final double strokeWidth;
@@ -155,19 +80,47 @@ class PhosphorSpinner extends StatelessWidget {
       child: CircularProgressIndicator(
         strokeWidth: strokeWidth,
         strokeCap: StrokeCap.round,
-        valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.phosphor),
-        backgroundColor: AppTheme.inkElevated,
+        color: Theme.of(context).colorScheme.primary,
       ),
     );
   }
 }
 
+// ─── Legacy aliases (for gradual migration) ───────────────────────────────
+
+/// @deprecated Use [AppLoader] instead.
+class PhosphorLoader extends StatelessWidget {
+  const PhosphorLoader({
+    super.key,
+    this.height = 4,
+    this.label,
+    this.compact = false,
+  });
+
+  final double height;
+  final String? label;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) =>
+      AppLoader(height: height, label: label, compact: compact);
+}
+
+/// @deprecated Use [AppSpinner] instead.
+class PhosphorSpinner extends StatelessWidget {
+  const PhosphorSpinner({super.key, this.size = 20, this.strokeWidth = 2.0});
+
+  final double size;
+  final double strokeWidth;
+
+  @override
+  Widget build(BuildContext context) =>
+      AppSpinner(size: size, strokeWidth: strokeWidth);
+}
+
 // ─── Error surface ────────────────────────────────────────────────────────
 
-/// Displays an [AppFailure] in a compact, terminal-flavoured banner.
-///
-/// The left rule is colour-coded by [FailureKind]; the failure code is
-/// rendered monospaced like a stderr line.
+/// Displays an [AppFailure] in a clean Material card.
 class ErrorBanner extends StatelessWidget {
   const ErrorBanner({
     super.key,
@@ -182,19 +135,22 @@ class ErrorBanner extends StatelessWidget {
   final VoidCallback? onDismiss;
   final bool dense;
 
-  static Color _colorFor(FailureKind kind) => switch (kind) {
-        FailureKind.auth => AppTheme.coral,
-        FailureKind.permission => AppTheme.coral,
-        FailureKind.notFound => AppTheme.amber,
-        FailureKind.validation => AppTheme.amber,
-        FailureKind.timeout => AppTheme.amber,
-        FailureKind.cancelled => AppTheme.textSecondary,
-        FailureKind.network => AppTheme.phosphor,
-        FailureKind.ssh => AppTheme.phosphor,
-        FailureKind.aiProvider => AppTheme.phosphorGlow,
-        FailureKind.storage => AppTheme.amber,
-        FailureKind.unexpected => AppTheme.coral,
-      };
+  static Color _colorFor(BuildContext context, FailureKind kind) {
+    final sem = context.sem;
+    return switch (kind) {
+      FailureKind.auth => sem.danger,
+      FailureKind.permission => sem.danger,
+      FailureKind.notFound => sem.warning,
+      FailureKind.validation => sem.warning,
+      FailureKind.timeout => sem.warning,
+      FailureKind.cancelled => Theme.of(context).colorScheme.onSurfaceVariant,
+      FailureKind.network => sem.info,
+      FailureKind.ssh => sem.info,
+      FailureKind.aiProvider => sem.info,
+      FailureKind.storage => sem.warning,
+      FailureKind.unexpected => sem.danger,
+    };
+  }
 
   static IconData _iconFor(FailureKind kind) => switch (kind) {
         FailureKind.auth => Icons.lock_outline_rounded,
@@ -212,108 +168,94 @@ class ErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color accent = _colorFor(failure.kind);
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final Color accent = _colorFor(context, failure.kind);
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.inkSurface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.inkBorderSoft),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            // Colour-coded left rule.
-            Container(width: 3, color: accent),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: dense ? 12 : 14,
-                  vertical: dense ? 10 : 14,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.outlineVariant),
+        boxShadow: isDark
+            ? null
+            : <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Icon(_iconFor(failure.kind), size: 14, color: accent),
-                        const SizedBox(width: 8),
-                        Text(
-                          failure.kind.name.toUpperCase(),
-                          style: TextStyle(
-                            fontFamily: AppTheme.monoFont,
-                            fontFamilyFallback: const <String>[
-                              'JetBrains Mono',
-                              'Menlo',
-                              'monospace',
-                            ],
-                            fontSize: 10,
-                            letterSpacing: 1.4,
-                            fontWeight: FontWeight.w600,
-                            color: accent,
-                          ),
+              ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: dense ? 12 : 16,
+          vertical: dense ? 12 : 16,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(_iconFor(failure.kind), size: 18, color: accent),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    failure.kind.name.toUpperCase(),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: accent,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.8,
                         ),
-                        if (failure.code != null) ...<Widget>[
-                          const SizedBox(width: 8),
-                          Text(
-                            '· ${failure.code}',
-                            style: TextStyle(
-                              fontFamily: AppTheme.monoFont,
-                              fontSize: 10,
-                              letterSpacing: 0.6,
-                              color: AppTheme.textTertiary,
-                            ),
-                          ),
-                        ],
-                        const Spacer(),
-                        if (onDismiss != null)
-                          IconButton(
-                            iconSize: 14,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                              minWidth: 22,
-                              minHeight: 22,
-                            ),
-                            visualDensity: VisualDensity.compact,
-                            onPressed: onDismiss,
-                            icon: const Icon(Icons.close_rounded,
-                                color: AppTheme.textTertiary),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      failure.message,
-                      style: context.text.bodyMedium?.copyWith(
-                        color: AppTheme.textPrimary,
-                        height: 1.45,
-                      ),
-                    ),
-                    if (onRetry != null) ...<Widget>[
-                      const SizedBox(height: 10),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: OutlinedButton.icon(
-                          onPressed: onRetry,
-                          icon: const Icon(Icons.refresh_rounded, size: 14),
-                          label: const Text('Retry'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: accent,
-                            side: BorderSide(color: accent.withValues(alpha: 0.5)),
-                            minimumSize: const Size(0, 32),
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            textStyle: context.text.labelMedium,
-                          ),
+                  ),
+                ),
+                if (failure.code != null)
+                  Text(
+                    '${failure.code}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontFamily: AppTheme.monoFont,
+                          color: colors.onSurfaceVariant,
                         ),
-                      ),
-                    ],
-                  ],
+                  ),
+                if (onDismiss != null)
+                  IconButton(
+                    iconSize: 16,
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(minWidth: 28, minHeight: 28),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: onDismiss,
+                    icon: Icon(Icons.close_rounded,
+                        color: colors.onSurfaceVariant),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              failure.message,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurface,
+                    height: 1.45,
+                  ),
+            ),
+            if (onRetry != null) ...<Widget>[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: Text(AppLocalizations.of(context).commonRetry),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: accent,
+                    side: BorderSide(color: accent.withValues(alpha: 0.5)),
+                    minimumSize: const Size(0, 36),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -324,7 +266,8 @@ class ErrorBanner extends StatelessWidget {
 /// Convenience wrapper: if [failure] is non-null, show [ErrorBanner];
 /// otherwise render [child].
 class ErrorOr extends StatelessWidget {
-  const ErrorOr({super.key, required this.failure, required this.child, this.onRetry});
+  const ErrorOr(
+      {super.key, required this.failure, required this.child, this.onRetry});
   final AppFailure? failure;
   final Widget child;
   final VoidCallback? onRetry;
@@ -342,38 +285,32 @@ class ErrorOr extends StatelessWidget {
 
 // ─── Empty state ──────────────────────────────────────────────────────────
 
-/// Terminal-flavoured empty state — an ASCII-ish panel with a `~/` prompt
-/// instead of the usual Material "inbox" icon.
+/// Clean, minimal empty state with icon, title, message and optional action.
 class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
-    this.title = 'no rows returned',
+    this.title,
     this.message,
     this.prompt,
-    this.icon = Icons.terminal_rounded,
+    this.icon = Icons.inbox_rounded,
     this.action,
     this.compact = false,
   });
 
-  /// Monospaced headline (lowercase, no punctuation — reads like a
-  /// shell error message).
-  final String title;
-
-  /// Sans-serif supporting copy.
+  final String? title;
   final String? message;
 
-  /// Optional `$`-prefixed command hint shown in the terminal window.
+  /// Kept for API compat — rendered as a subtle hint below the message.
   final String? prompt;
 
   final IconData icon;
-
-  /// Optional CTA rendered beneath the copy.
   final Widget? action;
-
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final ColorScheme colors = Theme.of(context).colorScheme;
     final EdgeInsets pad = EdgeInsets.symmetric(
       horizontal: compact ? 16 : 32,
       vertical: compact ? 24 : 48,
@@ -383,45 +320,59 @@ class EmptyState extends StatelessWidget {
       child: Padding(
         padding: pad,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
+          constraints: const BoxConstraints(maxWidth: 360),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              _TerminalGlyph(icon: icon, compact: compact),
-              SizedBox(height: compact ? 14 : 20),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: AppTheme.monoFont,
-                  fontFamilyFallback: const <String>[
-                    'JetBrains Mono',
-                    'Menlo',
-                    'monospace',
-                  ],
-                  fontSize: compact ? 12 : 14,
-                  letterSpacing: 0.4,
-                  color: AppTheme.textSecondary,
+              Container(
+                width: compact ? 48 : 64,
+                height: compact ? 48 : 64,
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
                 ),
+                child: Icon(
+                  icon,
+                  size: compact ? 24 : 32,
+                  color: colors.primary,
+                ),
+              ),
+              SizedBox(height: compact ? 12 : 16),
+              Text(
+                title ?? l10n.commonNoData,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: colors.onSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               if (message != null) ...<Widget>[
                 const SizedBox(height: 6),
                 Text(
                   message!,
                   textAlign: TextAlign.center,
-                  style: context.text.bodySmall?.copyWith(
-                    color: AppTheme.textTertiary,
-                    height: 1.55,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        height: 1.5,
+                      ),
                 ),
               ],
               if (prompt != null) ...<Widget>[
-                SizedBox(height: compact ? 14 : 18),
-                _PromptHint(text: prompt!),
+                const SizedBox(height: 12),
+                Text(
+                  prompt!,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontFamily: AppTheme.monoFont,
+                        fontFamilyFallback: AppTheme.monoFallback,
+                        fontSize: 12,
+                      ),
+                ),
               ],
               if (action != null) ...<Widget>[
-                SizedBox(height: compact ? 16 : 22),
+                SizedBox(height: compact ? 16 : 24),
                 action!,
               ],
             ],
@@ -432,84 +383,9 @@ class EmptyState extends StatelessWidget {
   }
 }
 
-class _TerminalGlyph extends StatelessWidget {
-  const _TerminalGlyph({required this.icon, required this.compact});
-  final IconData icon;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final double size = compact ? 40 : 56;
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: AppTheme.inkSurface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.inkBorder),
-      ),
-      child: Center(
-        child: Icon(icon, size: size * 0.44, color: AppTheme.phosphorDim),
-      ),
-    );
-  }
-}
-
-class _PromptHint extends StatelessWidget {
-  const _PromptHint({required this.text});
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0C1120),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppTheme.inkBorderSoft),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          const Text(
-            '\$',
-            style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontSize: 11.5,
-              color: AppTheme.phosphor,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontFamily: AppTheme.monoFont,
-                fontFamilyFallback: <String>[
-                  'JetBrains Mono',
-                  'Menlo',
-                  'monospace',
-                ],
-                fontSize: 11.5,
-                color: AppTheme.textSecondary,
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 // ─── Section headers ──────────────────────────────────────────────────────
 
-/// Small-caps monospace section header with an optional trailing widget.
-///
-/// Used to break up long lists (server groups, chat threads, settings
-/// sections) with a terminal-ish "chapter" marker instead of Material's
-/// default `ListTile` header look.
+/// Clean section header with optional trailing widget.
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
     super.key,
@@ -526,6 +402,7 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return Padding(
       padding: padding,
       child: Row(
@@ -537,18 +414,11 @@ class SectionHeader extends StatelessWidget {
           Expanded(
             child: Text(
               label.toUpperCase(),
-              style: TextStyle(
-                fontFamily: AppTheme.monoFont,
-                fontFamilyFallback: const <String>[
-                  'JetBrains Mono',
-                  'Menlo',
-                  'monospace',
-                ],
-                fontSize: 10.5,
-                letterSpacing: 1.6,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.textTertiary,
-              ),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.0,
+                  ),
             ),
           ),
           if (trailing != null) trailing!,
@@ -560,9 +430,8 @@ class SectionHeader extends StatelessWidget {
 
 // ─── Status pill ──────────────────────────────────────────────────────────
 
-/// Compact status pill with a pulsing dot — used for server connectivity,
-/// streaming state, etc.
-class StatusPill extends StatefulWidget {
+/// Compact status pill with a coloured dot.
+class StatusPill extends StatelessWidget {
   const StatusPill({
     super.key,
     required this.label,
@@ -573,102 +442,43 @@ class StatusPill extends StatefulWidget {
 
   final String label;
   final Color color;
-
-  /// When true, the leading dot animates with a soft bloom.
   final bool pulse;
-
   final StatusPillSize size;
 
   @override
-  State<StatusPill> createState() => _StatusPillState();
-}
-
-enum StatusPillSize { small, regular }
-
-class _StatusPillState extends State<StatusPill>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1400),
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.pulse) _c.repeat(reverse: true);
-  }
-
-  @override
-  void didUpdateWidget(covariant StatusPill old) {
-    super.didUpdateWidget(old);
-    if (widget.pulse && !_c.isAnimating) {
-      _c.repeat(reverse: true);
-    } else if (!widget.pulse && _c.isAnimating) {
-      _c.stop();
-      _c.value = 0;
-    }
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final bool small = widget.size == StatusPillSize.small;
-    final double dotSize = small ? 5 : 6;
-    final double fontSize = small ? 9.5 : 10.5;
+    final bool small = size == StatusPillSize.small;
+    final double dotSize = small ? 6 : 8;
+    final double fontSize = small ? 10 : 11;
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: small ? 7 : 9,
-        vertical: small ? 3 : 4,
+        horizontal: small ? 8 : 10,
+        vertical: small ? 4 : 5,
       ),
       decoration: BoxDecoration(
-        color: widget.color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: widget.color.withValues(alpha: 0.35)),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          AnimatedBuilder(
-            animation: _c,
-            builder: (context, _) {
-              final double t = widget.pulse ? _c.value : 1.0;
-              return Container(
-                width: dotSize,
-                height: dotSize,
-                decoration: BoxDecoration(
-                  color: widget.color,
-                  shape: BoxShape.circle,
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: widget.color.withValues(alpha: 0.35 + 0.4 * t),
-                      blurRadius: 4 + 4 * t,
-                      spreadRadius: 0,
-                    ),
-                  ],
-                ),
-              );
-            },
+          Container(
+            width: dotSize,
+            height: dotSize,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
           ),
           SizedBox(width: small ? 5 : 7),
           Text(
-            widget.label,
+            label,
             style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontFamilyFallback: const <String>[
-                'JetBrains Mono',
-                'Menlo',
-                'monospace',
-              ],
               fontSize: fontSize,
-              letterSpacing: 0.8,
               fontWeight: FontWeight.w600,
-              color: widget.color,
+              color: color,
+              letterSpacing: 0.3,
             ),
           ),
         ],
@@ -677,10 +487,11 @@ class _StatusPillState extends State<StatusPill>
   }
 }
 
+enum StatusPillSize { small, regular }
+
 // ─── Async value helper ───────────────────────────────────────────────────
 
-/// Renders `loading` / `error` / `data` for a nullable trio — a lightweight
-/// alternative to Riverpod's AsyncValue when working with plain futures.
+/// Renders loading / error / data states for a nullable trio.
 class LoadingErrorData<T> extends StatelessWidget {
   const LoadingErrorData({
     super.key,
@@ -703,12 +514,13 @@ class LoadingErrorData<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     if (isLoading) {
       return loadingWidget ??
-          const Center(
+          Center(
             child: Padding(
-              padding: EdgeInsets.all(24),
-              child: PhosphorLoader(label: 'loading', compact: true),
+              padding: const EdgeInsets.all(24),
+              child: AppLoader(label: l10n.commonLoading, compact: true),
             ),
           );
     }
@@ -725,19 +537,18 @@ class LoadingErrorData<T> extends StatelessWidget {
     final T? d = data;
     if (d == null) {
       return errorWidget ??
-          const EmptyState(
-            title: 'no data',
-            message: 'Nothing to show here yet.',
+          EmptyState(
+            title: l10n.commonNoData,
+            message: l10n.commonNothingToShow,
           );
     }
     return builder(d);
   }
 }
 
-// ─── Timer helper (re-exported for widgets that need one) ─────────────────
+// ─── Timer helper ─────────────────────────────────────────────────────────
 
-/// Small utility used by feature widgets to schedule post-frame work
-/// without pulling in `dart:async` explicitly at every call site.
+/// Small utility for scheduling post-frame work.
 void postFrame(VoidCallback cb) {
   Timer.run(cb);
 }

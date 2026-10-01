@@ -46,8 +46,7 @@ abstract final class _Seq {
 ///
 /// The Ctrl key is a sticky modifier: it arms [ctrlKeyStateProvider], which the
 /// terminal's `onOutput` consumes to translate the next typed letter into its
-/// control byte (Ctrl-C → interrupt), then auto-releases. While armed the key
-/// glows phosphor.
+/// control byte (Ctrl-C → interrupt), then auto-releases.
 class KeyboardToolbar extends ConsumerStatefulWidget {
   const KeyboardToolbar({
     super.key,
@@ -145,16 +144,17 @@ class _KeyboardToolbarState extends ConsumerState<KeyboardToolbar> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     final bool ctrlArmed = ref.watch(ctrlKeyStateProvider);
     final List<_Key> keys = <_Key>[
       ...(_extended ? _extendedKeys : _commonKeys),
       ..._navKeys,
     ];
 
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Color(0xFF0C1120),
-        border: Border(top: BorderSide(color: AppTheme.inkBorderSoft)),
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        border: Border(top: BorderSide(color: colors.outlineVariant)),
       ),
       child: SafeArea(
         top: false,
@@ -172,7 +172,7 @@ class _KeyboardToolbarState extends ConsumerState<KeyboardToolbar> {
               child: Text(
                 _extended ? '#+=' : 'abc',
                 style: _labelStyle(
-                  _extended ? AppTheme.inkVoid : AppTheme.textSecondary,
+                  _extended ? colors.onPrimary : colors.onSurfaceVariant,
                   size: 12,
                   weight: FontWeight.w700,
                 ),
@@ -182,7 +182,7 @@ class _KeyboardToolbarState extends ConsumerState<KeyboardToolbar> {
             Container(
               width: 1,
               height: 24,
-              color: AppTheme.inkBorderSoft,
+              color: colors.outlineVariant,
             ),
             const SizedBox(width: 6),
             Expanded(
@@ -201,13 +201,13 @@ class _KeyboardToolbarState extends ConsumerState<KeyboardToolbar> {
                                 key.icon,
                                 size: 18,
                                 color: widget.enabled
-                                    ? AppTheme.textSecondary
-                                    : AppTheme.textDisabled,
+                                    ? colors.onSurfaceVariant
+                                    : colors.onSurface.withValues(alpha: 0.3),
                               )
                             : Text(
                                 key.label!,
                                 style: _labelStyle(
-                                  _fgFor(key.isCtrl && ctrlArmed,
+                                  _fgFor(context, key.isCtrl && ctrlArmed,
                                       widget.enabled),
                                 ),
                               ),
@@ -224,9 +224,12 @@ class _KeyboardToolbarState extends ConsumerState<KeyboardToolbar> {
     );
   }
 
-  static Color _fgFor(bool active, bool enabled) {
-    if (active) return AppTheme.inkVoid;
-    return enabled ? AppTheme.textPrimary : AppTheme.textDisabled;
+  static Color _fgFor(BuildContext context, bool active, bool enabled) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    if (active) return colors.onPrimary;
+    return enabled
+        ? colors.onSurface
+        : colors.onSurface.withValues(alpha: 0.3);
   }
 
   static TextStyle _labelStyle(
@@ -236,12 +239,7 @@ class _KeyboardToolbarState extends ConsumerState<KeyboardToolbar> {
   }) {
     return TextStyle(
       fontFamily: AppTheme.monoFont,
-      fontFamilyFallback: const <String>[
-        'JetBrains Mono',
-        'Menlo',
-        'Consolas',
-        'monospace',
-      ],
+      fontFamilyFallback: AppTheme.monoFallback,
       fontSize: size,
       fontWeight: weight,
       letterSpacing: 0.4,
@@ -250,8 +248,8 @@ class _KeyboardToolbarState extends ConsumerState<KeyboardToolbar> {
   }
 }
 
-/// A single toolbar key: a rounded, hairline-bordered chip that lifts to a
-/// phosphor fill when [active] (used for the sticky Ctrl modifier).
+/// A single toolbar key: a rounded chip that highlights when [active]
+/// (used for the sticky Ctrl modifier).
 class _KeyChip extends StatelessWidget {
   const _KeyChip({
     required this.child,
@@ -267,9 +265,13 @@ class _KeyChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bg = active ? AppTheme.phosphor : AppTheme.inkElevated;
-    final Color border =
-        active ? AppTheme.phosphorGlow : AppTheme.inkBorder;
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final Color bg = active
+        ? colors.primary
+        : colors.surfaceContainerHigh;
+    final Color border = active
+        ? colors.primary
+        : colors.outlineVariant;
 
     return Material(
       color: Colors.transparent,
@@ -286,14 +288,6 @@ class _KeyChip extends StatelessWidget {
             color: bg,
             borderRadius: BorderRadius.circular(7),
             border: Border.all(color: border),
-            boxShadow: active
-                ? <BoxShadow>[
-                    BoxShadow(
-                      color: AppTheme.phosphor.withValues(alpha: 0.45),
-                      blurRadius: 10,
-                    ),
-                  ]
-                : null,
           ),
           alignment: Alignment.center,
           child: child,

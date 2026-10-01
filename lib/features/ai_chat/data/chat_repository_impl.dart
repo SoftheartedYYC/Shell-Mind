@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 import '../../../core/utils/result.dart';
 import '../domain/entities/chat_message.dart';
 import '../domain/repositories/chat_repository.dart';
-import 'openai_service.dart';
+import 'ai_service.dart';
 
 /// Persona injected as the leading `system` message on every request.
 ///
@@ -29,14 +29,14 @@ If the user shares terminal output, analyze it carefully and explain what's happ
 /// latency while preserving enough context for coherent follow-ups.
 const int kMaxHistoryMessages = 20;
 
-/// Default [ChatRepository] backed by [OpenAiService].
+/// Default [ChatRepository] backed by [AiService].
 ///
 /// Owns prompt assembly: prepends the system persona, trims history to the
 /// most recent [kMaxHistoryMessages] turns, and appends the live user message.
 class ChatRepositoryImpl implements ChatRepository {
   ChatRepositoryImpl(this._service);
 
-  final OpenAiService _service;
+  final AiService _service;
 
   /// Converts domain messages into the `[{role, content}]` wire format,
   /// dropping empty/system-noise and enforcing the history window.

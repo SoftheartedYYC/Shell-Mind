@@ -5,9 +5,8 @@ import 'package:dio/dio.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/network/sse_parser.dart';
-import '../../../core/storage/preferences_service.dart';
-import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/utils/result.dart';
+import '../domain/entities/ai_provider.dart';
 
 /// Exception carrying a structured [AppFailure] so callers (repository,
 /// providers) can branch on failure kind without string parsing.
@@ -19,33 +18,41 @@ class AiServiceException implements Exception {
   String toString() => 'AiServiceException(${failure.message})';
 }
 
-/// Transport layer for the OpenAI Chat Completions API.
+/// Transport layer for any OpenAI-compatible Chat Completions provider.
 ///
-/// Responsibilities are deliberately narrow: read the API key + model
-/// preferences, build the request payload, and turn the SSE byte stream into
+/// All built-in providers ([AiProviders]) — OpenAI, DeepSeek, Qwen, GLM, MiMo
+/// — speak the same protocol, so a single service drives them. The concrete
+/// provider, credential, model and temperature are injected at construction
+/// time (resolved by the Riverpod layer from storage/preferences), keeping
+/// this class a pure, easily testable transport.
+///
+/// Responsibilities are deliberately narrow: build the request payload, POST
+/// it to `{baseUrl}/chat/completions`, and turn the SSE byte stream into
 /// content deltas. Prompt assembly and history policy live in the repository.
-class OpenAiService {
-  OpenAiService({
+class AiService {
+  AiService({
     required this.client,
-    required this.secureStorage,
-    required this.preferences,
+    required this.provider,
+    required this.apiKey,
+    required this.model,
+    required this.temperature,
   });
 
   final DioClient client;
-  final SecureStorageService secureStorage;
-  final PreferencesService preferences;
+  final AiProvider provider;
+  final String apiKey;
+  final String model;
+  final double temperature;
 
-  /// Resolves the base URL — a user-supplied override wins over the default,
-  /// enabling OpenAI-compatible gateways (Azure proxies, local relays, etc.).
-  Future<String> _resolveBaseUrl() async {
-    final String? custom = await secureStorage.getApiBaseUrl();
-    final String base =
-        (custom != null && custom.trim().isNotEmpty) ? custom.trim() : AppConstants.openAiBaseUrl;
-    // Strip a trailing slash so path concatenation is predictable.
-    return base.endsWith('/') ? base.substring(0, base.length - 1) : base;
+  /// True when a usable credential is present.
+  bool get hasApiKey => apiKey.trim().isNotEmpty;
+
+  /// Full endpoint: provider base URL (trailing slash stripped) + chat path.
+  String get _endpoint {
+    String base = provider.baseUrl.trim();
+    if (base.endsWith('/')) base = base.substring(0, base.length - 1);
+    return '$base${AppConstants.aiChatCompletionsPath}';
   }
-
-  Future<String?> _apiKey() => secureStorage.getApiKey();
 
   /// Builds the shared request body. [stream] toggles the SSE mode.
   Map<String, dynamic> _payload(
@@ -53,11 +60,20 @@ class OpenAiService {
     required bool stream,
   }) =>
       <String, dynamic>{
-        'model': preferences.aiModel,
+        'model': model,
         'messages': messages,
-        'temperature': preferences.aiTemperature,
+        'temperature': temperature,
         'stream': stream,
       };
+
+  Options _authOptions({Duration? receiveTimeout}) => Options(
+        headers: <String, dynamic>{'Authorization': 'Bearer ${apiKey.trim()}'},
+        receiveTimeout: receiveTimeout,
+      );
+
+  AiServiceException _missingKey() => AiServiceException(
+        AppFailure.auth(message: '${provider.name} API key is not configured.'),
+      );
 
   // ─── Streaming ────────────────────────────────────────────────────────
 
@@ -70,24 +86,15 @@ class OpenAiService {
     List<Map<String, String>> messages, {
     CancelToken? cancelToken,
   }) async* {
-    final String? key = await _apiKey();
-    if (key == null || key.trim().isEmpty) {
-      throw AiServiceException(
-        AppFailure.auth(message: 'OpenAI API key is not configured.'),
-      );
-    }
-
-    final String url = '${await _resolveBaseUrl()}${AppConstants.openAiChatPath}';
+    if (!hasApiKey) throw _missingKey();
 
     Response<ResponseBody> response;
     try {
       response = await client.postStream(
-        url,
+        _endpoint,
         data: _payload(messages, stream: true),
         cancelToken: cancelToken,
-        options: Options(headers: <String, dynamic>{
-          'Authorization': 'Bearer $key',
-        }),
+        options: _authOptions(),
       );
     } on DioException catch (e) {
       throw AiServiceException(_mapDioError(e));
@@ -101,8 +108,7 @@ class OpenAiService {
     }
 
     // SSE frames arrive as `data: {json}` lines; parse them into deltas.
-    await for (final Map<String, dynamic> event
-        in body.stream.sseJsonEvents) {
+    await for (final Map<String, dynamic> event in body.stream.sseJsonEvents) {
       // Some gateways emit an error object mid-stream.
       final Object? error = event['error'];
       if (error is Map<String, dynamic>) {
@@ -148,24 +154,14 @@ class OpenAiService {
     List<Map<String, String>> messages, {
     CancelToken? cancelToken,
   }) async {
-    final String? key = await _apiKey();
-    if (key == null || key.trim().isEmpty) {
-      throw AiServiceException(
-        AppFailure.auth(message: 'OpenAI API key is not configured.'),
-      );
-    }
-
-    final String url = '${await _resolveBaseUrl()}${AppConstants.openAiChatPath}';
+    if (!hasApiKey) throw _missingKey();
 
     try {
       final Response<dynamic> response = await client.post<dynamic>(
-        url,
+        _endpoint,
         data: _payload(messages, stream: false),
         cancelToken: cancelToken,
-        options: Options(
-          headers: <String, dynamic>{'Authorization': 'Bearer $key'},
-          receiveTimeout: AppConstants.chatRequestTimeout,
-        ),
+        options: _authOptions(receiveTimeout: AppConstants.chatRequestTimeout),
       );
 
       final Object? data = response.data;
@@ -259,7 +255,7 @@ class OpenAiService {
     }
   }
 
-  /// Best-effort extraction of `error.message` from an OpenAI error body.
+  /// Best-effort extraction of `error.message` from an OpenAI-style error body.
   String _extractApiErrorMessage(Object? data) {
     if (data is Map) {
       final Object? err = data['error'];

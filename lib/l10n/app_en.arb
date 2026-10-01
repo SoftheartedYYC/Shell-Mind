@@ -1,0 +1,431 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Shell-Mind",
+
+  "navServers": "Servers",
+  "navAiChat": "AI Chat",
+  "navSettings": "Settings",
+
+  "pageNotFound": "Page not found",
+  "backToServers": "Back to Servers",
+
+  "serversTitle": "Servers",
+  "serversHostCount": "{count, plural, =1{1 host} other{{count} hosts}}",
+  "@serversHostCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "serversSearch": "Search servers…",
+  "serversAdd": "Add server",
+  "serversEmpty": "No servers yet",
+  "serversEmptyHint": "Add your first SSH server to get started.",
+  "serversDeleteConfirmTitle": "Delete server",
+  "serversDeleteConfirmMessage": "Delete \"{name}\"?\n\n{identity}:{port} and its stored credentials will be permanently removed.",
+  "@serversDeleteConfirmMessage": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serversDeleted": "Removed {identity}",
+  "@serversDeleted": {
+    "placeholders": {
+      "identity": { "type": "String" }
+    }
+  },
+  "serversDeleteFailed": "Delete failed: {message}",
+  "@serversDeleteFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "serversLoading": "Loading servers",
+  "serversUngrouped": "Ungrouped",
+  "serversSortName": "a–z",
+  "serversSortRecent": "recent",
+  "serversQuickStart": "Quick start",
+  "serversQuickStep1Title": "Add a host",
+  "serversQuickStep1Desc": "Register an SSH endpoint with password or key auth.",
+  "serversQuickStep2Title": "Test connection",
+  "serversQuickStep2Desc": "Probe the port before committing — catches typos fast.",
+  "serversQuickStep3Title": "Connect",
+  "serversQuickStep3Desc": "Open a terminal session — full PTY, colours, and vim.",
+  "serversNoMatch": "No match: \"{query}\"",
+  "@serversNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "serversClearFilter": "Clear filter",
+  "serversReadError": "Could not read the server list.",
+
+  "serverEditTitle": "Add server",
+  "serverEditTitleEdit": "Edit server",
+  "serverNotFound": "Server not found",
+  "serverValidationNameRequired": "Name required",
+  "serverValidationHostRequired": "Host required",
+  "serverValidationNoSpaces": "No spaces allowed",
+  "serverValidationRequired": "Required",
+  "serverValidationNumeric": "Numeric",
+  "serverValidationPortRange": "1–65535",
+  "serverValidationUsernameRequired": "Username required",
+  "serverValidationPasswordRequired": "Password required",
+  "serverValidationPrivateKeyRequired": "Private key required",
+  "serverAdded": "Server added: {identity}:{port}",
+  "@serverAdded": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverSaved": "Saved: {identity}:{port}",
+  "@serverSaved": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverSaveFailed": "Save failed: {message}",
+  "@serverSaveFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "serverTestEnterHost": "Enter a host address first",
+  "serverTestProbing": "Probing {host}:{port}…",
+  "@serverTestProbing": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestReachable": "{host}:{port} — reachable",
+  "@serverTestReachable": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestTimedOut": "{host}:{port} — timed out",
+  "@serverTestTimedOut": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestRefused": "{host}:{port} — refused / unreachable",
+  "@serverTestRefused": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestProbeFailed": "{host}:{port} — probe failed",
+  "@serverTestProbeFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverLoading": "Loading",
+  "serverSaveChanges": "Save changes",
+  "serverSectionIdentity": "Identity",
+  "serverSectionConnection": "Connection",
+  "serverSectionAuthentication": "Authentication",
+  "serverFieldLabel": "Label",
+  "serverFieldLabelHint": "prod-web-01",
+  "serverFieldGroup": "Group (optional)",
+  "serverFieldGroupHint": "production",
+  "serverFieldHost": "Host",
+  "serverFieldHostHint": "10.0.0.5",
+  "serverFieldPort": "Port",
+  "serverFieldUsername": "Username",
+  "serverFieldUsernameHint": "root",
+  "serverFieldPassword": "Password",
+  "serverFieldPasswordStored": "Stored — leave blank to keep",
+  "serverFieldPrivateKey": "Private key (PEM)",
+  "serverFieldPassphrase": "Key passphrase (optional)",
+  "serverAuthPassword": "Password",
+  "serverAuthPrivateKey": "Private key",
+  "serverTestIdle": "Tap \"Test\" to probe the connection",
+  "serverSecurityNote": "Credentials are encrypted in the device keystore — they never touch the Hive metadata store or leave this device.",
+  "serverTesting": "Testing…",
+  "serverTest": "Test",
+  "serverSaving": "Saving…",
+
+  "serverCopiedAddress": "Copied {address}",
+  "@serverCopiedAddress": {
+    "placeholders": {
+      "address": { "type": "String" }
+    }
+  },
+  "serverActions": "Server actions",
+  "serverActionConnect": "Connect",
+  "serverActionEdit": "Edit",
+  "serverActionEditDetails": "Edit details",
+  "serverActionCopySsh": "Copy SSH command",
+  "serverActionDelete": "Delete",
+  "serverActionDeleteServer": "Delete server",
+  "serverOnline": "Online",
+  "serverNeverConnected": "Never connected",
+  "serverJustNow": "Just now",
+  "serverMinutesAgo": "{minutes}m ago",
+  "@serverMinutesAgo": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "serverHoursAgo": "{hours}h ago",
+  "@serverHoursAgo": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "serverDaysAgo": "{days}d ago",
+  "@serverDaysAgo": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "terminalHostNotFound": "Host not found",
+  "terminalHostNotFoundMessage": "No saved server matches id \"{id}\". It may have been deleted.",
+  "@terminalHostNotFoundMessage": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "terminalBackToServers": "Back to servers",
+  "terminalConnectionFailed": "Connection failed.",
+  "terminalSessionClosed": "Session closed",
+  "terminalSessionClosedMessage": "The connection to {name} was terminated.",
+  "@terminalSessionClosedMessage": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "terminalReconnect": "Reconnect",
+  "terminalAuthenticating": "Authenticating",
+  "terminalConnecting": "Connecting",
+  "terminalResolvingHost": "Resolving host…",
+  "terminalTooltipDisconnectBack": "Disconnect & back",
+  "terminalTooltipSmallerText": "Smaller text",
+  "terminalTooltipLargerText": "Larger text",
+  "terminalTooltipDisconnect": "Disconnect",
+  "terminalRetryAvailable": "Retry available",
+  "terminalStatusConnected": "CONNECTED",
+  "terminalStatusOffline": "OFFLINE",
+  "terminalStatusError": "ERROR",
+
+  "aiChatTitle": "AI Assistant",
+  "aiChatStatusSetup": "SETUP",
+  "aiChatStatusStreaming": "STREAMING",
+  "aiChatStatusReady": "READY",
+  "aiChatClearConversation": "Clear conversation",
+  "aiChatSuggestion1": "Explain what ls -la output means",
+  "aiChatSuggestion2": "How do I find which process is using a port?",
+  "aiChatSuggestion3": "Show me how to tail logs and grep for errors",
+  "aiChatSuggestion4": "Write an awk one-liner to sum a CSV column",
+  "aiChatTryAsking": "Try asking",
+  "aiChatIntroTitle": "Your terminal companion",
+  "aiChatIntroBody": "Paste a command, an error, or a chunk of log output. Shell-Mind explains what happened, suggests the next move, and writes the commands so you don't have to.",
+  "aiChatNoKeyTitle": "No API key configured",
+  "aiChatNoKeyMessage": "Add your {provider} API key to wake the assistant. It's stored encrypted on this device and never leaves it except to call the model.",
+  "@aiChatNoKeyMessage": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiChatOpenSettings": "Open AI settings",
+  "aiChatCheckingCredentials": "Checking credentials",
+  "aiChatInputHint": "Ask anything…",
+  "aiChatInputDisabled": "Set an API key to begin",
+  "aiChatError": "Error",
+  "aiChatAssistantName": "Shell-Mind",
+  "aiChatCopied": "Copied",
+  "aiChatCopy": "Copy",
+  "aiChatThinking": "Thinking…",
+
+  "settingsTitle": "Settings",
+  "settingsSearchTooltip": "Search settings",
+  "settingsStable": "STABLE",
+  "settingsSectionAppearance": "Appearance",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsSectionLanguage": "Language",
+  "settingsLanguageSystem": "System",
+  "settingsLanguageZh": "中文",
+  "settingsLanguageEn": "English",
+  "settingsSectionAiProvider": "AI Provider",
+  "settingsSectionAboutUpdate": "About & Update",
+  "settingsSectionStoragePrivacy": "Storage & Privacy",
+  "settingsSectionResources": "Resources",
+  "settingsTileSecrets": "Secrets",
+  "settingsTileEncrypted": "Encrypted",
+  "settingsTileLocalCache": "Local cache",
+  "settingsTileClearData": "Clear all data",
+  "settingsTileLicenses": "Open-source licences",
+  "settingsTileReportIssue": "Report an issue",
+  "settingsFooter": "SSH + AI Assistant for modern workflows",
+
+  "aiSettingsApiKeyTitle": "{provider} API key",
+  "@aiSettingsApiKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsKeySet": "set",
+  "aiSettingsKeyNotConfigured": "not configured",
+  "aiSettingsGetApiKey": "Get an API key",
+  "aiSettingsTemperature": "Temperature",
+  "aiSettingsRemoveKey": "Remove key",
+  "aiSettingsKeySaved": "{provider} API key saved securely.",
+  "@aiSettingsKeySaved": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsRemoveKeyTitle": "Remove {provider} key?",
+  "@aiSettingsRemoveKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsRemoveKeyMessage": "The assistant will stop working for this provider until a new key is added.",
+  "aiSettingsRemoveKeyConfirm": "Remove",
+  "aiSettingsGetKeyTitle": "Get a {provider} key",
+  "@aiSettingsGetKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsGetKeyMessage": "Open the provider console in your browser to create an API key, then paste it back here.",
+  "aiSettingsClose": "Close",
+  "aiSettingsLinkCopied": "Link copied to clipboard.",
+  "aiSettingsCopyLink": "Copy link",
+  "aiSettingsKeyConfigured": "Key configured",
+  "aiSettingsNotConfigured": "Not configured",
+  "aiSettingsUpdateKeyTitle": "Update {provider} key",
+  "@aiSettingsUpdateKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsAddKeyTitle": "Add {provider} key",
+  "@aiSettingsAddKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsKeyStorageNote": "Stored encrypted on this device. Used only to call the AI provider.",
+  "aiSettingsApiKeyHint": "API key…",
+  "aiSettingsSave": "Save",
+
+  "modelDescFastAffordable": "Fast & affordable",
+  "modelDescMostCapable": "Most capable",
+  "modelDescLegacyFast": "Legacy fast",
+  "modelDescGeneralConversation": "General conversation",
+  "modelDescAdvancedReasoning": "Advanced reasoning",
+  "modelDescFastResponse": "Fast response",
+  "modelDescBalanced": "Balanced",
+  "modelDescFreeFast": "Free & fast",
+  "modelDescEnhanced": "Enhanced",
+  "modelDescStandard": "Standard",
+  "modelDescLightweight": "Lightweight",
+  "modelDescRlEnhanced": "RL enhanced",
+
+  "updateVersion": "Version",
+  "updateSoftwareUpdate": "Software update",
+  "updateChecking": "CHECKING",
+  "updateUpToDate": "UP TO DATE",
+  "updateCheckAgain": "Check again",
+  "updateReady": "READY",
+  "updateNew": "NEW",
+  "updateCheck": "CHECK",
+  "updateAwaitingResponse": "Awaiting response",
+  "updateAlreadyLatest": "Already on the latest build",
+  "updateCurrentVersionLatest": "v{version} is the newest release published on GitHub.",
+  "@updateCurrentVersionLatest": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "updateRunningVersion": "Running v{current} — remote head is v{latest}.",
+  "@updateRunningVersion": {
+    "placeholders": {
+      "current": { "type": "String" },
+      "latest": { "type": "String" }
+    }
+  },
+  "updateCheckedAgo": "Checked {timeAgo}",
+  "@updateCheckedAgo": {
+    "placeholders": {
+      "timeAgo": { "type": "String" }
+    }
+  },
+  "updateAvailable": "Update available",
+  "updatePre": "PRE",
+  "updateDownloadInstall": "Download & Install",
+  "updateLater": "Later",
+  "updateApkHint": "APK installation is only supported on Android. The file can still be downloaded here.",
+  "updateDownloading": "Downloading {tag}",
+  "@updateDownloading": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateSize": "size",
+  "updateRate": "rate",
+  "updateEta": "eta",
+  "updateElapsed": "elapsed",
+  "updateCancel": "Cancel",
+  "updateKeepForeground": "Keep the app in the foreground",
+  "updateDownloadComplete": "Download complete",
+  "updateInstallHint": "Android will ask you to confirm. Shell-Mind closes while the installer runs; your servers and history are preserved.",
+  "updateLaunching": "Launching...",
+  "updateInstallNow": "Install Now",
+  "updateDelete": "Delete",
+  "updateInstallTitle": "Install {tag}?",
+  "@updateInstallTitle": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateInstallMessage": "The system package installer will open. Shell-Mind closes during installation and reopens on the new version.",
+  "updateNotNow": "Not now",
+  "updateInstall": "Install",
+  "updateCheckFailed": "The update check failed.",
+  "updateRetry": "Retry",
+  "updateDismiss": "Dismiss",
+  "updateReleaseNotes": "Release {tag}",
+  "@updateReleaseNotes": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateNotesLabel": "notes",
+  "updateNewVersionAvailable": "New version available",
+  "updateRemindLater": "Remind me later",
+  "updateCancelDownload": "Cancel Download",
+  "updateInstallTag": "Install {tag}",
+  "@updateInstallTag": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateInstallLaterFromSettings": "Install later from settings",
+  "updateCouldNotComplete": "The update could not be completed.",
+  "updateClose": "Close",
+  "updatePromptInstallHint": "Android closes Shell-Mind while the installer runs. Servers, keys and chat history are preserved.",
+
+  "commonCancel": "Cancel",
+  "commonDelete": "Delete",
+  "commonRetry": "Retry",
+  "commonLoading": "Loading...",
+  "commonNoData": "No data",
+  "commonNothingToShow": "Nothing to show here yet."
+}

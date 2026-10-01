@@ -6,6 +6,8 @@ import '../../../../app/router.dart';
 import '../../../../app/theme.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../core/widgets/common_widgets.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../domain/entities/ai_provider.dart';
 import '../../domain/entities/chat_message.dart';
 import '../providers/chat_providers.dart';
 import '../widgets/message_bubble.dart';
@@ -13,9 +15,9 @@ import '../widgets/message_bubble.dart';
 /// The AI assistant chat surface.
 ///
 /// Three zones stacked vertically: a status header, a reversed transcript
-/// (newest pinned to the bottom), and a phosphor-lit composer. Streaming
-/// replies render live via [MessageBubble] → `StreamingText`, and the whole
-/// screen degrades gracefully to a setup guide when no API key is present.
+/// (newest pinned to the bottom), and a composer. Streaming replies render
+/// live via [MessageBubble] → `StreamingText`, and the whole screen degrades
+/// gracefully to a setup guide when no API key is present.
 class AiChatPage extends ConsumerStatefulWidget {
   const AiChatPage({super.key});
 
@@ -94,9 +96,9 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     final ChatState chat = ref.watch(chatMessagesProvider);
     final AsyncValue<bool> keyStatus = ref.watch(apiKeyConfiguredProvider);
     final bool hasKey = keyStatus.valueOrNull ?? false;
+    final AiProvider provider = ref.watch(selectedProviderProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.inkVoid,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -110,15 +112,21 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
             ),
             Expanded(
               child: keyStatus.when(
-                loading: () => const Center(
-                  child: PhosphorLoader(label: 'checking credentials', compact: true),
+                loading: () => Center(
+                  child: AppLoader(
+                      label: AppLocalizations.of(context)
+                          .aiChatCheckingCredentials),
                 ),
                 error: (Object _, StackTrace __) => _ApiKeySetupGuide(
+                  providerName: provider.name,
                   onOpenSettings: _openSettings,
                 ),
                 data: (bool configured) {
                   if (!configured) {
-                    return _ApiKeySetupGuide(onOpenSettings: _openSettings);
+                    return _ApiKeySetupGuide(
+                      providerName: provider.name,
+                      onOpenSettings: _openSettings,
+                    );
                   }
                   if (chat.messages.isEmpty) {
                     return _WelcomeTranscript(onSuggestion: _useSuggestion);
@@ -174,13 +182,16 @@ class _ChatHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final String model = ref.watch(activeModelProvider);
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final AiProvider provider = ref.watch(selectedProviderProvider);
+    final AiModel model = ref.watch(selectedModelProvider);
 
     final (String label, Color color, bool pulse) = !hasKey
-        ? ('SETUP', AppTheme.amber, false)
+        ? (l10n.aiChatStatusSetup, context.sem.warning, false)
         : isStreaming
-            ? ('STREAMING', AppTheme.phosphorGlow, true)
-            : ('READY', AppTheme.mint, false);
+            ? (l10n.aiChatStatusStreaming, colors.primary, true)
+            : (l10n.aiChatStatusReady, context.sem.success, false);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
@@ -192,64 +203,18 @@ class _ChatHeader extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Text(
-                      'assistant',
-                      style: TextStyle(
-                        fontFamily: AppTheme.monoFont,
-                        fontFamilyFallback: const <String>[
-                          'JetBrains Mono',
-                          'Menlo',
-                          'monospace',
-                        ],
-                        fontSize: 11,
-                        letterSpacing: 2.4,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.phosphorGlow,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 4,
-                      height: 4,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.phosphorGlow,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '~/ai',
-                      style: TextStyle(
-                        fontFamily: AppTheme.monoFont,
-                        fontSize: 11,
-                        letterSpacing: 1.2,
-                        color: AppTheme.textTertiary,
-                      ),
-                    ),
-                  ],
+                Text(
+                  l10n.aiChatTitle,
+                  style: context.text.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: <Widget>[
-                    Flexible(
-                      child: Text(
-                        'AI Assistant',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.text.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.6,
-                          height: 1.05,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      child: _ModelBadge(model: model),
-                    ),
+                    _ProviderBadge(name: provider.name),
+                    const SizedBox(width: 6),
+                    Flexible(child: _ModelBadge(model: model.name)),
                   ],
                 ),
               ],
@@ -259,11 +224,39 @@ class _ChatHeader extends ConsumerWidget {
           if (canClear)
             IconButton(
               onPressed: onClear,
-              tooltip: 'Clear conversation',
-              icon: const Icon(Icons.delete_sweep_outlined,
-                  size: 20, color: AppTheme.textSecondary),
+              tooltip: l10n.aiChatClearConversation,
+              icon: Icon(Icons.delete_sweep_outlined,
+                  size: 22, color: colors.onSurfaceVariant),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProviderBadge extends StatelessWidget {
+  const _ProviderBadge({required this.name});
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: colors.onSurfaceVariant.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 11,
+          letterSpacing: 0.2,
+          color: colors.onSurfaceVariant,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -275,12 +268,12 @@ class _ModelBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppTheme.phosphor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: AppTheme.phosphor.withValues(alpha: 0.28)),
+        color: colors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         model,
@@ -288,14 +281,11 @@ class _ModelBadge extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontFamily: AppTheme.monoFont,
-          fontFamilyFallback: const <String>[
-            'JetBrains Mono',
-            'Menlo',
-            'monospace',
-          ],
-          fontSize: 9.5,
-          letterSpacing: 0.4,
-          color: AppTheme.phosphor,
+          fontFamilyFallback: AppTheme.monoFallback,
+          fontSize: 11,
+          letterSpacing: 0.3,
+          color: colors.primary,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -339,23 +329,24 @@ class _WelcomeTranscript extends StatelessWidget {
 
   final ValueChanged<String> onSuggestion;
 
-  static const List<String> _suggestions = <String>[
-    'Explain what ls -la output means',
-    'How do I find which process is using a port?',
-    'Show me how to tail logs and grep for errors',
-    'Write an awk one-liner to sum a CSV column',
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final List<String> suggestions = <String>[
+      l10n.aiChatSuggestion1,
+      l10n.aiChatSuggestion2,
+      l10n.aiChatSuggestion3,
+      l10n.aiChatSuggestion4,
+    ];
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       children: <Widget>[
         const _IntroCard(),
-        const SizedBox(height: 22),
-        const SectionHeader(label: 'try asking', padding: EdgeInsets.zero),
-        const SizedBox(height: 4),
-        for (final String s in _suggestions)
+        const SizedBox(height: 24),
+        SectionHeader(
+            label: l10n.aiChatTryAsking, padding: EdgeInsets.zero),
+        const SizedBox(height: 8),
+        for (final String s in suggestions)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: _SuggestionTile(
@@ -373,54 +364,41 @@ class _IntroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[Color(0xFF142038), Color(0xFF101728)],
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.smart_toy_outlined,
+                  size: 22, color: colors.primary),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.aiChatIntroTitle,
+              style: context.text.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.aiChatIntroBody,
+              style: context.text.bodyMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+                height: 1.6,
+              ),
+            ),
+          ],
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.phosphor.withValues(alpha: 0.18)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            '> shell-mind --start',
-            style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontFamilyFallback: const <String>[
-                'JetBrains Mono',
-                'Menlo',
-                'monospace',
-              ],
-              fontSize: 11,
-              letterSpacing: 0.6,
-              color: AppTheme.phosphor,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            'Your second pair of eyes on the terminal.',
-            style: context.text.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.2,
-              height: 1.3,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Paste a command, an error, or a chunk of log output. Shell-Mind '
-            'explains what happened, suggests the next move, and writes the '
-            'commands so you don\'t have to.',
-            style: context.text.bodySmall?.copyWith(
-              color: AppTheme.textSecondary,
-              height: 1.6,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -434,41 +412,26 @@ class _SuggestionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppTheme.inkSurface,
-      borderRadius: BorderRadius.circular(9),
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    return Card(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(9),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(9),
-            border: Border.all(color: AppTheme.inkBorderSoft),
-          ),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
           child: Row(
             children: <Widget>[
-              const Text(
-                '\$',
-                style: TextStyle(
-                  fontFamily: AppTheme.monoFont,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.phosphor,
-                ),
-              ),
-              const SizedBox(width: 10),
+              Icon(Icons.arrow_outward_rounded,
+                  size: 16, color: colors.primary),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   label,
-                  style: context.text.bodySmall?.copyWith(
-                    color: AppTheme.textSecondary,
-                    height: 1.4,
+                  style: context.text.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
                   ),
                 ),
               ),
-              const Icon(Icons.north_east_rounded,
-                  size: 14, color: AppTheme.textTertiary),
             ],
           ),
         ),
@@ -480,12 +443,15 @@ class _SuggestionTile extends StatelessWidget {
 // ─── API key setup guide ────────────────────────────────────────────────
 
 class _ApiKeySetupGuide extends StatelessWidget {
-  const _ApiKeySetupGuide({required this.onOpenSettings});
+  const _ApiKeySetupGuide({required this.onOpenSettings, this.providerName});
 
   final VoidCallback onOpenSettings;
+  final String? providerName;
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(28),
@@ -496,41 +462,29 @@ class _ApiKeySetupGuide extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Container(
-                width: 60,
-                height: 60,
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
-                  color: AppTheme.amber.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: AppTheme.amber.withValues(alpha: 0.35),
-                  ),
+                  color: context.sem.warning.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.key_rounded,
-                    size: 26, color: AppTheme.amber),
+                child: Icon(Icons.key_rounded,
+                    size: 28, color: context.sem.warning),
               ),
               const SizedBox(height: 20),
               Text(
-                'no api key found',
-                style: TextStyle(
-                  fontFamily: AppTheme.monoFont,
-                  fontFamilyFallback: const <String>[
-                    'JetBrains Mono',
-                    'Menlo',
-                    'monospace',
-                  ],
-                  fontSize: 13,
-                  letterSpacing: 0.4,
-                  color: AppTheme.textSecondary,
+                l10n.aiChatNoKeyTitle,
+                style: context.text.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 10),
               Text(
-                'Add your OpenAI API key to wake the assistant. It\'s stored '
-                'encrypted on this device and never leaves it except to call '
-                'the model.',
+                l10n.aiChatNoKeyMessage(
+                    providerName ?? l10n.settingsSectionAiProvider),
                 textAlign: TextAlign.center,
-                style: context.text.bodySmall?.copyWith(
-                  color: AppTheme.textTertiary,
+                style: context.text.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
                   height: 1.6,
                 ),
               ),
@@ -540,7 +494,7 @@ class _ApiKeySetupGuide extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: onOpenSettings,
                   icon: const Icon(Icons.tune_rounded, size: 18),
-                  label: const Text('Open AI settings'),
+                  label: Text(l10n.aiChatOpenSettings),
                 ),
               ),
             ],
@@ -591,11 +545,12 @@ class _Composer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-      decoration: const BoxDecoration(
-        color: Color(0xFF0C1120),
-        border: Border(top: BorderSide(color: AppTheme.inkBorderSoft)),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(top: BorderSide(color: colors.outlineVariant)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -603,72 +558,36 @@ class _Composer extends StatelessWidget {
           Expanded(
             child: Container(
               constraints: const BoxConstraints(minHeight: 44, maxHeight: 140),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0A0E1A),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: enabled ? AppTheme.inkBorder : AppTheme.inkBorderSoft,
+              child: TextField(
+                controller: controller,
+                focusNode: focusNode,
+                enabled: enabled,
+                minLines: 1,
+                maxLines: 5,
+                textInputAction: TextInputAction.send,
+                style: context.text.bodyMedium,
+                decoration: InputDecoration(
+                  hintText: enabled
+                      ? AppLocalizations.of(context).aiChatInputHint
+                      : AppLocalizations.of(context).aiChatInputDisabled,
+                  filled: true,
+                  fillColor: colors.surfaceContainerLow,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: colors.outlineVariant),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: colors.outlineVariant),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: colors.primary, width: 2),
+                  ),
                 ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    '>',
-                    style: TextStyle(
-                      fontFamily: AppTheme.monoFont,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: enabled
-                          ? AppTheme.phosphor
-                          : AppTheme.textDisabled,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: controller,
-                      focusNode: focusNode,
-                      enabled: enabled,
-                      minLines: 1,
-                      maxLines: 5,
-                      textInputAction: TextInputAction.send,
-                      cursorColor: AppTheme.phosphorGlow,
-                      cursorWidth: 1.6,
-                      style: TextStyle(
-                        fontFamily: AppTheme.monoFont,
-                        fontFamilyFallback: const <String>[
-                          'JetBrains Mono',
-                          'Menlo',
-                          'monospace',
-                        ],
-                        fontSize: 13,
-                        height: 1.5,
-                        color: AppTheme.textPrimary,
-                      ),
-                      decoration: InputDecoration(
-                        isCollapsed: true,
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        filled: false,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 12),
-                        hintText: enabled
-                            ? 'Ask anything…'
-                            : 'Set an API key to begin',
-                        hintStyle: TextStyle(
-                          fontFamily: AppTheme.monoFont,
-                          fontSize: 12.5,
-                          color: AppTheme.textTertiary,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      onSubmitted: (_) => onSend(),
-                    ),
-                  ),
-                ],
+                onSubmitted: (_) => onSend(),
               ),
             ),
           ),
@@ -690,32 +609,25 @@ class _SendButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bg = enabled ? AppTheme.phosphor : AppTheme.inkElevated;
-    final Color fg = enabled ? AppTheme.inkVoid : AppTheme.textDisabled;
-
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: enabled
-            ? <BoxShadow>[
-                BoxShadow(
-                  color: AppTheme.phosphor.withValues(alpha: 0.35),
-                  blurRadius: 12,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
+        color: enabled ? colors.primary : colors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: enabled ? onTap : null,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           child: Center(
-            child: Icon(Icons.arrow_upward_rounded, size: 20, color: fg),
+            child: Icon(
+              Icons.arrow_upward_rounded,
+              size: 20,
+              color: enabled ? colors.onPrimary : colors.onSurface.withValues(alpha: 0.3),
+            ),
           ),
         ),
       ),
@@ -730,21 +642,22 @@ class _StopButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: AppTheme.coral.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.coral.withValues(alpha: 0.5)),
+        color: colors.error.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.error.withValues(alpha: 0.4)),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(10),
-          child: const Center(
-            child: Icon(Icons.stop_rounded, size: 20, color: AppTheme.coral),
+          borderRadius: BorderRadius.circular(12),
+          child: Center(
+            child: Icon(Icons.stop_rounded, size: 20, color: colors.error),
           ),
         ),
       ),

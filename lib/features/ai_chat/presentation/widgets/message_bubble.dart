@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../app/theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/chat_message.dart';
 import 'streaming_text.dart';
 
-/// A single chat turn rendered in the Terminal Noir language.
+/// A single chat turn rendered in a clean Material style.
 ///
-/// User turns are right-aligned on a phosphor-tinted slab; assistant turns
-/// are left-aligned on a raised surface with a `>_` sigil, monospaced role
-/// tag, and Markdown-rendered body (live cursor while streaming).
+/// User turns are right-aligned with a primary-tinted background; assistant
+/// turns are left-aligned on a surface card with a subtle avatar and
+/// Markdown-rendered body (live cursor while streaming).
 class MessageBubble extends StatelessWidget {
   const MessageBubble({
     super.key,
@@ -38,6 +39,7 @@ class _UserBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return Align(
       alignment: Alignment.centerRight,
       child: ConstrainedBox(
@@ -49,29 +51,19 @@ class _UserBubble extends StatelessWidget {
             Container(
               padding: const EdgeInsets.fromLTRB(14, 10, 14, 11),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[
-                    AppTheme.phosphor.withValues(alpha: 0.20),
-                    AppTheme.phosphor.withValues(alpha: 0.10),
-                  ],
-                ),
+                color: colors.primary,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                  bottomLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(3),
-                ),
-                border: Border.all(
-                  color: AppTheme.phosphor.withValues(alpha: 0.40),
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(4),
                 ),
               ),
               child: SelectableText(
                 message.content,
                 style: context.text.bodyMedium?.copyWith(
-                  color: AppTheme.textPrimary,
-                  height: 1.55,
+                  color: colors.onPrimary,
+                  height: 1.5,
                 ),
               ),
             ),
@@ -97,8 +89,8 @@ class _AssistantBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     final bool isError = message.error;
-    final Color accent = isError ? AppTheme.coral : AppTheme.phosphorDim;
 
     return Align(
       alignment: Alignment.centerLeft,
@@ -111,33 +103,26 @@ class _AssistantBubble extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                // Sigil avatar.
+                // Avatar.
                 Container(
-                  width: 26,
-                  height: 26,
+                  width: 28,
+                  height: 28,
                   margin: const EdgeInsets.only(top: 2),
                   decoration: BoxDecoration(
-                    color: AppTheme.inkSurface,
-                    borderRadius: BorderRadius.circular(7),
-                    border: Border.all(
-                      color: isError
-                          ? AppTheme.coral.withValues(alpha: 0.45)
-                          : AppTheme.phosphor.withValues(alpha: 0.30),
-                    ),
+                    color: isError
+                        ? colors.error.withValues(alpha: 0.1)
+                        : colors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
-                    child: Text(
-                      isError ? '!' : '>',
-                      style: TextStyle(
-                        fontFamily: AppTheme.monoFont,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: isError ? AppTheme.coral : AppTheme.phosphor,
-                      ),
+                    child: Icon(
+                      isError ? Icons.error_outline_rounded : Icons.smart_toy_outlined,
+                      size: 16,
+                      color: isError ? colors.error : colors.primary,
                     ),
                   ),
                 ),
-                const SizedBox(width: 9),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,38 +130,36 @@ class _AssistantBubble extends StatelessWidget {
                     children: <Widget>[
                       // Role tag.
                       Text(
-                        isError ? 'error' : 'shell-mind',
+                        isError
+                            ? AppLocalizations.of(context).aiChatError
+                            : AppLocalizations.of(context).aiChatAssistantName,
                         style: TextStyle(
-                          fontFamily: AppTheme.monoFont,
-                          fontFamilyFallback: const <String>[
-                            'JetBrains Mono',
-                            'Menlo',
-                            'monospace',
-                          ],
-                          fontSize: 9.5,
-                          letterSpacing: 1.2,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: accent,
+                          letterSpacing: 0.3,
+                          color: isError
+                              ? colors.error
+                              : colors.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 5),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(13, 11, 13, 12),
+                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                         decoration: BoxDecoration(
                           color: isError
-                              ? AppTheme.coral.withValues(alpha: 0.06)
-                              : AppTheme.inkSurface,
+                              ? colors.error.withValues(alpha: 0.05)
+                              : colors.surfaceContainerLow,
                           borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(3),
-                            topRight: Radius.circular(12),
-                            bottomLeft: Radius.circular(12),
-                            bottomRight: Radius.circular(12),
+                            topLeft: Radius.circular(4),
+                            topRight: Radius.circular(16),
+                            bottomLeft: Radius.circular(16),
+                            bottomRight: Radius.circular(16),
                           ),
                           border: Border.all(
                             color: isError
-                                ? AppTheme.coral.withValues(alpha: 0.35)
-                                : AppTheme.inkBorderSoft,
+                                ? colors.error.withValues(alpha: 0.2)
+                                : colors.outlineVariant.withValues(alpha: 0.5),
                           ),
                         ),
                         child: _AssistantBody(message: message),
@@ -260,6 +243,7 @@ class _MiniCopyButtonState extends State<_MiniCopyButton> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: _copy,
       child: Row(
@@ -267,17 +251,17 @@ class _MiniCopyButtonState extends State<_MiniCopyButton> {
         children: <Widget>[
           Icon(
             _copied ? Icons.check_rounded : Icons.copy_rounded,
-            size: 11,
-            color: _copied ? AppTheme.mint : AppTheme.textTertiary,
+            size: 12,
+            color: _copied ? context.sem.success : colors.onSurfaceVariant,
           ),
           const SizedBox(width: 3),
           Text(
-            _copied ? 'copied' : 'copy',
+            _copied
+                ? AppLocalizations.of(context).aiChatCopied
+                : AppLocalizations.of(context).aiChatCopy,
             style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontSize: 9.5,
-              letterSpacing: 0.5,
-              color: _copied ? AppTheme.mint : AppTheme.textTertiary,
+              fontSize: 10,
+              color: _copied ? context.sem.success : colors.onSurfaceVariant,
             ),
           ),
         ],
@@ -306,21 +290,14 @@ class _Timestamp extends StatelessWidget {
       _format(time),
       textAlign: alignRight ? TextAlign.right : TextAlign.left,
       style: TextStyle(
-        fontFamily: AppTheme.monoFont,
-        fontFamilyFallback: const <String>[
-          'JetBrains Mono',
-          'Menlo',
-          'monospace',
-        ],
-        fontSize: 9.5,
-        letterSpacing: 0.4,
-        color: AppTheme.textDisabled,
+        fontSize: 10,
+        color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
       ),
     );
   }
 }
 
-/// Three phosphor dots that pulse in sequence while awaiting the first token.
+/// Three dots that pulse in sequence while awaiting the first token.
 class _ThinkingDots extends StatefulWidget {
   const _ThinkingDots();
 
@@ -343,21 +320,20 @@ class _ThinkingDotsState extends State<_ThinkingDots>
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return AnimatedBuilder(
       animation: _c,
       builder: (BuildContext context, Widget? child) {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            for (int i = 0; i < 3; i++) _dot(i),
+            for (int i = 0; i < 3; i++) _dot(i, colors),
             const SizedBox(width: 8),
             Text(
-              'thinking',
+              AppLocalizations.of(context).aiChatThinking,
               style: TextStyle(
-                fontFamily: AppTheme.monoFont,
-                fontSize: 10,
-                letterSpacing: 0.8,
-                color: AppTheme.textTertiary,
+                fontSize: 12,
+                color: colors.onSurfaceVariant,
               ),
             ),
           ],
@@ -366,7 +342,7 @@ class _ThinkingDotsState extends State<_ThinkingDots>
     );
   }
 
-  Widget _dot(int index) {
+  Widget _dot(int index, ColorScheme colors) {
     // Stagger each dot by a third of the cycle.
     final double phase = (_c.value + index / 3) % 1.0;
     final double t = phase < 0.5 ? phase * 2 : (1 - phase) * 2;
@@ -375,14 +351,8 @@ class _ThinkingDotsState extends State<_ThinkingDots>
       height: 6,
       margin: const EdgeInsets.only(right: 4),
       decoration: BoxDecoration(
-        color: AppTheme.phosphor.withValues(alpha: 0.35 + 0.65 * t),
+        color: colors.primary.withValues(alpha: 0.3 + 0.7 * t),
         shape: BoxShape.circle,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: AppTheme.phosphor.withValues(alpha: 0.5 * t),
-            blurRadius: 6 * t,
-          ),
-        ],
       ),
     );
   }

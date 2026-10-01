@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FileProvider paths for the in-app updater.
+
+  The APK is written to path_provider's `getExternalStorageDirectory()`
+  (== Context.getExternalFilesDir(null)) with fall-backs to the app support,
+  cache and documents directories, so every one of those roots is exposed
+  here. Android 7.0+ refuses `file://` URIs across app boundaries, hence the
+  `content://` grant performed by the installer intent.
+-->
+<paths>
+    <!-- /storage/emulated/0/Android/data/<pkg>/files — primary download dir -->
+    <external-files-path
+        name="external_files"
+        path="." />
+
+    <!-- /storage/emulated/0/Android/data/<pkg>/cache -->
+    <external-cache-path
+        name="external_cache"
+        path="." />
+
+    <!-- /data/user/0/<pkg>/files -->
+    <files-path
+        name="internal_files"
+        path="." />
+
+    <!-- /data/user/0/<pkg>/cache -->
+    <cache-path
+        name="internal_cache"
+        path="." />
+
+    <!-- /storage/emulated/0 (legacy WRITE_EXTERNAL_STORAGE targets) -->
+    <external-path
+        name="external_storage"
+        path="." />
+</paths>

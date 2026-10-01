@@ -7,8 +7,9 @@ import '../features/ai_chat/presentation/pages/ai_chat_page.dart';
 import '../features/server_config/presentation/pages/server_edit_page.dart';
 import '../features/server_config/presentation/pages/servers_page.dart';
 import '../features/settings/presentation/pages/settings_page.dart';
+import '../features/settings/presentation/widgets/update_prompt_dialog.dart';
 import '../features/ssh_terminal/presentation/pages/terminal_page.dart';
-import 'theme.dart';
+import '../l10n/app_localizations.dart';
 
 // ─── Route name registry ──────────────────────────────────────────────────
 abstract final class RouteNames {
@@ -34,8 +35,7 @@ abstract final class RoutePaths {
       serverId == null ? serverEdit : '$serverEdit?id=$serverId';
 }
 
-/// The application router. Kept as a Riverpod provider so it can be
-/// invalidated if navigation guards are added later (e.g. onboarding flow).
+/// The application router.
 final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
   final GlobalKey<NavigatorState> rootKey =
       GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -88,7 +88,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // ─── Add / edit server form, sits above the shell ───
+      // ─── Add / edit server form ───
       GoRoute(
         path: RoutePaths.serverEdit,
         name: RouteNames.serverEdit,
@@ -99,7 +99,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // ─── Full-screen terminal, sits above the shell ───
+      // ─── Full-screen terminal ───
       GoRoute(
         path: '${RoutePaths.terminal}/:serverId',
         name: RouteNames.terminal,
@@ -169,19 +169,13 @@ CustomTransitionPage<void> _fadeThrough(Widget child, GoRouterState state) {
 
 // ─── AppShell ─────────────────────────────────────────────────────────────
 
-/// Bottom-navigation shell around the three primary tabs.
-///
-/// Rather than the default Material pill indicator, this uses a
-/// terminal-inspired nav bar: a hairline top border, monospaced
-/// "path" labels (`~/servers`, `~/ai`, `~/config`), and a phosphor
-/// glow under the active destination.
+/// Bottom-navigation shell using standard Material 3 NavigationBar.
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   void _onTap(int index) {
-    // Tapping the active tab pops it back to its root route.
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
@@ -190,179 +184,35 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.inkVoid,
-      extendBody: false,
-      body: navigationShell,
-      bottomNavigationBar: _TerminalNavBar(
-        currentIndex: navigationShell.currentIndex,
-        onTap: _onTap,
-      ),
-    );
-  }
-}
-
-class _TerminalNavBar extends StatelessWidget {
-  const _TerminalNavBar({required this.currentIndex, required this.onTap});
-
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Color(0xFF0C1120),
-        border: Border(top: BorderSide(color: AppTheme.inkBorderSoft)),
-      ),
-      child: SafeArea(
-        top: false,
-        minimum: const EdgeInsets.fromLTRB(6, 4, 6, 6),
-        child: Row(
-          children: <Widget>[
-            for (int i = 0; i < _TabSpec.all.length; i++)
-              Expanded(
-                child: _NavItem(
-                  spec: _TabSpec.all[i],
-                  selected: i == currentIndex,
-                  onTap: () => onTap(i),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  const _NavItem({
-    required this.spec,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final _TabSpec spec;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color tint = selected ? AppTheme.phosphor : AppTheme.textTertiary;
-
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: spec.label,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOut,
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          decoration: BoxDecoration(
-            color: selected
-                ? AppTheme.phosphor.withValues(alpha: 0.06)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
+      body: UpdateGate(child: navigationShell),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: navigationShell.currentIndex,
+        onDestinationSelected: _onTap,
+        destinations: <NavigationDestination>[
+          NavigationDestination(
+            icon: const Icon(Icons.dns_outlined),
+            selectedIcon: const Icon(Icons.dns_rounded),
+            label: l10n.navServers,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                transitionBuilder: (child, anim) => FadeTransition(
-                  opacity: anim,
-                  child: ScaleTransition(scale: anim, child: child),
-                ),
-                child: Icon(
-                  selected ? spec.activeIcon : spec.icon,
-                  key: ValueKey<bool>(selected),
-                  size: 20,
-                  color: tint,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                spec.path,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: AppTheme.monoFont,
-                  fontFamilyFallback: const <String>[
-                    'JetBrains Mono',
-                    'Menlo',
-                    'Consolas',
-                    'monospace',
-                  ],
-                  fontSize: 9.5,
-                  letterSpacing: 0.6,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                  color: tint,
-                ),
-              ),
-              const SizedBox(height: 3),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                height: 2,
-                width: selected ? 18 : 0,
-                decoration: BoxDecoration(
-                  color: selected ? AppTheme.phosphor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(2),
-                  boxShadow: selected
-                      ? <BoxShadow>[
-                          BoxShadow(
-                            color: AppTheme.phosphor.withValues(alpha: 0.6),
-                            blurRadius: 8,
-                            spreadRadius: 0,
-                          ),
-                        ]
-                      : null,
-                ),
-              ),
-            ],
+          NavigationDestination(
+            icon: const Icon(Icons.chat_bubble_outline_rounded),
+            selectedIcon: const Icon(Icons.chat_bubble_rounded),
+            label: l10n.navAiChat,
           ),
-        ),
+          NavigationDestination(
+            icon: const Icon(Icons.settings_outlined),
+            selectedIcon: const Icon(Icons.settings_rounded),
+            label: l10n.navSettings,
+          ),
+        ],
       ),
     );
   }
 }
 
-class _TabSpec {
-  const _TabSpec({
-    required this.label,
-    required this.path,
-    required this.icon,
-    required this.activeIcon,
-  });
-
-  final String label;
-  final String path;
-  final IconData icon;
-  final IconData activeIcon;
-
-  static const List<_TabSpec> all = <_TabSpec>[
-    _TabSpec(
-      label: 'Servers',
-      path: '~/servers',
-      icon: Icons.dns_outlined,
-      activeIcon: Icons.dns_rounded,
-    ),
-    _TabSpec(
-      label: 'AI Assistant',
-      path: '~/ai',
-      icon: Icons.bolt_outlined,
-      activeIcon: Icons.bolt_rounded,
-    ),
-    _TabSpec(
-      label: 'Settings',
-      path: '~/config',
-      icon: Icons.tune_rounded,
-      activeIcon: Icons.tune_rounded,
-    ),
-  ];
-}
+// ─── Route error page ─────────────────────────────────────────────────────
 
 class _RouteErrorPage extends StatelessWidget {
   const _RouteErrorPage({this.error});
@@ -371,6 +221,8 @@ class _RouteErrorPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: Center(
         child: Padding(
@@ -379,22 +231,24 @@ class _RouteErrorPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              const Icon(Icons.error_outline_rounded,
-                  size: 40, color: AppTheme.coral),
-              const SizedBox(height: 12),
-              Text('route not found',
-                  style: AppTheme.monoStyle(context, size: 14)),
+              Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
+              const SizedBox(height: 16),
+              Text(
+                l10n.pageNotFound,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
               const SizedBox(height: 8),
               Text(
                 error?.toString() ?? '',
                 textAlign: TextAlign.center,
-                style: context.text.bodySmall
-                    ?.copyWith(color: AppTheme.textTertiary),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
               ),
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: () => context.goNamed(RouteNames.servers),
-                child: const Text('Back to servers'),
+                child: Text(l10n.backToServers),
               ),
             ],
           ),

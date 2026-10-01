@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../app/theme.dart';
 
-/// A dependency-free Markdown renderer tuned for the Terminal Noir theme.
+/// A dependency-free Markdown renderer tuned for the Material theme.
 ///
 /// Supports the subset an LLM actually emits in a shell-assistant context:
 /// fenced code blocks (with language tag + copy button), inline code, bold,
@@ -255,14 +255,15 @@ class _ParagraphView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     final TextStyle base = (context.text.bodyMedium ?? const TextStyle()).copyWith(
-      color: AppTheme.textPrimary,
+      color: colors.onSurface,
       height: 1.6,
       fontSize: 13.5 * textScale,
     );
     final TextStyle codeStyle = _mono(context, 12.5 * textScale)
-        .copyWith(color: AppTheme.phosphorGlow, fontWeight: FontWeight.w500);
-    final Color codeBg = AppTheme.phosphor.withValues(alpha: 0.10);
+        .copyWith(color: colors.primary, fontWeight: FontWeight.w500);
+    final Color codeBg = colors.primary.withValues(alpha: 0.08);
 
     // Preserve hard line breaks inside a paragraph as separate rich lines.
     final List<String> lines = content.split('\n');
@@ -298,6 +299,7 @@ class _HeadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     final double size = switch (level) {
       1 => 19,
       2 => 17,
@@ -315,7 +317,7 @@ class _HeadingView extends StatelessWidget {
             margin: const EdgeInsets.only(top: 4, right: 9),
             constraints: const BoxConstraints(minHeight: 14),
             decoration: BoxDecoration(
-              color: AppTheme.phosphor,
+              color: colors.primary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -326,7 +328,7 @@ class _HeadingView extends StatelessWidget {
                 fontSize: size,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.2,
-                color: AppTheme.textPrimary,
+                color: colors.onSurface,
                 height: 1.3,
               ),
             ),
@@ -352,14 +354,15 @@ class _ListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     final TextStyle base = (context.text.bodyMedium ?? const TextStyle()).copyWith(
-      color: AppTheme.textPrimary,
+      color: colors.onSurface,
       height: 1.55,
       fontSize: 13.5 * textScale,
     );
     final TextStyle codeStyle = _mono(context, 12.5 * textScale)
-        .copyWith(color: AppTheme.phosphorGlow, fontWeight: FontWeight.w500);
-    final Color codeBg = AppTheme.phosphor.withValues(alpha: 0.10);
+        .copyWith(color: colors.primary, fontWeight: FontWeight.w500);
+    final Color codeBg = colors.primary.withValues(alpha: 0.08);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,11 +379,10 @@ class _ListView extends StatelessWidget {
                   child: Text(
                     ordered ? '${i + 1}.' : '•',
                     style: TextStyle(
-                      fontFamily: ordered ? null : AppTheme.monoFont,
                       fontSize: 13 * textScale,
                       height: 1.55,
-                      color: ordered ? AppTheme.phosphor : AppTheme.phosphorDim,
-                      fontWeight: ordered ? FontWeight.w600 : FontWeight.w700,
+                      color: colors.primary,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -423,7 +425,6 @@ class _InlineCode extends StatelessWidget {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: AppTheme.phosphor.withValues(alpha: 0.18)),
       ),
       child: Text(text, style: style),
     );
@@ -459,53 +460,50 @@ class _CodeBlockViewState extends State<_CodeBlockView> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final String label = widget.language.isEmpty ? 'code' : widget.language;
+
+    // Code blocks always use a dark background for readability.
+    final Color codeBg = isDark ? const Color(0xFF1A1A2E) : const Color(0xFF282C34);
+    final Color codeFg = const Color(0xFFD4D4D4);
+    final Color headerBg = isDark ? const Color(0xFF16162A) : const Color(0xFF21252B);
+
     final TextStyle codeStyle = _mono(context, 12.5 * widget.textScale).copyWith(
-      color: const Color(0xFFD6E2F0),
+      color: codeFg,
       height: 1.55,
     );
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0E18),
-        borderRadius: BorderRadius.circular(9),
-        border: Border.all(color: AppTheme.inkBorder),
+        color: codeBg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: colors.outlineVariant),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          // Title bar — mimics a terminal window chrome.
+          // Title bar.
           Container(
-            padding: const EdgeInsets.fromLTRB(10, 6, 6, 6),
-            decoration: const BoxDecoration(
-              color: Color(0xFF111726),
-              border: Border(bottom: BorderSide(color: AppTheme.inkBorderSoft)),
+            padding: const EdgeInsets.fromLTRB(12, 7, 8, 7),
+            decoration: BoxDecoration(
+              color: headerBg,
+              border: Border(
+                bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+              ),
             ),
             child: Row(
               children: <Widget>[
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.phosphorDim,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
                 Text(
                   label,
                   style: TextStyle(
                     fontFamily: AppTheme.monoFont,
-                    fontFamilyFallback: const <String>[
-                      'JetBrains Mono',
-                      'Menlo',
-                      'monospace',
-                    ],
-                    fontSize: 10,
-                    letterSpacing: 1.0,
-                    color: AppTheme.textTertiary,
+                    fontFamilyFallback: AppTheme.monoFallback,
+                    fontSize: 11,
+                    letterSpacing: 0.5,
+                    color: Colors.white54,
                   ),
                 ),
                 const Spacer(),
@@ -534,7 +532,7 @@ class _CopyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color tint = copied ? AppTheme.mint : AppTheme.textSecondary;
+    final Color tint = copied ? const Color(0xFF4CAF50) : Colors.white54;
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(5),
@@ -548,16 +546,15 @@ class _CopyButton extends StatelessWidget {
             children: <Widget>[
               Icon(
                 copied ? Icons.check_rounded : Icons.copy_rounded,
-                size: 12,
+                size: 13,
                 color: tint,
               ),
               const SizedBox(width: 4),
               Text(
-                copied ? 'copied' : 'copy',
+                copied ? 'Copied' : 'Copy',
                 style: TextStyle(
-                  fontFamily: AppTheme.monoFont,
-                  fontSize: 9.5,
-                  letterSpacing: 0.6,
+                  fontSize: 10,
+                  letterSpacing: 0.3,
                   color: tint,
                 ),
               ),
@@ -573,13 +570,7 @@ class _CopyButton extends StatelessWidget {
 
 TextStyle _mono(BuildContext context, double size) => TextStyle(
       fontFamily: AppTheme.monoFont,
-      fontFamilyFallback: const <String>[
-        'JetBrains Mono',
-        'Fira Code',
-        'Menlo',
-        'Consolas',
-        'monospace',
-      ],
+      fontFamilyFallback: AppTheme.monoFallback,
       fontSize: size,
       letterSpacing: 0.2,
     );

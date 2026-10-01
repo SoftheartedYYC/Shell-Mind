@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../app/theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/server_config.dart';
 
-/// A single row in the fleet list — dense, terminal-flavoured, tappable.
+/// A single row in the fleet list — clean, minimal, tappable.
 ///
-/// Visual grammar: a phosphor accent rule on the leading edge, a monogram
-/// "sigil", the `user@host:port` identity in monospace, an auth badge, an
-/// optional group tag, and a last-seen timestamp. Tap connects, long-press
-/// (or the ⋮ button) opens the action sheet.
+/// Visual grammar: a monogram avatar, the server name, the `user@host:port`
+/// identity in monospace, an auth badge, an optional group tag, and a
+/// last-seen timestamp. Tap connects, long-press (or the ⋮ button) opens
+/// the action sheet.
 class ServerCard extends StatelessWidget {
   const ServerCard({
     super.key,
@@ -25,7 +26,7 @@ class ServerCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  /// Live-session hint. Drives the mint accent + status dot. Defaults to
+  /// Live-session hint. Drives the green accent + status dot. Defaults to
   /// false; the terminal feature flips it while a socket is open.
   final bool connected;
 
@@ -40,7 +41,8 @@ class ServerCard extends StatelessWidget {
             '-p ${config.port}'));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('copied · ${config.address}'),
+            content: Text(
+                AppLocalizations.of(context).serverCopiedAddress(config.address)),
             duration: const Duration(milliseconds: 1400),
             behavior: SnackBarBehavior.floating,
           ),
@@ -53,7 +55,6 @@ class ServerCard extends StatelessWidget {
   void _openSheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
       builder: (BuildContext sheetContext) => _ActionSheet(
         config: config,
         onAction: (_CardAction action) {
@@ -66,61 +67,20 @@ class ServerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color accent = connected ? AppTheme.mint : AppTheme.phosphor;
-
-    return Material(
-      color: AppTheme.inkSurface,
-      borderRadius: BorderRadius.circular(12),
+    return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onConnect,
         onLongPress: () => _openSheet(context),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: connected ? accent.withValues(alpha: 0.4) : AppTheme.inkBorderSoft,
-            ),
-          ),
-          child: Stack(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 6, 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              // Leading accent rule.
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                child: Container(
-                  width: 3,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: <Color>[
-                        accent.withValues(alpha: 0.9),
-                        accent.withValues(alpha: 0.25),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Faint corner bloom for depth.
-              Positioned(
-                right: -30,
-                top: -30,
-                child: _IgnorePointerGlow(color: accent),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(15, 12, 6, 12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    _Sigil(label: _monogram(config), connected: connected),
-                    const SizedBox(width: 12),
-                    Expanded(child: _CardBody(config: config, connected: connected)),
-                    _OverflowMenu(onSelected: (_CardAction a) => _run(context, a)),
-                  ],
-                ),
-              ),
+              _Avatar(label: _monogram(config), connected: connected),
+              const SizedBox(width: 12),
+              Expanded(child: _CardBody(config: config, connected: connected)),
+              _OverflowMenu(onSelected: (_CardAction a) => _run(context, a)),
             ],
           ),
         ),
@@ -145,6 +105,8 @@ class _CardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -156,11 +118,8 @@ class _CardBody extends StatelessWidget {
                 config.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: context.text.titleLarge?.copyWith(
-                  fontSize: 15,
+                style: context.text.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary,
-                  letterSpacing: -0.1,
                 ),
               ),
             ),
@@ -168,32 +127,33 @@ class _CardBody extends StatelessWidget {
             _AuthBadge(authType: config.authType),
           ],
         ),
-        const SizedBox(height: 5),
-        // user@host:port — the terminal identity line.
-        Text.rich(
-          TextSpan(
-            children: <InlineSpan>[
-              TextSpan(
-                text: '${config.username}@${config.host}',
-                style: _mono(13, AppTheme.phosphorGlow, FontWeight.w500),
-              ),
-              TextSpan(
-                text: ':${config.port}',
-                style: _mono(13, AppTheme.textTertiary, FontWeight.w500),
-              ),
-            ],
-          ),
+        const SizedBox(height: 4),
+        // user@host:port — the identity line.
+        Text(
+          '${config.username}@${config.host}:${config.port}',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontFamily: AppTheme.monoFont,
+            fontFamilyFallback: AppTheme.monoFallback,
+            fontSize: 12,
+            color: colors.onSurfaceVariant,
+            height: 1.35,
+          ),
         ),
-        const SizedBox(height: 9),
+        const SizedBox(height: 6),
         Row(
           children: <Widget>[
             _StatusDot(connected: connected),
             const SizedBox(width: 6),
             Text(
-              connected ? 'online' : _relativeTime(config.lastConnectedAt),
-              style: _mono(10, AppTheme.textTertiary, FontWeight.w500, ls: 0.5),
+              connected
+                  ? l10n.serverOnline
+                  : _relativeTime(l10n, config.lastConnectedAt),
+              style: TextStyle(
+                fontSize: 11,
+                color: colors.onSurfaceVariant,
+              ),
             ),
             if (config.group != null && config.group!.isNotEmpty) ...<Widget>[
               const SizedBox(width: 10),
@@ -204,64 +164,35 @@ class _CardBody extends StatelessWidget {
       ],
     );
   }
-
-  static TextStyle _mono(
-    double size,
-    Color color,
-    FontWeight weight, {
-    double ls = 0.2,
-  }) =>
-      TextStyle(
-        fontFamily: AppTheme.monoFont,
-        fontFamilyFallback: const <String>[
-          'JetBrains Mono',
-          'Menlo',
-          'Consolas',
-          'monospace',
-        ],
-        fontSize: size,
-        fontWeight: weight,
-        letterSpacing: ls,
-        color: color,
-        height: 1.35,
-      );
 }
 
-/// Leading monogram tile with a phosphor glow.
-class _Sigil extends StatelessWidget {
-  const _Sigil({required this.label, required this.connected});
+/// Leading monogram avatar.
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.label, required this.connected});
 
   final String label;
   final bool connected;
 
   @override
   Widget build(BuildContext context) {
-    final Color tint = connected ? AppTheme.mint : AppTheme.phosphor;
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final Color tint = connected ? colors.primary : colors.onSurfaceVariant;
     return Container(
       width: 40,
       height: 40,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFF0E1322),
-        borderRadius: BorderRadius.circular(9),
-        border: Border.all(color: tint.withValues(alpha: 0.28)),
+        color: connected
+            ? colors.primary.withValues(alpha: 0.1)
+            : colors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         label,
         style: TextStyle(
-          fontFamily: AppTheme.monoFont,
-          fontFamilyFallback: const <String>[
-            'JetBrains Mono',
-            'Menlo',
-            'monospace',
-          ],
-          fontSize: 17,
+          fontSize: 16,
           fontWeight: FontWeight.w700,
-          height: 1,
           color: tint,
-          shadows: <Shadow>[
-            Shadow(color: tint.withValues(alpha: 0.55), blurRadius: 8),
-          ],
         ),
       ),
     );
@@ -275,29 +206,28 @@ class _AuthBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     final IconData icon = authType == AuthType.password
         ? Icons.lock_rounded
         : Icons.vpn_key_rounded;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: AppTheme.inkElevated,
+        color: colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: AppTheme.inkBorder),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, size: 10, color: AppTheme.phosphor),
-          const SizedBox(width: 4),
+          Icon(icon, size: 10, color: colors.onSurfaceVariant),
+          const SizedBox(width: 3),
           Text(
             authType.token.toUpperCase(),
             style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontSize: 8.5,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-              color: AppTheme.textSecondary,
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.4,
+              color: colors.onSurfaceVariant,
             ),
           ),
         ],
@@ -313,41 +243,22 @@ class _GroupTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
       decoration: BoxDecoration(
-        color: AppTheme.phosphor.withValues(alpha: 0.08),
+        color: colors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: AppTheme.phosphor.withValues(alpha: 0.22)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            '#',
-            style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontSize: 9.5,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.phosphorDim,
-            ),
-          ),
-          const SizedBox(width: 1),
-          Flexible(
-            child: Text(
-              group,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: AppTheme.monoFont,
-                fontSize: 9.5,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.4,
-                color: AppTheme.phosphor,
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        group,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+          color: colors.primary,
+        ),
       ),
     );
   }
@@ -360,19 +271,16 @@ class _StatusDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = connected ? AppTheme.mint : AppTheme.textDisabled;
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final Color color = connected
+        ? context.sem.success
+        : colors.onSurfaceVariant.withValues(alpha: 0.4);
     return Container(
-      width: 6,
-      height: 6,
+      width: 7,
+      height: 7,
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: color.withValues(alpha: connected ? 0.7 : 0.0),
-            blurRadius: connected ? 6 : 0,
-          ),
-        ],
       ),
     );
   }
@@ -385,21 +293,26 @@ class _OverflowMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return PopupMenuButton<_CardAction>(
       onSelected: onSelected,
-      tooltip: 'Server actions',
+      tooltip: l10n.serverActions,
       position: PopupMenuPosition.under,
-      icon: const Icon(Icons.more_vert_rounded,
-          size: 18, color: AppTheme.textTertiary),
+      icon: Icon(Icons.more_vert_rounded,
+          size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
       itemBuilder: (BuildContext context) => <PopupMenuEntry<_CardAction>>[
-        _menuEntry(_CardAction.connect, Icons.terminal_rounded, 'Connect'),
-        _menuEntry(_CardAction.edit, Icons.edit_rounded, 'Edit'),
-        _menuEntry(_CardAction.copy, Icons.copy_all_rounded, 'Copy SSH command'),
+        _menuEntry(
+            context, _CardAction.connect, Icons.terminal_rounded, l10n.serverActionConnect),
+        _menuEntry(
+            context, _CardAction.edit, Icons.edit_rounded, l10n.serverActionEdit),
+        _menuEntry(context, _CardAction.copy, Icons.copy_all_rounded,
+            l10n.serverActionCopySsh),
         const PopupMenuDivider(height: 8),
         _menuEntry(
+          context,
           _CardAction.delete,
           Icons.delete_outline_rounded,
-          'Delete',
+          l10n.serverActionDelete,
           danger: true,
         ),
       ],
@@ -408,27 +321,25 @@ class _OverflowMenu extends StatelessWidget {
 }
 
 PopupMenuItem<_CardAction> _menuEntry(
+  BuildContext context,
   _CardAction action,
   IconData icon,
   String label, {
   bool danger = false,
 }) {
-  final Color tint = danger ? AppTheme.coral : AppTheme.textPrimary;
+  final ColorScheme colors = Theme.of(context).colorScheme;
+  final Color tint = danger ? colors.error : colors.onSurface;
   return PopupMenuItem<_CardAction>(
     value: action,
     height: 42,
     child: Row(
       children: <Widget>[
-        Icon(
-          icon,
-          size: 16,
-          color: danger ? AppTheme.coral : AppTheme.textSecondary,
-        ),
+        Icon(icon, size: 18, color: danger ? colors.error : colors.onSurfaceVariant),
         const SizedBox(width: 12),
         Text(
           label,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
             color: tint,
           ),
@@ -436,31 +347,6 @@ PopupMenuItem<_CardAction> _menuEntry(
       ],
     ),
   );
-}
-
-class _IgnorePointerGlow extends StatelessWidget {
-  const _IgnorePointerGlow({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        width: 90,
-        height: 90,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: <Color>[
-              color.withValues(alpha: 0.1),
-              color.withValues(alpha: 0.0),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // ─── Action sheet (long-press) ────────────────────────────────────────────
@@ -475,83 +361,77 @@ class _ActionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return SafeArea(
       top: false,
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        decoration: BoxDecoration(
-          color: AppTheme.inkSurface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.inkBorder),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            const SizedBox(height: 10),
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppTheme.inkBorder,
-                  borderRadius: BorderRadius.circular(2),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          const SizedBox(height: 10),
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colors.onSurfaceVariant.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  config.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.text.titleLarge?.copyWith(fontSize: 16),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    config.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.text.titleLarge?.copyWith(fontSize: 16),
+                const SizedBox(height: 3),
+                Text(
+                  '${config.identity}:${config.port}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppTheme.monoFont,
+                    fontFamilyFallback: AppTheme.monoFallback,
+                    fontSize: 12,
+                    color: colors.onSurfaceVariant,
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '${config.identity}:${config.port}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: AppTheme.monoFont,
-                      fontSize: 11.5,
-                      color: AppTheme.textTertiary,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const Divider(height: 1, color: AppTheme.inkBorderSoft),
-            _SheetTile(
-              icon: Icons.terminal_rounded,
-              label: 'Connect',
-              color: AppTheme.phosphor,
-              onTap: () => onAction(_CardAction.connect),
-            ),
-            _SheetTile(
-              icon: Icons.edit_rounded,
-              label: 'Edit details',
-              onTap: () => onAction(_CardAction.edit),
-            ),
-            _SheetTile(
-              icon: Icons.copy_all_rounded,
-              label: 'Copy SSH command',
-              onTap: () => onAction(_CardAction.copy),
-            ),
-            const Divider(height: 1, color: AppTheme.inkBorderSoft),
-            _SheetTile(
-              icon: Icons.delete_outline_rounded,
-              label: 'Delete server',
-              color: AppTheme.coral,
-              onTap: () => onAction(_CardAction.delete),
-            ),
-            const SizedBox(height: 6),
-          ],
-        ),
+          ),
+          const Divider(height: 1),
+          _SheetTile(
+            icon: Icons.terminal_rounded,
+            label: l10n.serverActionConnect,
+            color: colors.primary,
+            onTap: () => onAction(_CardAction.connect),
+          ),
+          _SheetTile(
+            icon: Icons.edit_rounded,
+            label: l10n.serverActionEditDetails,
+            onTap: () => onAction(_CardAction.edit),
+          ),
+          _SheetTile(
+            icon: Icons.copy_all_rounded,
+            label: l10n.serverActionCopySsh,
+            onTap: () => onAction(_CardAction.copy),
+          ),
+          const Divider(height: 1),
+          _SheetTile(
+            icon: Icons.delete_outline_rounded,
+            label: l10n.serverActionDeleteServer,
+            color: colors.error,
+            onTap: () => onAction(_CardAction.delete),
+          ),
+          const SizedBox(height: 6),
+        ],
       ),
     );
   }
@@ -572,29 +452,17 @@ class _SheetTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color tint = color ?? AppTheme.textPrimary;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-          child: Row(
-            children: <Widget>[
-              Icon(icon, size: 18, color: tint),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  label,
-                  style: context.text.bodyLarge?.copyWith(
-                    fontSize: 14.5,
-                    color: tint,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final Color tint = color ?? colors.onSurface;
+    return ListTile(
+      onTap: onTap,
+      leading: Icon(icon, size: 20, color: tint),
+      title: Text(
+        label,
+        style: context.text.bodyLarge?.copyWith(
+          fontSize: 15,
+          color: tint,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -604,13 +472,13 @@ class _SheetTile extends StatelessWidget {
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
 /// Coarse "time since" formatter for the card's last-seen line.
-String _relativeTime(DateTime? at) {
-  if (at == null) return 'never connected';
+String _relativeTime(AppLocalizations l10n, DateTime? at) {
+  if (at == null) return l10n.serverNeverConnected;
   final Duration diff = DateTime.now().difference(at);
-  if (diff.isNegative || diff.inSeconds < 45) return 'just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-  if (diff.inHours < 24) return '${diff.inHours}h ago';
-  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  if (diff.isNegative || diff.inSeconds < 45) return l10n.serverJustNow;
+  if (diff.inMinutes < 60) return l10n.serverMinutesAgo(diff.inMinutes);
+  if (diff.inHours < 24) return l10n.serverHoursAgo(diff.inHours);
+  if (diff.inDays < 7) return l10n.serverDaysAgo(diff.inDays);
   return '${at.year}/${at.month.toString().padLeft(2, '0')}/'
       '${at.day.toString().padLeft(2, '0')}';
 }

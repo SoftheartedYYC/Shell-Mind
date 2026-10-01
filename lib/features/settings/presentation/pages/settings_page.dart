@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/common_widgets.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../providers/locale_provider.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/ai_settings_section.dart';
+import '../widgets/update_section.dart';
 
-/// Settings tab — a placeholder that establishes the section-based layout
-/// the real settings feature will fill in.
-///
-/// Sections are grouped by concern (Provider, Terminal, Storage, About) and
-/// rendered as monospace-labelled rows with hairline dividers, following
-/// the same visual grammar as the rest of the app.
-class SettingsPage extends StatelessWidget {
+/// Settings page — clean Material 3 design with theme switching.
+class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.inkVoid,
       body: SafeArea(
         bottom: false,
         child: ListView(
@@ -25,77 +25,48 @@ class SettingsPage extends StatelessWidget {
           children: <Widget>[
             const _SettingsHeader(),
             const _IdentityCard(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            const _ThemeSection(),
+            const _LanguageSection(),
             const _AiProviderSection(),
-            const _Section(
-              label: 'terminal',
-              children: <Widget>[
-                _SettingsTile(
-                  icon: Icons.text_fields_rounded,
-                  title: 'Font size',
-                  value: '13.5',
-                ),
-                _SettingsTile(
-                  icon: Icons.font_download_outlined,
-                  title: 'Font family',
-                  value: 'Roboto Mono',
-                ),
-                _SettingsTile(
-                  icon: Icons.palette_outlined,
-                  title: 'Colour scheme',
-                  value: 'Phosphor',
-                ),
-                _SettingsTile(
-                  icon: Icons.vibration_rounded,
-                  title: 'Haptic feedback',
-                  value: 'on',
-                  trailing: _MockSwitch(value: true),
-                ),
-              ],
-            ),
-            const _Section(
-              label: 'storage & privacy',
+            const _AboutSection(),
+            _Section(
+              label: l10n.settingsSectionStoragePrivacy,
               children: <Widget>[
                 _SettingsTile(
                   icon: Icons.shield_outlined,
-                  title: 'Secrets',
-                  value: 'encrypted',
-                  valueColor: AppTheme.mint,
+                  title: l10n.settingsTileSecrets,
+                  value: l10n.settingsTileEncrypted,
                 ),
                 _SettingsTile(
                   icon: Icons.storage_rounded,
-                  title: 'Local cache',
+                  title: l10n.settingsTileLocalCache,
                   value: '4.2 MB',
                 ),
                 _SettingsTile(
                   icon: Icons.delete_sweep_outlined,
-                  title: 'Clear all data',
+                  title: l10n.settingsTileClearData,
                   value: '',
                   destructive: true,
                 ),
               ],
             ),
-            const _Section(
-              label: 'about',
+            _Section(
+              label: l10n.settingsSectionResources,
               children: <Widget>[
                 _SettingsTile(
-                  icon: Icons.info_outline_rounded,
-                  title: 'Version',
-                  value: AppConstants.appVersion,
-                ),
-                _SettingsTile(
                   icon: Icons.code_rounded,
-                  title: 'Open-source licences',
+                  title: l10n.settingsTileLicenses,
                   value: '',
                 ),
                 _SettingsTile(
                   icon: Icons.bug_report_outlined,
-                  title: 'Report an issue',
+                  title: l10n.settingsTileReportIssue,
                   value: '',
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             const _FooterSignature(),
           ],
         ),
@@ -111,70 +82,24 @@ class _SettingsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Text(
-                      'config',
-                      style: TextStyle(
-                        fontFamily: AppTheme.monoFont,
-                        fontFamilyFallback: const <String>[
-                          'JetBrains Mono',
-                          'Menlo',
-                          'monospace',
-                        ],
-                        fontSize: 11,
-                        letterSpacing: 2.4,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.phosphor,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 4,
-                      height: 4,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.phosphor,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '~/config',
-                      style: TextStyle(
-                        fontFamily: AppTheme.monoFont,
-                        fontSize: 11,
-                        letterSpacing: 1.2,
-                        color: AppTheme.textTertiary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Settings.',
-                  style: context.text.displaySmall?.copyWith(
+            child: Text(
+              l10n.settingsTitle,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    letterSpacing: -0.8,
-                    height: 1.05,
                   ),
-                ),
-              ],
             ),
           ),
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.search_rounded,
-                size: 20, color: AppTheme.textSecondary),
-            tooltip: 'Search settings',
+            icon: Icon(Icons.search_rounded, color: colors.onSurfaceVariant),
+            tooltip: l10n.settingsSearchTooltip,
           ),
         ],
       ),
@@ -189,13 +114,25 @@ class _IdentityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.inkSurface,
+        color: isDark ? colors.surfaceContainerHigh : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.inkBorderSoft),
+        border: Border.all(color: colors.outlineVariant),
+        boxShadow: isDark
+            ? null
+            : <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Row(
         children: <Widget>[
@@ -203,20 +140,12 @@ class _IdentityCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xFF0E1322),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.phosphor.withValues(alpha: 0.35)),
+              color: colors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: const Center(
-              child: Text(
-                '>_',
-                style: TextStyle(
-                  fontFamily: AppTheme.monoFont,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.phosphor,
-                ),
-              ),
+            child: Center(
+              child: Icon(Icons.terminal_rounded,
+                  size: 22, color: colors.primary),
             ),
           ),
           const SizedBox(width: 14),
@@ -226,27 +155,124 @@ class _IdentityCard extends StatelessWidget {
               children: <Widget>[
                 Text(
                   AppConstants.appName,
-                  style: context.text.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.1,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'v${AppConstants.appVersion} · build ${AppConstants.appBuildNumber}',
-                  style: TextStyle(
-                    fontFamily: AppTheme.monoFont,
-                    fontSize: 10.5,
-                    letterSpacing: 0.4,
-                    color: AppTheme.textTertiary,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
                 ),
               ],
             ),
           ),
-          const StatusPill(
-            label: 'STABLE',
-            color: AppTheme.mint,
+          StatusPill(
+            label: AppLocalizations.of(context).settingsStable,
+            color: context.sem.success,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Theme section ────────────────────────────────────────────────────────
+
+class _ThemeSection extends ConsumerWidget {
+  const _ThemeSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    final notifier = ref.read(themeModeProvider.notifier);
+    final l10n = AppLocalizations.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          SectionHeader(label: l10n.settingsSectionAppearance),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SegmentedButton<ThemeMode>(
+              segments: <ButtonSegment<ThemeMode>>[
+                ButtonSegment<ThemeMode>(
+                  value: ThemeMode.system,
+                  icon: const Icon(Icons.brightness_auto_rounded),
+                  label: Text(l10n.settingsThemeSystem),
+                ),
+                ButtonSegment<ThemeMode>(
+                  value: ThemeMode.light,
+                  icon: const Icon(Icons.light_mode_rounded),
+                  label: Text(l10n.settingsThemeLight),
+                ),
+                ButtonSegment<ThemeMode>(
+                  value: ThemeMode.dark,
+                  icon: const Icon(Icons.dark_mode_rounded),
+                  label: Text(l10n.settingsThemeDark),
+                ),
+              ],
+              selected: <ThemeMode>{themeMode},
+              onSelectionChanged: (Set<ThemeMode> selection) {
+                notifier.setThemeMode(selection.first);
+              },
+              showSelectedIcon: false,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Language section ──────────────────────────────────────────────────────
+
+class _LanguageSection extends ConsumerWidget {
+  const _LanguageSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
+    final notifier = ref.read(localeProvider.notifier);
+    final l10n = AppLocalizations.of(context);
+
+    final String currentValue = locale?.languageCode ?? 'system';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          SectionHeader(label: l10n.settingsSectionLanguage),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SegmentedButton<String>(
+              segments: <ButtonSegment<String>>[
+                ButtonSegment<String>(
+                  value: 'system',
+                  icon: const Icon(Icons.language_rounded),
+                  label: Text(l10n.settingsLanguageSystem),
+                ),
+                ButtonSegment<String>(
+                  value: 'zh',
+                  label: Text(l10n.settingsLanguageZh),
+                ),
+                ButtonSegment<String>(
+                  value: 'en',
+                  label: Text(l10n.settingsLanguageEn),
+                ),
+              ],
+              selected: <String>{currentValue},
+              onSelectionChanged: (Set<String> selection) {
+                final String code = selection.first;
+                notifier.setLocale(code == 'system' ? null : Locale(code));
+              },
+              showSelectedIcon: false,
+            ),
           ),
         ],
       ),
@@ -256,20 +282,40 @@ class _IdentityCard extends StatelessWidget {
 
 // ─── AI provider section ──────────────────────────────────────────────────
 
-/// Wraps the live [AiSettingsSection] in the same header + spacing rhythm the
-/// static [_Section]s use, so it sits flush with the rest of the page.
 class _AiProviderSection extends StatelessWidget {
   const _AiProviderSection();
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 10),
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          SectionHeader(label: 'ai provider'),
-          AiSettingsSection(),
+          SectionHeader(label: l10n.settingsSectionAiProvider),
+          const AiSettingsSection(),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── About & update section ───────────────────────────────────────────────
+
+class _AboutSection extends StatelessWidget {
+  const _AboutSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          SectionHeader(label: l10n.settingsSectionAboutUpdate),
+          const UpdateSection(),
         ],
       ),
     );
@@ -286,28 +332,40 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           SectionHeader(label: label),
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
+            margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: AppTheme.inkSurface,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.inkBorderSoft),
+              color: isDark ? colors.surfaceContainerHigh : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colors.outlineVariant),
+              boxShadow: isDark
+                  ? null
+                  : <BoxShadow>[
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: <Widget>[
                 for (int i = 0; i < children.length; i++) ...<Widget>[
                   if (i > 0)
-                    const Divider(
+                    Divider(
                       height: 1,
                       thickness: 1,
-                      color: AppTheme.inkBorderSoft,
+                      color: colors.outlineVariant,
                       indent: 52,
                     ),
                   children[i],
@@ -328,123 +386,51 @@ class _SettingsTile extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.value,
-    this.valueColor,
-    this.trailing,
     this.destructive = false,
   });
 
   final IconData icon;
   final String title;
   final String value;
-  final Color? valueColor;
-  final Widget? trailing;
   final bool destructive;
 
   @override
   Widget build(BuildContext context) {
-    final Color titleColor =
-        destructive ? AppTheme.coral : AppTheme.textPrimary;
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final Color titleColor = destructive ? colors.error : colors.onSurface;
+    final Color iconColor =
+        destructive ? colors.error : colors.onSurfaceVariant;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () {},
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: <Widget>[
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: destructive
-                      ? AppTheme.coral.withValues(alpha: 0.08)
-                      : const Color(0xFF0E1322),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: destructive
-                        ? AppTheme.coral.withValues(alpha: 0.35)
-                        : AppTheme.inkBorder,
-                  ),
-                ),
-                child: Icon(
-                  icon,
-                  size: 13,
-                  color: destructive ? AppTheme.coral : AppTheme.textSecondary,
-                ),
-              ),
-              const SizedBox(width: 12),
+              Icon(icon, size: 20, color: iconColor),
+              const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   title,
-                  style: context.text.bodyMedium?.copyWith(
-                    color: titleColor,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: titleColor,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ),
               if (value.isNotEmpty)
                 Text(
                   value,
-                  style: TextStyle(
-                    fontFamily: AppTheme.monoFont,
-                    fontFamilyFallback: const <String>[
-                      'JetBrains Mono',
-                      'Menlo',
-                      'monospace',
-                    ],
-                    fontSize: 11.5,
-                    letterSpacing: 0.3,
-                    color: valueColor ?? AppTheme.textSecondary,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
                 ),
-              if (trailing != null) ...<Widget>[
-                const SizedBox(width: 8),
-                trailing!,
-              ],
-              if (value.isNotEmpty || trailing == null)
-                const Padding(
-                  padding: EdgeInsets.only(left: 6),
-                  child: Icon(Icons.chevron_right_rounded,
-                      size: 16, color: AppTheme.textTertiary),
-                ),
+              const SizedBox(width: 4),
+              Icon(Icons.chevron_right_rounded,
+                  size: 18, color: colors.onSurfaceVariant),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Mock switch (placeholder until the real settings land) ───────────────
-
-class _MockSwitch extends StatelessWidget {
-  const _MockSwitch({required this.value});
-  final bool value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 20,
-      decoration: BoxDecoration(
-        color: value ? AppTheme.phosphor : AppTheme.inkElevated,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: value ? AppTheme.phosphor : AppTheme.inkBorder,
-        ),
-      ),
-      child: AnimatedAlign(
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOut,
-        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          width: 14,
-          height: 14,
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          decoration: BoxDecoration(
-            color: value ? AppTheme.inkVoid : AppTheme.textTertiary,
-            shape: BoxShape.circle,
           ),
         ),
       ),
@@ -459,51 +445,21 @@ class _FooterSignature extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: <Widget>[
-          const Divider(color: AppTheme.inkBorderSoft),
+          Divider(color: colors.outlineVariant),
           const SizedBox(height: 14),
           Text(
-            'made for people who live in the terminal',
-            style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontSize: 10,
-              letterSpacing: 0.6,
-              color: AppTheme.textTertiary,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const _FooterDot(color: AppTheme.coral),
-              const SizedBox(width: 4),
-              const _FooterDot(color: AppTheme.amber),
-              const SizedBox(width: 4),
-              const _FooterDot(color: AppTheme.mint),
-            ],
+            l10n.settingsFooter,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FooterDot extends StatelessWidget {
-  const _FooterDot({required this.color});
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 6,
-      height: 6,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.7),
-        shape: BoxShape.circle,
       ),
     );
   }
