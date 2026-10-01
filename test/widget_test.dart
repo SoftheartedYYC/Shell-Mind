@@ -1,30 +1,42 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Smoke test: the app should boot, mount the shell, and land on the
+// Servers tab without throwing.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:shell_mind/main.dart';
+import 'package:shell_mind/app/app.dart';
+import 'package:shell_mind/app/router.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Shell-Mind boots into the servers tab',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(child: const ShellMindApp()),
+    );
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // The bottom navigation should always be present in the shell.
+    // `~/servers` appears both in the nav bar and the page header.
+    expect(find.text('~/servers'), findsAtLeastNWidgets(1));
+    expect(find.text('~/ai'), findsOneWidget);
+    expect(find.text('~/config'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // The shell should render the initial route's landing content.
+    expect(find.text('Your hosts.'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // The initial route resolves to Servers.
+    expect(
+      find.byType(ProviderScope),
+      findsOneWidget,
+      reason: 'ProviderScope should wrap the root app',
+    );
+  });
+
+  testWidgets('Route paths resolve to distinct routes',
+      (WidgetTester tester) async {
+    expect(RoutePaths.servers, '/servers');
+    expect(RoutePaths.aiChat, '/ai');
+    expect(RoutePaths.settings, '/settings');
+    expect(RoutePaths.terminalFor('abc'), '/terminal/abc');
   });
 }
