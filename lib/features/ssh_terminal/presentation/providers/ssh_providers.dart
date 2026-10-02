@@ -14,19 +14,28 @@ import '../../domain/repositories/ssh_repository.dart';
 
 /// Owns the single live [SshClientManager].
 ///
-/// Auto-disposed: when the terminal page unmounts and nothing else watches it,
-/// the manager (and thus the socket) is released. The app shows one terminal
-/// at a time, so a single instance is sufficient.
-final AutoDisposeProvider<SshClientManager> sshClientManagerProvider =
-    Provider.autoDispose<SshClientManager>((ref) {
+/// Deliberately **not** `autoDispose`. The terminal page lives on the root
+/// navigator while the AI chat page lives inside the bottom-nav shell, so
+/// navigating from the terminal to "Ask AI" (`goNamed`) unmounts the terminal
+/// route. If this provider were auto-disposed the socket would be torn down
+/// and the session unregistered from [sshSessionRegistryProvider] the instant
+/// the AI page needs it — the exact "AI can't reach the server" failure. The
+/// connection must outlive any single screen; it is closed explicitly by
+/// [SshConnectionController.disconnect] (back button) or when the transport
+/// drops, and the manager itself is released only at container teardown.
+final Provider<SshClientManager> sshClientManagerProvider =
+    Provider<SshClientManager>((ref) {
   final SshClientManager manager = SshClientManager();
   ref.onDispose(manager.dispose);
   return manager;
 });
 
 /// Binds the [SshRepository] contract to the `dartssh2`-backed manager.
-final AutoDisposeProvider<SshRepository> sshRepositoryProvider =
-    Provider.autoDispose<SshRepository>((ref) {
+///
+/// Non-autoDispose for the same reason as [sshClientManagerProvider]: the
+/// repository wraps the single long-lived manager.
+final Provider<SshRepository> sshRepositoryProvider =
+    Provider<SshRepository>((ref) {
   return SshSessionRepository(ref.watch(sshClientManagerProvider));
 });
 
@@ -34,13 +43,15 @@ final AutoDisposeProvider<SshRepository> sshRepositoryProvider =
 ///
 /// Mirrors the manager's [SshRepository.stateStream] into Riverpod state and
 /// exposes [SshConnectionController.connect] / [disconnect] for the page.
-final AutoDisposeNotifierProvider<SshConnectionController, SshConnectionState>
-    sshConnectionStateProvider = NotifierProvider.autoDispose<
-        SshConnectionController, SshConnectionState>(
+/// Non-autoDispose so the live session (and its registry entry) survives
+/// navigation away from the terminal page.
+final NotifierProvider<SshConnectionController, SshConnectionState>
+    sshConnectionStateProvider =
+    NotifierProvider<SshConnectionController, SshConnectionState>(
   SshConnectionController.new,
 );
 
-class SshConnectionController extends AutoDisposeNotifier<SshConnectionState> {
+class SshConnectionController extends Notifier<SshConnectionState> {
   /// Server id of the session this controller currently owns, used to
   /// unregister from the global [SshSessionRegistry] on disconnect/dispose.
   String? _activeServerId;
@@ -51,10 +62,10 @@ class SshConnectionController extends AutoDisposeNotifier<SshConnectionState> {
     final StreamSubscription<SshConnectionState> sub =
         repo.stateStream.listen((SshConnectionState next) => state = next);
     ref.onDispose(sub.cancel);
-    // Safety net: if the terminal page is torn down without an explicit
-    // disconnect, drop our registry entry so no stale session lingers. The
-    // registry's own state-stream watcher usually beats this, but the two are
-    // idempotent.
+    // This controller is non-autoDispose, so the callback below only runs at
+    // container teardown (app close) — not when the terminal page unmounts.
+    // Day-to-day cleanup is handled by [disconnect] and by the registry's own
+    // state-stream watcher, which unregisters the moment the session drops.
     ref.onDispose(() {
       final String? id = _activeServerId;
       if (id != null) {

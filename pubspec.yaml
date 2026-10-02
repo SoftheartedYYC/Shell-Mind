@@ -1,7 +1,7 @@
 name: shell_mind
 description: "SSH + AI Assistant mobile app built with Flutter"
 publish_to: 'none'
-version: 1.2.1+4
+version: 1.2.2+5
 
 environment:
   sdk: ^3.13.4

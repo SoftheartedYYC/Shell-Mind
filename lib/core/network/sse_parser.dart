@@ -37,9 +37,21 @@ class SseParser {
     Stream<List<int>> bytes, {
     String doneMarkerValue = doneMarker,
   }) async* {
-    final Utf8Decoder decoder = const Utf8Decoder(allowMalformed: true);
-    final Stream<String> lines =
-        bytes.transform(decoder).transform(const LineSplitter());
+    const Utf8Decoder decoder = Utf8Decoder(allowMalformed: true);
+    // `bytes` is statically a `Stream<List<int>>` but Dio's
+    // `ResponseBody.stream` is a `Stream<Uint8List>` at runtime. Calling
+    // `.transform(decoder)` directly reifies the transformer's input type as
+    // `Uint8List`, and since `Utf8Decoder` is only a
+    // `StreamTransformer<List<int>, String>` (generics are invariant here) it
+    // throws `type 'Utf8Decoder' is not a subtype of type
+    // 'StreamTransformer<Uint8List, String>'` — surfacing to the user as an
+    // "Unexpected error". `cast<List<int>>()` normalises the runtime element
+    // type while keeping the single stateful decoder, so multi-byte UTF-8
+    // sequences split across chunks still decode correctly.
+    final Stream<String> lines = bytes
+        .cast<List<int>>()
+        .transform(decoder)
+        .transform(const LineSplitter());
 
     // Buffers multi-line `data:` fields belonging to the current frame.
     final List<String> dataLines = <String>[];
