@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 
@@ -115,21 +116,46 @@ class AiService {
     }
 
     // SSE frames arrive as `data: {json}` lines; parse them into deltas.
-    await for (final Map<String, dynamic> event in body.stream.sseJsonEvents) {
-      // Some gateways emit an error object mid-stream.
-      final Object? error = event['error'];
-      if (error is Map<String, dynamic>) {
-        throw AiServiceException(
-          AppFailure.aiProvider(
-            (error['message'] as String?) ?? 'Provider returned an error.',
-          ),
-        );
-      }
+    //
+    // The consumption loop is guarded: once the response headers are in,
+    // transport-level failures (dropped connection, malformed chunks) surface
+    // as raw dart:io exceptions rather than DioException, so without this they
+    // would leak to the listener as "unexpected" errors.
+    try {
+      await for (final Map<String, dynamic> event in body.stream.sseJsonEvents) {
+        // Some gateways emit an error object mid-stream.
+        final Object? error = event['error'];
+        if (error is Map<String, dynamic>) {
+          throw AiServiceException(
+            AppFailure.aiProvider(
+              (error['message'] as String?) ?? 'Provider returned an error.',
+            ),
+          );
+        }
 
-      final String? delta = _extractDelta(event);
-      if (delta != null && delta.isNotEmpty) {
-        yield delta;
+        final String? delta = _extractDelta(event);
+        if (delta != null && delta.isNotEmpty) {
+          yield delta;
+        }
       }
+    } on AiServiceException {
+      rethrow;
+    } on SocketException catch (e, st) {
+      throw AiServiceException(AppFailure.network(e, stackTrace: st));
+    } on HttpException catch (e) {
+      throw AiServiceException(AppFailure.network(e));
+    } on FormatException catch (e) {
+      throw AiServiceException(
+        AppFailure.aiProvider(
+          'Malformed SSE response: ${e.message}',
+          cause: e,
+        ),
+      );
+    } on DioException catch (e) {
+      // Dio can still surface mid-stream failures (e.g. receive timeout).
+      throw AiServiceException(_mapDioError(e));
+    } catch (e, st) {
+      throw AiServiceException(AppFailure.unexpected(e, stackTrace: st));
     }
   }
 

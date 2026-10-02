@@ -110,10 +110,16 @@ class ChatRepositoryImpl implements ChatRepository {
       }
     }
 
-    wire.add(<String, String>{
-      'role': MessageRole.user.wire,
-      'content': userMessage,
-    });
+    // Skip the trailing user turn when empty — tool-result continuations
+    // call with `userMessage: ''` because the [tool-output] turns in
+    // [history] already carry the prompt; an empty user message would
+    // violate the alternation some providers enforce.
+    if (userMessage.trim().isNotEmpty) {
+      wire.add(<String, String>{
+        'role': MessageRole.user.wire,
+        'content': userMessage,
+      });
+    }
 
     return wire;
   }

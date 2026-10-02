@@ -86,8 +86,8 @@ class AiSettingsController extends Notifier<AiSettingsState> {
   Future<void> _load() async {
     final AiProvider provider = AiProviders.getById(_prefs.selectedProviderId);
     final String? storedModel = _prefs.getSelectedModel(provider.id);
-    final AiModel model =
-        storedModel == null ? provider.defaultModel : provider.modelById(storedModel);
+    // Resolve against the built-in catalogue but keep custom/fetched model ids.
+    final AiModel model = resolveStoredModel(provider, storedModel);
     final String? key = await _secure.getProviderApiKey(provider.id);
     final Set<String> configured = await _configuredProviderIds();
 
@@ -120,8 +120,7 @@ class AiSettingsController extends Notifier<AiSettingsState> {
     await _prefs.setSelectedProviderId(providerId);
     final AiProvider provider = AiProviders.getById(providerId);
     final String? storedModel = _prefs.getSelectedModel(provider.id);
-    final AiModel model =
-        storedModel == null ? provider.defaultModel : provider.modelById(storedModel);
+    final AiModel model = resolveStoredModel(provider, storedModel);
     final String? key = await _secure.getProviderApiKey(provider.id);
 
     state = state.copyWith(

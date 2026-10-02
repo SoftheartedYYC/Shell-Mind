@@ -24,14 +24,31 @@ final Provider<AiProvider> selectedProviderProvider = Provider<AiProvider>((Ref 
   return AiProviders.getById(prefs.selectedProviderId);
 });
 
-/// The model chosen for the current provider, resolved against its catalogue
-/// (falls back to the provider default when the stored id is stale).
+/// The model chosen for the current provider.
+///
+/// Resolved against the built-in catalogue first (for a friendly display
+/// name); a stored id that isn't built-in (fetched from `/models` or manually
+/// added) is kept as-is instead of falling back to the provider default.
 final Provider<AiModel> selectedModelProvider = Provider<AiModel>((Ref ref) {
   final PreferencesService prefs = ref.watch(preferencesServiceProvider);
   final AiProvider provider = ref.watch(selectedProviderProvider);
   final String? stored = prefs.getSelectedModel(provider.id);
-  return stored == null ? provider.defaultModel : provider.modelById(stored);
+  return resolveStoredModel(provider, stored);
 });
+
+/// Resolves a stored model id against [provider].
+///
+/// [AiProvider.modelById] falls back to [defaultModel] for unknown ids, so a
+/// plain lookup would silently discard custom/fetched models (e.g.
+/// `deepseek-flash`). We therefore compare the lookup result's id with the
+/// stored id: a match means it's built-in (keep the friendly name), a
+/// mismatch means it's custom — construct an [AiModel] from the id itself.
+AiModel resolveStoredModel(AiProvider provider, String? storedId) {
+  if (storedId == null || storedId.isEmpty) return provider.defaultModel;
+  final AiModel builtin = provider.modelById(storedId);
+  if (builtin.id == storedId) return builtin;
+  return AiModel(id: storedId, name: storedId);
+}
 
 /// The API key for the current provider (async — secure storage). `null` when
 /// unconfigured. Invalidated whenever a key is saved/cleared.
@@ -188,29 +205,36 @@ class ChatNotifier extends Notifier<ChatState> {
 
     final StringBuffer buffer = StringBuffer();
 
-    _subscription = ref
-        .read(chatRepositoryProvider)
-        .sendMessageStream(history: history, userMessage: trimmed)
-        .listen(
-      (String delta) {
-        buffer.write(delta);
-        if (state.isConnecting) {
-          state = state.copyWith(isConnecting: false);
-        }
-        _patchMessage(
+    try {
+      _subscription = ref
+          .read(chatRepositoryProvider)
+          .sendMessageStream(history: history, userMessage: trimmed)
+          .listen(
+        (String delta) {
+          buffer.write(delta);
+          if (state.isConnecting) {
+            state = state.copyWith(isConnecting: false);
+          }
+          _patchMessage(
+            assistantId,
+            (ChatMessage m) => m.copyWith(content: buffer.toString()),
+          );
+        },
+        onError: (Object error, StackTrace stack) => _onStreamError(
           assistantId,
-          (ChatMessage m) => m.copyWith(content: buffer.toString()),
-        );
-      },
-      onError: (Object error, StackTrace stack) => _onStreamError(
-        assistantId,
-        buffer.toString(),
-        error,
-        stack,
-      ),
-      onDone: () => _onStreamDone(assistantId, buffer.toString()),
-      cancelOnError: true,
-    );
+          buffer.toString(),
+          error,
+          stack,
+        ),
+        onDone: () => _onStreamDone(assistantId, buffer.toString()),
+        cancelOnError: true,
+      );
+    } catch (error, stack) {
+      // Synchronous failure while wiring the stream (provider/repository
+      // construction). Reset the flags and surface the failure exactly like
+      // a stream error with no tokens received.
+      _onStreamError(assistantId, buffer.toString(), error, stack);
+    }
   }
 
   void _onStreamDone(String assistantId, String content) {
@@ -369,32 +393,40 @@ class ChatNotifier extends Notifier<ChatState> {
 
     final StringBuffer buffer = StringBuffer();
 
-    _subscription = ref
-        .read(chatRepositoryProvider)
-        .sendMessageStream(
-          history: messages,
-          userMessage: '', // Empty user message triggers continuation based on tool results
-        )
-        .listen(
-      (String delta) {
-        buffer.write(delta);
-        if (state.isConnecting) {
-          state = state.copyWith(isConnecting: false);
-        }
-        _patchMessage(
+    try {
+      _subscription = ref
+          .read(chatRepositoryProvider)
+          .sendMessageStream(
+            history: messages,
+            // Empty user message: continuation is driven by the tool-result
+            // turns already present in [messages]; _buildMessages skips the
+            // empty trailing user turn.
+            userMessage: '',
+          )
+          .listen(
+        (String delta) {
+          buffer.write(delta);
+          if (state.isConnecting) {
+            state = state.copyWith(isConnecting: false);
+          }
+          _patchMessage(
+            assistantMsg.id,
+            (ChatMessage m) => m.copyWith(content: buffer.toString()),
+          );
+        },
+        onError: (Object error, StackTrace stack) => _onStreamError(
           assistantMsg.id,
-          (ChatMessage m) => m.copyWith(content: buffer.toString()),
-        );
-      },
-      onError: (Object error, StackTrace stack) => _onStreamError(
-        assistantMsg.id,
-        buffer.toString(),
-        error,
-        stack,
-      ),
-      onDone: () => _onStreamDone(assistantMsg.id, buffer.toString()),
-      cancelOnError: true,
-    );
+          buffer.toString(),
+          error,
+          stack,
+        ),
+        onDone: () => _onStreamDone(assistantMsg.id, buffer.toString()),
+        cancelOnError: true,
+      );
+    } catch (error, stack) {
+      // Same synchronous-failure guard as sendMessage.
+      _onStreamError(assistantMsg.id, buffer.toString(), error, stack);
+    }
   }
 
   /// Wipes the conversation and any error state.
