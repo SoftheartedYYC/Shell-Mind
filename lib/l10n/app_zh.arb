@@ -327,6 +327,20 @@
   "aiExecuteSuccess": "命令执行成功",
   "aiExecuteFailed": "命令执行失败",
 
+  "aiServerManageTitle": "服务器",
+  "aiServerManageSubtitle": "连接服务器供 AI 助手操作",
+  "aiServerOnlineCount": "{count} 台在线",
+  "@aiServerOnlineCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiServerDone": "完成",
+  "aiServerConnecting": "连接中…",
+  "aiServerOffline": "离线",
+  "aiServerNoCredential": "未存储凭据——请先在服务器页面保存密码或密钥",
+  "aiServerConnectFailed": "连接失败",
+
   "aiToolResultCommand": "命令",
   "aiToolResultOutput": "命令输出",
   "aiToolResultExitCode": "退出码：{code}",

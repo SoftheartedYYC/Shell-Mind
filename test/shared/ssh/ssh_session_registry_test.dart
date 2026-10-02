@@ -33,6 +33,9 @@ void main() {
     final MockSshClientManager manager = MockSshClientManager();
     when(() => manager.isConnected).thenReturn(connected);
     when(() => manager.stateStream).thenAnswer((_) => controller.stream);
+    // The registry owns its sessions and disposes the manager when the
+    // transport drops; the mock must honour the Future<void> contract.
+    when(() => manager.dispose()).thenAnswer((_) async {});
     return manager;
   }
 

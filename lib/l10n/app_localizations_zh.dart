@@ -1021,6 +1021,32 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiExecuteFailed => '命令执行失败';
 
   @override
+  String get aiServerManageTitle => '服务器';
+
+  @override
+  String get aiServerManageSubtitle => '连接服务器供 AI 助手操作';
+
+  @override
+  String aiServerOnlineCount(int count) {
+    return '$count 台在线';
+  }
+
+  @override
+  String get aiServerDone => '完成';
+
+  @override
+  String get aiServerConnecting => '连接中…';
+
+  @override
+  String get aiServerOffline => '离线';
+
+  @override
+  String get aiServerNoCredential => '未存储凭据——请先在服务器页面保存密码或密钥';
+
+  @override
+  String get aiServerConnectFailed => '连接失败';
+
+  @override
   String get aiToolResultCommand => '命令';
 
   @override

@@ -136,6 +136,13 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     _submit();
   }
 
+  /// Opens the in-chat connection manager so the user can bring servers
+  /// online (or drop them) without leaving the assistant.
+  Future<void> _openServerManager() async {
+    _focus.unfocus();
+    await ServerSelectorSheet.show(context, manage: true);
+  }
+
   /// Handles the "run on server" action for an executable code block.
   ///
   /// Flow: pick target server(s) → confirm → hand off to [AgentController].
@@ -241,6 +248,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
               hasKey: hasKey,
               canClear: chat.messages.isNotEmpty,
               onClear: _clear,
+              onManageServers: _openServerManager,
             ),
             Expanded(
               child: keyStatus.when(
@@ -308,12 +316,14 @@ class _ChatHeader extends ConsumerWidget {
     required this.hasKey,
     required this.canClear,
     required this.onClear,
+    required this.onManageServers,
   });
 
   final bool isStreaming;
   final bool hasKey;
   final bool canClear;
   final VoidCallback onClear;
+  final VoidCallback onManageServers;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -356,6 +366,12 @@ class _ChatHeader extends ConsumerWidget {
             ),
           ),
           StatusPill(label: label, color: color, pulse: pulse),
+          IconButton(
+            onPressed: onManageServers,
+            tooltip: l10n.aiServerManageTitle,
+            icon: Icon(Icons.dns_outlined,
+                size: 22, color: colors.onSurfaceVariant),
+          ),
           if (canClear)
             IconButton(
               onPressed: onClear,

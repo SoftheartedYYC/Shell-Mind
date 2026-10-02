@@ -1044,6 +1044,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiExecuteFailed => 'Command execution failed';
 
   @override
+  String get aiServerManageTitle => 'Servers';
+
+  @override
+  String get aiServerManageSubtitle =>
+      'Connect servers for the AI assistant to operate';
+
+  @override
+  String aiServerOnlineCount(int count) {
+    return '$count online';
+  }
+
+  @override
+  String get aiServerDone => 'Done';
+
+  @override
+  String get aiServerConnecting => 'Connecting…';
+
+  @override
+  String get aiServerOffline => 'Offline';
+
+  @override
+  String get aiServerNoCredential =>
+      'No stored credential — save the password or key on the server page first';
+
+  @override
+  String get aiServerConnectFailed => 'Connect failed';
+
+  @override
   String get aiToolResultCommand => 'Command';
 
   @override

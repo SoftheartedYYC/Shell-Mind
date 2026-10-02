@@ -535,6 +535,20 @@
   "aiExecuteSuccess": "Command executed successfully",
   "aiExecuteFailed": "Command execution failed",
 
+  "aiServerManageTitle": "Servers",
+  "aiServerManageSubtitle": "Connect servers for the AI assistant to operate",
+  "aiServerOnlineCount": "{count} online",
+  "@aiServerOnlineCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiServerDone": "Done",
+  "aiServerConnecting": "Connecting…",
+  "aiServerOffline": "Offline",
+  "aiServerNoCredential": "No stored credential — save the password or key on the server page first",
+  "aiServerConnectFailed": "Connect failed",
+
   "aiToolResultCommand": "Command",
   "aiToolResultOutput": "Command output",
   "aiToolResultExitCode": "Exit code: {code}",

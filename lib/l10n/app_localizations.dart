@@ -1940,6 +1940,54 @@ abstract class AppLocalizations {
   /// **'Command execution failed'**
   String get aiExecuteFailed;
 
+  /// No description provided for @aiServerManageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers'**
+  String get aiServerManageTitle;
+
+  /// No description provided for @aiServerManageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect servers for the AI assistant to operate'**
+  String get aiServerManageSubtitle;
+
+  /// No description provided for @aiServerOnlineCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} online'**
+  String aiServerOnlineCount(int count);
+
+  /// No description provided for @aiServerDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get aiServerDone;
+
+  /// No description provided for @aiServerConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting…'**
+  String get aiServerConnecting;
+
+  /// No description provided for @aiServerOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get aiServerOffline;
+
+  /// No description provided for @aiServerNoCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'No stored credential — save the password or key on the server page first'**
+  String get aiServerNoCredential;
+
+  /// No description provided for @aiServerConnectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect failed'**
+  String get aiServerConnectFailed;
+
   /// No description provided for @aiToolResultCommand.
   ///
   /// In en, this message translates to:

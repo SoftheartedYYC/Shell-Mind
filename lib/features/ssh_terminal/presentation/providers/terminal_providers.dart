@@ -6,52 +6,68 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:xterm/xterm.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import 'ssh_providers.dart';
+import '../../../../shared/ssh/ssh_session_registry.dart';
+import '../../data/ssh_client_manager.dart';
 
-/// The xterm [Terminal] instance for the live screen, wired bidirectionally to
-/// the SSH shell:
+// ─── Terminal instance (per server, autoDispose with page) ────────────────
+
+/// The xterm [Terminal] instance for a given server, wired bidirectionally to
+/// the SSH session from the global registry:
 ///
 /// * remote bytes → incrementally UTF-8 decoded → batched into [Terminal.write]
-/// * user keystrokes ([Terminal.onOutput]) → [SshRepository.sendInput]
-/// * viewport changes ([Terminal.onResize]) → [SshRepository.resize] (PTY)
+/// * user keystrokes ([Terminal.onOutput]) → [SshClientManager.sendInput]
+/// * viewport changes ([Terminal.onResize]) → [SshClientManager.resize] (PTY)
 ///
+/// Watches [sshSessionRegistryProvider] so wiring is established as soon as a
+/// session appears (after connect) and torn down when it disappears.
 /// Auto-disposed alongside the terminal page; all subscriptions and timers are
-/// torn down in [Ref.onDispose].
-final AutoDisposeProvider<Terminal> terminalProvider =
-    Provider.autoDispose<Terminal>((ref) {
-  final repo = ref.watch(sshRepositoryProvider);
+/// released in [Ref.onDispose].
+final terminalForServerProvider =
+    Provider.autoDispose.family<Terminal, String>((Ref ref, String serverId) {
   final Terminal terminal = Terminal(maxLines: AppConstants.terminalScrollback);
   final _TerminalOutputPump pump = _TerminalOutputPump(terminal);
 
-  // Remote output → terminal. Broadcast stream survives across (re)connects.
-  final StreamSubscription<Uint8List> sub = repo.outputStream.listen(
-    pump.add,
-    onError: (Object _) {},
-    cancelOnError: false,
-  );
+  // Watch the registry — rebuilds when a session appears or disappears.
+  final Map<String, RegisteredSession> sessions =
+      ref.watch(sshSessionRegistryProvider);
+  final RegisteredSession? session = sessions[serverId];
 
-  // Terminal input → remote stdin. When the Ctrl modifier is armed, a single
-  // typed letter is translated into its control byte (Ctrl-C → 0x03) and the
-  // modifier auto-releases, matching a hardware terminal's behaviour.
-  terminal.onOutput = (String data) {
-    if (data.length == 1 && ref.read(ctrlKeyStateProvider)) {
-      final int? control = _controlByte(data.codeUnitAt(0));
-      if (control != null) {
-        repo.sendInput(String.fromCharCode(control));
-        ref.read(ctrlKeyStateProvider.notifier).release();
-        return;
+  StreamSubscription<Uint8List>? outputSub;
+
+  if (session != null) {
+    final SshClientManager manager = session.manager;
+
+    // Remote output → terminal. Broadcast stream survives across (re)connects.
+    outputSub = manager.outputStream.listen(
+      pump.add,
+      onError: (Object _) {},
+      cancelOnError: false,
+    );
+
+    // Terminal input → remote stdin. When the Ctrl modifier is armed, a single
+    // typed letter is translated into its control byte (Ctrl-C → 0x03) and the
+    // modifier auto-releases, matching a hardware terminal's behaviour.
+    terminal.onOutput = (String data) {
+      if (data.length == 1 && ref.read(ctrlKeyStateProvider)) {
+        final int? control = _controlByte(data.codeUnitAt(0));
+        if (control != null) {
+          manager.sendInput(String.fromCharCode(control));
+          ref.read(ctrlKeyStateProvider.notifier).release();
+          return;
+        }
       }
-    }
-    repo.sendInput(data);
-  };
+      manager.sendInput(data);
+    };
 
-  // Viewport resize → remote PTY window-change.
-  terminal.onResize = (int width, int height, int pixelWidth, int pixelHeight) {
-    unawaited(repo.resize(width, height));
-  };
+    // Viewport resize → remote PTY window-change.
+    terminal.onResize =
+        (int width, int height, int pixelWidth, int pixelHeight) {
+      unawaited(manager.resize(width, height));
+    };
+  }
 
   ref.onDispose(() {
-    unawaited(sub.cancel());
+    unawaited(outputSub?.cancel());
     pump.dispose();
     terminal.onOutput = null;
     terminal.onResize = null;
@@ -67,8 +83,9 @@ final AutoDisposeProvider<TerminalController> terminalControllerProvider =
 
 /// Whether the Ctrl modifier is currently armed by the keyboard toolbar.
 ///
-/// Consumed by [terminalProvider]'s `onOutput` handler so the modifier applies
-/// to the *next* character typed on the system soft keyboard, then releases.
+/// Consumed by [terminalForServerProvider]'s `onOutput` handler so the modifier
+/// applies to the *next* character typed on the system soft keyboard, then
+/// releases.
 final AutoDisposeNotifierProvider<CtrlKeyController, bool>
     ctrlKeyStateProvider =
     NotifierProvider.autoDispose<CtrlKeyController, bool>(

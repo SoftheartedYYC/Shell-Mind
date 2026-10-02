@@ -12,6 +12,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/ssh/ssh_session_registry.dart';
 import '../../../../shared/ssh/terminal_context_provider.dart';
 import '../../../ai_chat/domain/entities/ai_chat_extra.dart';
 import '../../../server_config/domain/entities/server_config.dart';
@@ -29,7 +30,7 @@ const Color _kTerminalBg = Color(0xFF1A1B26);
 ///
 /// Mounted from `/terminal/:serverId`. On first frame it resolves the
 /// [ServerConfig] and opens an interactive shell; the xterm [Terminal] is wired
-/// bidirectionally to the socket by `terminalProvider`. The chrome around it —
+/// bidirectionally to the socket by `terminalForServerProvider`. The chrome around it —
 /// status bar, auxiliary keyboard — follows the app theme, while the terminal
 /// itself stays dark.
 class TerminalPage extends ConsumerStatefulWidget {
@@ -69,10 +70,23 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         setState(() {});
       }
     });
-    // Kick the connection off after the first frame so the terminal widget is
-    // laid out (and its size known) before the PTY opens.
+    // Attach to existing session (if any) and kick connection after first frame
+    // so the terminal widget is laid out (and its size known) before PTY opens.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) unawaited(_startConnection());
+      if (!mounted) return;
+      // If the registry already has a live session for this server, just attach.
+      final RegisteredSession? existing =
+          ref.read(sshSessionRegistryProvider)[widget.serverId];
+      if (existing != null) {
+        ref.read(sshConnectionStateProvider.notifier).attach(widget.serverId);
+        setState(() {
+          _hasConnectedOnce = true;
+        });
+        // Resolve config for display purposes.
+        unawaited(_resolveConfig());
+      } else {
+        unawaited(_startConnection());
+      }
     });
   }
 
@@ -85,29 +99,35 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
 
   // ─── Connection control ───────────────────────────────────────────────────
 
-  /// Resolves the server (once) and opens the shell. Safe to call again to
-  /// retry — the manager tears down any prior attempt before dialing.
-  Future<void> _startConnection() async {
-    if (_config == null) {
-      final ServerConfig? resolved = await ref
-          .read(serverConfigListProvider.notifier)
-          .resolveById(widget.serverId);
-      if (!mounted) return;
-      if (resolved == null) {
-        setState(() => _notFound = true);
-        return;
-      }
-      setState(() {
-        _config = resolved;
-        _notFound = false;
-      });
+  /// Resolves the [ServerConfig] for display (name, identity) without
+  /// initiating a connection.
+  Future<void> _resolveConfig() async {
+    if (_config != null) return;
+    final ServerConfig? resolved = await ref
+        .read(serverConfigListProvider.notifier)
+        .resolveById(widget.serverId);
+    if (!mounted) return;
+    if (resolved == null) {
+      setState(() => _notFound = true);
+      return;
     }
+    setState(() {
+      _config = resolved;
+      _notFound = false;
+    });
+  }
+
+  /// Resolves the server (once) and opens the shell via the global registry.
+  /// Safe to call again to retry — the registry tears down any prior session.
+  Future<void> _startConnection() async {
+    await _resolveConfig();
+    if (!mounted || _config == null) return;
     await ref.read(sshConnectionStateProvider.notifier).connect(_config!);
   }
 
-  void _disconnectAndPop() {
-    // Graceful close before the route pops; autoDispose is the safety net.
-    unawaited(ref.read(sshConnectionStateProvider.notifier).disconnect());
+  /// Navigates back without disconnecting — the session stays alive in the
+  /// global registry so the AI assistant and other pages can still use it.
+  void _popWithoutDisconnect() {
     if (context.canPop()) {
       context.pop();
     } else {
@@ -115,8 +135,16 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     }
   }
 
+  /// Explicitly disconnects the SSH session and pops the page.
+  void _disconnectAndPop() {
+    unawaited(
+        ref.read(sshConnectionStateProvider.notifier).disconnectServer(widget.serverId));
+    _popWithoutDisconnect();
+  }
+
   void _sendInput(String data) {
-    ref.read(sshRepositoryProvider).sendInput(data);
+    final session = ref.read(sshSessionRegistryProvider)[widget.serverId];
+    session?.manager.sendInput(data);
   }
 
   void _bumpFontSize(double delta) {
@@ -138,7 +166,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   /// previews what will be sent; otherwise it navigates straight to the chat.
   void _openAiAssistant() {
     HapticFeedback.selectionClick();
-    final Terminal terminal = ref.read(terminalProvider);
+    final Terminal terminal = ref.read(terminalForServerProvider(widget.serverId));
     final TerminalController controller = ref.read(terminalControllerProvider);
 
     String? selected;
@@ -223,7 +251,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     });
 
     final SshConnectionState conn = ref.watch(sshConnectionStateProvider);
-    final Terminal terminal = ref.watch(terminalProvider);
+    final Terminal terminal = ref.watch(terminalForServerProvider(widget.serverId));
     final TerminalController controller = ref.watch(terminalControllerProvider);
 
     return Scaffold(
@@ -236,11 +264,12 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
               serverName: _config?.name ?? conn.serverName ?? widget.serverId,
               identity: _config?.identity,
               fontSize: _fontSize,
-              onBack: _disconnectAndPop,
+              onBack: _popWithoutDisconnect,
               onAskAi: _openAiAssistant,
               onDisconnect: conn.isConnected
-                  ? () => unawaited(
-                      ref.read(sshConnectionStateProvider.notifier).disconnect())
+                  ? () => unawaited(ref
+                      .read(sshConnectionStateProvider.notifier)
+                      .disconnectServer(widget.serverId))
                   : null,
               onFontSmaller: () => _bumpFontSize(-1),
               onFontLarger: () => _bumpFontSize(1),

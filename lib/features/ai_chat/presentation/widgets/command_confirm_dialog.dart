@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../app/theme.dart';
+import '../../../../app/theme.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Pre-execution confirmation dialog for SSH commands.
 ///
@@ -42,6 +43,7 @@ class CommandConfirmDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -55,7 +57,7 @@ class CommandConfirmDialog extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              isDangerous ? '⚠ 危险命令警告' : '确认执行命令',
+              isDangerous ? l10n.aiExecuteDangerWarning : l10n.aiExecuteTitle,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -88,7 +90,7 @@ class CommandConfirmDialog extends StatelessWidget {
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        '此命令可能具有破坏性，请谨慎执行。确保您了解该命令的后果。',
+                        l10n.aiExecuteDangerText,
                         style: TextStyle(
                           color: colors.error,
                           height: 1.4,
@@ -103,7 +105,7 @@ class CommandConfirmDialog extends StatelessWidget {
 
             // Command label
             Text(
-              '要执行的命令:',
+              l10n.aiExecuteCommandLabel,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: colors.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
@@ -139,7 +141,7 @@ class CommandConfirmDialog extends StatelessWidget {
 
             // Server list
             Text(
-              '目标服务器:',
+              l10n.aiExecuteTargetServer,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: colors.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
@@ -172,14 +174,15 @@ class CommandConfirmDialog extends StatelessWidget {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: Text('取消'),
+          child: Text(l10n.commonCancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
           style: FilledButton.styleFrom(
             backgroundColor: isDangerous ? colors.error : colors.primary,
           ),
-          child: Text(isDangerous ? '仍要执行' : '确认执行'),
+          child: Text(
+              isDangerous ? l10n.aiExecuteConfirmAnyway : l10n.aiExecuteConfirmButton),
         ),
       ],
     );

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/utils/result.dart';
 import '../../features/server_config/domain/entities/server_config.dart';
 import '../../features/ssh_terminal/data/ssh_client_manager.dart';
 import '../../features/ssh_terminal/domain/entities/connection_state.dart';
@@ -28,9 +29,8 @@ class RegisteredSession {
   /// Non-secret metadata (name/host/port/user) for the connected server.
   final ServerConfig config;
 
-  /// The manager owning the underlying `dartssh2` connection. Shared with the
-  /// terminal page's autoDispose provider — the registry only holds a
-  /// reference and never disposes it.
+  /// The manager owning the underlying `dartssh2` connection. Owned by the
+  /// [SshSessionRegistry] — disposed when the session is disconnected.
   final SshClientManager manager;
 
   /// When the session was registered (i.e. went live).
@@ -64,17 +64,17 @@ class RegisteredSession {
 
 /// Global registry of active SSH sessions.
 ///
-/// Unlike the terminal page's `autoDispose` manager provider — which lives and
-/// dies with a single screen — this notifier has an app-wide lifecycle. Every
-/// time a connection goes live it is [register]ed here, giving other modules
-/// (notably the AI assistant) a way to discover which servers are online and
-/// to run commands against them via [SshClientManager.runCommand].
+/// **Owns** all SSH connections — each connected server gets its own
+/// [SshClientManager] instance created and managed by this registry.
+/// The lifecycle is app-wide (non-autoDispose): connections survive navigation
+/// between pages and are only released by explicit [disconnect] / [disconnectAll]
+/// or when the transport drops unexpectedly.
 ///
-/// The registry is intentionally passive about lifetimes: it holds strong
-/// references to managers it does not own. To avoid leaking entries when a
-/// terminal page is torn down, [register] subscribes to the manager's
-/// `stateStream` and self-[unregister]s the moment the session drops, errors,
-/// or the manager is disposed (stream closed).
+/// Other modules (AI assistant, terminal page, server list) interact with
+/// connections exclusively through this registry:
+/// - [connect] creates a manager, dials, and registers the session
+/// - [disconnect] tears down a specific server's session
+/// - [register] / [unregister] for manual session management (legacy compat)
 class SshSessionRegistry extends Notifier<Map<String, RegisteredSession>> {
   /// Per-server subscriptions to the manager state stream, used for the
   /// automatic cleanup described above. Keyed by [RegisteredSession.serverId].
@@ -85,6 +85,93 @@ class SshSessionRegistry extends Notifier<Map<String, RegisteredSession>> {
     // Release every watcher if the container itself is ever torn down.
     ref.onDispose(_cancelAllWatchers);
     return const {};
+  }
+
+  // ─── Connection ownership API ───────────────────────────────────────────
+
+  /// Creates a new [SshClientManager], connects to the server described by
+  /// [config], and registers the live session.
+  ///
+  /// If a session for `config.id` already exists it is torn down first
+  /// (reconnect semantics). Credentials must be resolved by the caller
+  /// (typically from [SecureStorageService]) and passed in.
+  Future<Result<void>> connect(
+    ServerConfig config, {
+    String? password,
+    String? privateKey,
+    String? passphrase,
+    int width = 80,
+    int height = 24,
+  }) async {
+    // 1. Tear down any existing session for this server.
+    if (state.containsKey(config.id)) {
+      await disconnect(config.id);
+    }
+
+    // 2. Create a fresh manager owned by this registry.
+    final SshClientManager manager = SshClientManager();
+
+    // 3. Attempt connection.
+    try {
+      await manager.connect(
+        host: config.host,
+        port: config.port,
+        username: config.username,
+        serverName: config.name,
+        password: password,
+        privateKey: privateKey,
+        passphrase: passphrase,
+        width: width,
+        height: height,
+      );
+    } catch (e) {
+      final AppFailure failure = SshClientManager.mapError(e);
+      await manager.dispose();
+      return Result<void>.failure(failure);
+    }
+
+    // 4. Register the live session.
+    final RegisteredSession session = RegisteredSession(
+      serverId: config.id,
+      config: config,
+      manager: manager,
+      connectedAt: DateTime.now(),
+    );
+    state = {...state, config.id: session};
+
+    // 5. Watch for unexpected drops and auto-cleanup.
+    _watch(session);
+
+    return const Result<void>.success(null);
+  }
+
+  /// Explicitly disconnects and disposes the session for [serverId].
+  ///
+  /// No-op when the server is not currently connected.
+  Future<void> disconnect(String serverId) async {
+    final RegisteredSession? session = state[serverId];
+    if (session == null) return;
+    // Cancel watcher first so the disconnect emission doesn't race cleanup.
+    _cancelWatcher(serverId);
+    // Remove from state before tearing down to avoid re-entrant issues.
+    final Map<String, RegisteredSession> next =
+        Map<String, RegisteredSession>.from(state)..remove(serverId);
+    state = next;
+    await session.manager.disconnect();
+    await session.manager.dispose();
+  }
+
+  /// Disconnects and disposes **all** active sessions.
+  ///
+  /// Typically called at app shutdown.
+  Future<void> disconnectAll() async {
+    final List<RegisteredSession> sessions = state.values.toList();
+    _cancelAllWatchers();
+    state = const {};
+    for (final RegisteredSession session in sessions) {
+      await session.manager.disconnect();
+      await session.manager.dispose();
+    }
   }
 
   /// Adds (or replaces) the live session for [serverId].
@@ -143,18 +230,29 @@ class SshSessionRegistry extends Notifier<Map<String, RegisteredSession>> {
   // ─── Internals ─────────────────────────────────────────────────────────
 
   /// Subscribes to [session]'s manager so the entry self-removes when the
-  /// connection ends. `onDone` covers the disposal path (the manager closes
-  /// its state controller in `dispose()`), which emits no terminal state.
+  /// connection ends unexpectedly. `onDone` covers the disposal path (the
+  /// manager closes its state controller in `dispose()`), which emits no
+  /// terminal state.
+  ///
+  /// When auto-cleanup fires, the manager is also disposed since the registry
+  /// owns it.
   void _watch(RegisteredSession session) {
     _cancelWatcher(session.serverId);
     _watchers[session.serverId] = session.manager.stateStream.listen(
       (SshConnectionState next) {
         if (next.isDisconnected || next.isError) {
+          _cancelWatcher(session.serverId);
           unregister(session.serverId);
+          unawaited(session.manager.dispose());
         }
       },
-      onDone: () => unregister(session.serverId),
-      onError: (Object _) => unregister(session.serverId),
+      onDone: () {
+        unregister(session.serverId);
+      },
+      onError: (Object _) {
+        unregister(session.serverId);
+        unawaited(session.manager.dispose());
+      },
       cancelOnError: false,
     );
   }
