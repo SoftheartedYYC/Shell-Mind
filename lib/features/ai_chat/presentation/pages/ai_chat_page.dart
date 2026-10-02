@@ -7,10 +7,17 @@ import '../../../../app/theme.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/ssh/agent_controller.dart';
+import '../../../../shared/ssh/ssh_command_executor.dart';
+import '../../../../shared/ssh/ssh_session_registry.dart';
+import '../../../../shared/ssh/terminal_context_provider.dart';
 import '../../domain/entities/ai_provider.dart';
+import '../../domain/entities/ai_chat_extra.dart';
 import '../../domain/entities/chat_message.dart';
 import '../providers/chat_providers.dart';
+import '../widgets/command_confirm_dialog.dart';
 import '../widgets/message_bubble.dart';
+import '../widgets/server_selector_sheet.dart';
 
 /// The AI assistant chat surface.
 ///
@@ -19,7 +26,10 @@ import '../widgets/message_bubble.dart';
 /// live via [MessageBubble] → `StreamingText`, and the whole screen degrades
 /// gracefully to a setup guide when no API key is present.
 class AiChatPage extends ConsumerStatefulWidget {
-  const AiChatPage({super.key});
+  const AiChatPage({super.key, this.extra});
+
+  /// Optional navigation payload (e.g. from the terminal's "Ask AI" entry).
+  final AiChatExtra? extra;
 
   @override
   ConsumerState<AiChatPage> createState() => _AiChatPageState();
@@ -36,6 +46,28 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   void initState() {
     super.initState();
     _input.addListener(_onInputChanged);
+    _applyExtra(widget.extra);
+  }
+
+  /// Consumes an inbound [AiChatExtra]: pre-fills the composer with a terminal
+  /// selection and, when requested, attaches the live terminal context for the
+  /// originating server.
+  void _applyExtra(AiChatExtra? extra) {
+    if (extra == null) return;
+    final String? query = extra.initialQuery;
+    if (query != null && query.trim().isNotEmpty) {
+      _input.text = query;
+      _canSend = true;
+    }
+    if (extra.serverId != null || extra.attachedTerminalContext) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final TerminalContextController ctx =
+            ref.read(terminalContextProvider.notifier);
+        if (extra.serverId != null) ctx.setServer(extra.serverId);
+        if (extra.attachedTerminalContext) ctx.setEnabled(true);
+      });
+    }
   }
 
   void _onInputChanged() {
@@ -58,7 +90,20 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     final ChatNotifier notifier = ref.read(chatMessagesProvider.notifier);
     if (ref.read(chatMessagesProvider).isStreaming) return;
 
-    notifier.sendMessage(text);
+    // Attach terminal context when enabled.
+    final TerminalContextController ctxCtrl =
+        ref.read(terminalContextProvider.notifier);
+    final TerminalContextState ctxState = ref.read(terminalContextProvider);
+    String messageToSend = text;
+    if (ctxState.isEnabled) {
+      final String? raw = ctxCtrl.getTerminalContext();
+      final String? formatted = ctxCtrl.formatContext(raw, ctxCtrl.currentServerName);
+      if (formatted != null) {
+        messageToSend = '$formatted\n\n$text';
+      }
+    }
+
+    notifier.sendMessage(messageToSend);
     _input.clear();
     _scrollToBottom();
   }
@@ -91,12 +136,99 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     _submit();
   }
 
+  /// Handles the "run on server" action for an executable code block.
+  ///
+  /// Flow: pick target server(s) → confirm → hand off to [AgentController].
+  Future<void> _handleExecuteCode(String code, String language) async {
+    final Map<String, RegisteredSession> registry =
+        ref.read(sshSessionRegistryProvider);
+    if (registry.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).aiChatNoConnection),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // 1. Choose target server(s).
+    List<String> serverIds;
+    if (registry.length > 1) {
+      final List<String>? selected =
+          await ServerSelectorSheet.show(context, multiSelect: true);
+      if (selected == null || selected.isEmpty) return;
+      serverIds = selected;
+    } else {
+      serverIds = <String>[registry.keys.first];
+    }
+    if (!mounted) return;
+
+    // 2. Confirm (with a danger warning when applicable).
+    final bool isDangerous = SshCommandExecutor.isDangerous(code);
+    final List<String> serverNames = serverIds
+        .map((String id) => registry[id]?.serverName ?? id)
+        .toList();
+    final bool confirmed = await CommandConfirmDialog.show(
+      context,
+      command: code,
+      serverNames: serverNames,
+      isDangerous: isDangerous,
+    );
+    if (!confirmed || !mounted) return;
+
+    // 3. Execute via the agent controller (also feeds results back to the AI).
+    _focus.unfocus();
+    await ref
+        .read(agentControllerProvider.notifier)
+        .executeConfirmed(command: code, serverIds: serverIds);
+    _scrollToBottom();
+  }
+
+  /// Asks the AI to analyze the most recent tool output.
+  void _handleAnalyzeTool() {
+    final ChatNotifier notifier = ref.read(chatMessagesProvider.notifier);
+    if (ref.read(chatMessagesProvider).isStreaming) return;
+    notifier.sendMessage(AppLocalizations.of(context).aiChatAnalyzePrompt);
+    _scrollToBottom();
+  }
+
+  /// Toggles the hands-off auto-execution loop.
+  void _toggleAutoMode() {
+    final AgentController controller = ref.read(agentControllerProvider.notifier);
+    if (ref.read(agentControllerProvider).isAutoMode) {
+      controller.stopAutoMode();
+    } else {
+      controller.startAutoMode();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final ChatState chat = ref.watch(chatMessagesProvider);
     final AsyncValue<bool> keyStatus = ref.watch(apiKeyConfiguredProvider);
     final bool hasKey = keyStatus.valueOrNull ?? false;
     final AiProvider provider = ref.watch(selectedProviderProvider);
+    final AgentState agent = ref.watch(agentControllerProvider);
+
+    // When a streamed assistant reply finishes, hand its content to the agent
+    // so the auto-loop can pick up any command blocks it contains.
+    ref.listen<ChatState>(chatMessagesProvider, (ChatState? prev, ChatState next) {
+      if (prev != null && prev.isStreaming && !next.isStreaming) {
+        String lastAssistant = '';
+        for (final ChatMessage m in next.messages.reversed) {
+          if (m.role == MessageRole.assistant && m.content.trim().isNotEmpty) {
+            lastAssistant = m.content;
+            break;
+          }
+        }
+        if (lastAssistant.isNotEmpty) {
+          ref
+              .read(agentControllerProvider.notifier)
+              .onAssistantResponseComplete(lastAssistant);
+        }
+      }
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -134,6 +266,8 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                   return _Transcript(
                     messages: chat.messages,
                     controller: _scroll,
+                    onExecuteCode: _handleExecuteCode,
+                    onAnalyzeTool: _handleAnalyzeTool,
                   );
                 },
               ),
@@ -144,6 +278,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                 onDismiss: () =>
                     ref.read(chatMessagesProvider.notifier).dismissError(),
               ),
+            _AgentBar(state: agent, onToggleAutoMode: _toggleAutoMode),
             _Composer(
               controller: _input,
               focusNode: _focus,
@@ -295,10 +430,17 @@ class _ModelBadge extends StatelessWidget {
 // ─── Transcript ─────────────────────────────────────────────────────────
 
 class _Transcript extends StatelessWidget {
-  const _Transcript({required this.messages, required this.controller});
+  const _Transcript({
+    required this.messages,
+    required this.controller,
+    this.onExecuteCode,
+    this.onAnalyzeTool,
+  });
 
   final List<ChatMessage> messages;
   final ScrollController controller;
+  final void Function(String code, String language)? onExecuteCode;
+  final VoidCallback? onAnalyzeTool;
 
   @override
   Widget build(BuildContext context) {
@@ -310,11 +452,16 @@ class _Transcript extends StatelessWidget {
       itemBuilder: (BuildContext context, int index) {
         // reverse: index 0 is the newest (bottom-most) message.
         final ChatMessage message = messages[messages.length - 1 - index];
+        // Only offer code execution on finished assistant turns.
+        final bool canExecute = message.role == MessageRole.assistant &&
+            !message.isStreaming;
         return Padding(
           padding: const EdgeInsets.only(bottom: 14),
           child: MessageBubble(
             key: ValueKey<String>(message.id),
             message: message,
+            onExecuteCode: canExecute ? onExecuteCode : null,
+            onAnalyzeTool: onAnalyzeTool,
           ),
         );
       },
@@ -522,9 +669,140 @@ class _ErrorStrip extends StatelessWidget {
   }
 }
 
+// ─── Agent status bar ─────────────────────────────────────────────────────
+
+/// Slim bar above the composer surfacing the [AgentController] state: an
+/// auto-mode toggle, a live execution indicator, and loop progress.
+class _AgentBar extends StatelessWidget {
+  const _AgentBar({required this.state, required this.onToggleAutoMode});
+
+  final AgentState state;
+  final VoidCallback onToggleAutoMode;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final bool executing = state.status == AgentStatus.executing;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+      decoration: BoxDecoration(
+        color: state.isAutoMode
+            ? colors.primary.withValues(alpha: 0.06)
+            : colors.surface,
+        border: Border(top: BorderSide(color: colors.outlineVariant)),
+      ),
+      child: Row(
+        children: <Widget>[
+          // Auto-mode toggle.
+          InkWell(
+            onTap: onToggleAutoMode,
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Icon(
+                    state.isAutoMode
+                        ? Icons.autorenew_rounded
+                        : Icons.bolt_outlined,
+                    size: 16,
+                    color: state.isAutoMode
+                        ? colors.primary
+                        : colors.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    state.isAutoMode
+                        ? l10n.aiAgentAutoModeOn
+                        : l10n.aiAgentAutoModeOff,
+                    style: context.text.labelMedium?.copyWith(
+                      color: state.isAutoMode
+                          ? colors.primary
+                          : colors.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Live execution indicator.
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: executing
+                  ? Row(
+                      key: const ValueKey<String>('executing'),
+                      children: <Widget>[
+                        SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: colors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            '${state.executingServerName ?? l10n.aiAgentDefaultServer} · '
+                            '${state.executingCommand ?? ''}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.text.bodySmall?.copyWith(
+                              color: colors.onSurfaceVariant,
+                              fontFamily: AppTheme.monoFont,
+                              fontFamilyFallback: AppTheme.monoFallback,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : (state.errorMessage != null
+                      ? Text(
+                          state.errorMessage!,
+                          key: const ValueKey<String>('error'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.text.bodySmall?.copyWith(
+                            color: colors.error,
+                          ),
+                        )
+                      : const SizedBox.shrink(key: ValueKey<String>('idle'))),
+            ),
+          ),
+          // Loop progress + stop button while auto mode is on.
+          if (state.isAutoMode) ...<Widget>[
+            const SizedBox(width: 8),
+            Text(
+              '${state.autoLoopCount}/${state.maxAutoLoops}',
+              style: context.text.labelSmall?.copyWith(
+                color: colors.onSurfaceVariant,
+                fontFamily: AppTheme.monoFont,
+                fontFamilyFallback: AppTheme.monoFallback,
+              ),
+            ),
+            const SizedBox(width: 4),
+            IconButton(
+              onPressed: onToggleAutoMode,
+              tooltip: l10n.aiAgentStop,
+              visualDensity: VisualDensity.compact,
+              icon: Icon(Icons.stop_circle_outlined, size: 20, color: colors.error),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 // ─── Composer ─────────────────────────────────────────────────────────────
 
-class _Composer extends StatelessWidget {
+class _Composer extends ConsumerWidget {
   const _Composer({
     required this.controller,
     required this.focusNode,
@@ -544,57 +822,127 @@ class _Composer extends StatelessWidget {
   final VoidCallback onStop;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ColorScheme colors = Theme.of(context).colorScheme;
+    final TerminalContextState ctxState = ref.watch(terminalContextProvider);
+    final Map<String, RegisteredSession> sessions =
+        ref.watch(sshSessionRegistryProvider);
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
       decoration: BoxDecoration(
         color: colors.surface,
         border: Border(top: BorderSide(color: colors.outlineVariant)),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Expanded(
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 44, maxHeight: 140),
-              child: TextField(
-                controller: controller,
-                focusNode: focusNode,
-                enabled: enabled,
-                minLines: 1,
-                maxLines: 5,
-                textInputAction: TextInputAction.send,
-                style: context.text.bodyMedium,
-                decoration: InputDecoration(
-                  hintText: enabled
-                      ? AppLocalizations.of(context).aiChatInputHint
-                      : AppLocalizations.of(context).aiChatInputDisabled,
-                  filled: true,
-                  fillColor: colors.surfaceContainerLow,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: colors.outlineVariant),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: colors.outlineVariant),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: colors.primary, width: 2),
-                  ),
-                ),
-                onSubmitted: (_) => onSend(),
+          // Server chips when context is enabled and sessions exist.
+          if (ctxState.isEnabled && sessions.isNotEmpty) ...<Widget>[
+            SizedBox(
+              height: 30,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: <Widget>[
+                  for (final RegisteredSession s in sessions.values)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: ChoiceChip(
+                        label: Text(
+                          s.config.name,
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                        selected: ctxState.serverId == s.serverId ||
+                            (ctxState.serverId == null &&
+                                s.serverId == sessions.values.last.serverId),
+                        visualDensity: VisualDensity.compact,
+                        materialTapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap,
+                        onSelected: (_) {
+                          ref
+                              .read(terminalContextProvider.notifier)
+                              .setServer(s.serverId);
+                        },
+                      ),
+                    ),
+                ],
               ),
             ),
+            const SizedBox(height: 6),
+          ],
+          // Input row.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              // Terminal context toggle.
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4, right: 4),
+                child: IconButton(
+                  onPressed: enabled
+                      ? () => ref
+                          .read(terminalContextProvider.notifier)
+                          .toggleContext()
+                      : null,
+                  tooltip: ctxState.isEnabled
+                      ? AppLocalizations.of(context).aiContextToggleDetach
+                      : AppLocalizations.of(context).aiContextToggleAttach,
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    ctxState.isEnabled ? Icons.link : Icons.link_off,
+                    size: 20,
+                    color: ctxState.isEnabled
+                        ? colors.primary
+                        : colors.outline,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  constraints:
+                      const BoxConstraints(minHeight: 44, maxHeight: 140),
+                  child: TextField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    enabled: enabled,
+                    minLines: 1,
+                    maxLines: 5,
+                    textInputAction: TextInputAction.send,
+                    style: context.text.bodyMedium,
+                    decoration: InputDecoration(
+                      hintText: enabled
+                          ? AppLocalizations.of(context).aiChatInputHint
+                          : AppLocalizations.of(context).aiChatInputDisabled,
+                      filled: true,
+                      fillColor: colors.surfaceContainerLow,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            BorderSide(color: colors.outlineVariant),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            BorderSide(color: colors.outlineVariant),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            BorderSide(color: colors.primary, width: 2),
+                      ),
+                    ),
+                    onSubmitted: (_) => onSend(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              isStreaming
+                  ? _StopButton(onTap: onStop)
+                  : _SendButton(enabled: canSend, onTap: onSend),
+            ],
           ),
-          const SizedBox(width: 10),
-          isStreaming
-              ? _StopButton(onTap: onStop)
-              : _SendButton(enabled: canSend, onTap: onSend),
         ],
       ),
     );

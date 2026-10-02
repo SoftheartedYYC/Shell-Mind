@@ -9,6 +9,38 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/result.dart';
 import '../domain/entities/connection_state.dart';
 
+/// Immutable result of a non-interactive `exec` command run over SSH.
+///
+/// Produced by [SshClientManager.runCommand]; deliberately decoupled from
+/// `dartssh2`'s own `SSHRunResult` so callers don't depend on the transport
+/// type and receive already-decoded strings.
+@immutable
+class CommandExecutionResult {
+  const CommandExecutionResult({
+    required this.stdout,
+    required this.stderr,
+    required this.exitCode,
+  });
+
+  /// Decoded standard output.
+  final String stdout;
+
+  /// Decoded standard error.
+  final String stderr;
+
+  /// Remote process exit code. `-1` when the server did not report one
+  /// (e.g. the command was killed by a signal).
+  final int exitCode;
+
+  /// Convenience: exit code == 0.
+  bool get isSuccess => exitCode == 0;
+
+  @override
+  String toString() =>
+      'CommandExecutionResult(exitCode: $exitCode, '
+      'stdout: ${stdout.length} chars, stderr: ${stderr.length} chars)';
+}
+
 /// Low-level wrapper around a single `dartssh2` interactive shell.
 ///
 /// Owns the full transport stack — [SSHSocket] → [SSHClient] → shell
@@ -191,6 +223,44 @@ class SshClientManager {
       shell.resizeTerminal(width, height);
     } catch (error) {
       debugPrint('[ssh] resize failed: $error');
+    }
+  }
+
+  /// Runs [command] over a dedicated `exec` channel and captures its output.
+  ///
+  /// This is independent of the interactive PTY shell — it opens a separate
+  /// SSH channel, so it never disturbs what's on screen in the terminal.
+  /// Throws [AppFailureException] when not connected, on timeout, or on any
+  /// transport/protocol error (mapped via [mapError]).
+  Future<CommandExecutionResult> runCommand(
+    String command, {
+    Duration? timeout,
+  }) async {
+    final SSHClient? client = _client;
+    if (client == null || !isConnected) {
+      throw AppFailureException(
+        AppFailure.ssh('Not connected — cannot run command.'),
+      );
+    }
+
+    final Duration effectiveTimeout =
+        timeout ?? const Duration(seconds: 30);
+
+    try {
+      final SSHRunResult result = await client
+          .runWithResult(command)
+          .timeout(effectiveTimeout);
+      return CommandExecutionResult(
+        stdout: utf8.decode(result.stdout, allowMalformed: true),
+        stderr: utf8.decode(result.stderr, allowMalformed: true),
+        exitCode: result.exitCode ?? -1,
+      );
+    } on TimeoutException catch (error) {
+      throw AppFailureException(
+        AppFailure.timeout(effectiveTimeout, cause: error),
+      );
+    } catch (error) {
+      throw AppFailureException(mapError(error));
     }
   }
 

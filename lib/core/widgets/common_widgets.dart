@@ -128,12 +128,30 @@ class ErrorBanner extends StatelessWidget {
     this.onRetry,
     this.onDismiss,
     this.dense = false,
+    this.title,
+    this.message,
+    this.showCode = true,
   });
 
   final AppFailure failure;
   final VoidCallback? onRetry;
   final VoidCallback? onDismiss;
   final bool dense;
+
+  /// Whether to render the numeric [AppFailure.code] chip (e.g. an HTTP
+  /// status). User-facing update surfaces turn this off so no raw protocol
+  /// code is shown.
+  final bool showCode;
+
+  /// Optional localised heading. When null, falls back to the raw
+  /// [FailureKind] token — callers that show this banner to end users should
+  /// pass a translated title so the internal enum name never leaks.
+  final String? title;
+
+  /// Optional localised body. When null, falls back to [AppFailure.message]
+  /// (which is an English, developer-facing string). User-facing surfaces
+  /// should supply a translated message.
+  final String? message;
 
   static Color _colorFor(BuildContext context, FailureKind kind) {
     final sem = context.sem;
@@ -202,7 +220,7 @@ class ErrorBanner extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    failure.kind.name.toUpperCase(),
+                    title ?? failure.kind.name.toUpperCase(),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: accent,
                           fontWeight: FontWeight.w600,
@@ -210,7 +228,7 @@ class ErrorBanner extends StatelessWidget {
                         ),
                   ),
                 ),
-                if (failure.code != null)
+                if (showCode && failure.code != null)
                   Text(
                     '${failure.code}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -233,7 +251,7 @@ class ErrorBanner extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              failure.message,
+              message ?? failure.message,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colors.onSurface,
                     height: 1.45,

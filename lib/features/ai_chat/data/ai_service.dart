@@ -54,6 +54,13 @@ class AiService {
     return '$base${AppConstants.aiChatCompletionsPath}';
   }
 
+  /// Model-catalogue endpoint: base URL + `/models`.
+  String get _modelsEndpoint {
+    String base = provider.baseUrl.trim();
+    if (base.endsWith('/')) base = base.substring(0, base.length - 1);
+    return '$base${AppConstants.aiModelsPath}';
+  }
+
   /// Builds the shared request body. [stream] toggles the SSE mode.
   Map<String, dynamic> _payload(
     List<Map<String, String>> messages, {
@@ -175,6 +182,59 @@ class AiService {
     } on DioException catch (e) {
       throw AiServiceException(_mapDioError(e));
     }
+  }
+
+  // ─── Model catalogue ──────────────────────────────────────────────────
+
+  /// Fetches the list of model ids available to the current credential via the
+  /// OpenAI-compatible `GET {baseUrl}/models` endpoint.
+  ///
+  /// Returns a [Result] so callers never have to catch: a missing key or a
+  /// transport/HTTP error becomes a [Failure] (mapped through the same
+  /// [AppFailure] taxonomy as chat), while a well-formed but empty/absent
+  /// `data` array is a successful empty list. Parsing is deliberately
+  /// tolerant — entries without a string `id` are skipped.
+  Future<Result<List<String>>> fetchModels() async {
+    if (!hasApiKey) {
+      return Result<List<String>>.failure(
+        AppFailure.auth(
+          message: '${provider.name} API key is not configured.',
+        ),
+      );
+    }
+
+    try {
+      final Response<dynamic> response = await client.get<dynamic>(
+        _modelsEndpoint,
+        options: _authOptions(
+          receiveTimeout: AppConstants.modelsRequestTimeout,
+        ),
+      );
+      return Result<List<String>>.success(_parseModelIds(response.data));
+    } on DioException catch (e) {
+      return Result<List<String>>.failure(_mapDioError(e));
+    }
+  }
+
+  /// Extracts `data[*].id` from an OpenAI models response. Missing/non-list
+  /// `data` yields an empty list rather than an error.
+  List<String> _parseModelIds(Object? body) {
+    if (body is! Map) return const <String>[];
+    final Object? data = body['data'];
+    if (data is! List) return const <String>[];
+
+    final List<String> ids = <String>[];
+    final Set<String> seen = <String>{};
+    for (final Object? entry in data) {
+      if (entry is! Map) continue;
+      final Object? id = entry['id'];
+      if (id is! String) continue;
+      final String trimmed = id.trim();
+      if (trimmed.isEmpty || seen.contains(trimmed)) continue;
+      seen.add(trimmed);
+      ids.add(trimmed);
+    }
+    return ids;
   }
 
   // ─── Error mapping ────────────────────────────────────────────────────

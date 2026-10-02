@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../providers/terminal_providers.dart';
 
 /// A key on the auxiliary toolbar.
@@ -52,6 +53,7 @@ class KeyboardToolbar extends ConsumerStatefulWidget {
     super.key,
     required this.onSend,
     this.enabled = true,
+    this.onAskAi,
   });
 
   /// Emits a raw sequence (character or escape code) to the remote shell.
@@ -59,6 +61,10 @@ class KeyboardToolbar extends ConsumerStatefulWidget {
 
   /// When false (e.g. not yet connected) every key is dimmed and inert.
   final bool enabled;
+
+  /// When non-null, an "Ask AI" chip is pinned to the trailing edge; tapping it
+  /// hands the current terminal context off to the AI assistant.
+  final VoidCallback? onAskAi;
 
   @override
   ConsumerState<KeyboardToolbar> createState() => _KeyboardToolbarState();
@@ -218,6 +224,32 @@ class _KeyboardToolbarState extends ConsumerState<KeyboardToolbar> {
                 ),
               ),
             ),
+            // "Ask AI" chip, pinned to the trailing edge so it never scrolls away.
+            if (widget.onAskAi != null) ...<Widget>[
+              Container(
+                width: 1,
+                height: 24,
+                color: colors.outlineVariant,
+              ),
+              const SizedBox(width: 6),
+              Tooltip(
+                message: AppLocalizations.of(context).terminalTooltipAskAi,
+                child: _KeyChip(
+                  enabled: widget.enabled,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    widget.onAskAi!();
+                  },
+                  child: Icon(
+                    Icons.smart_toy_rounded,
+                    size: 18,
+                    color: widget.enabled
+                        ? colors.primary
+                        : colors.onSurface.withValues(alpha: 0.3),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

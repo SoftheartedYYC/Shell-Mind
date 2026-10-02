@@ -646,7 +646,13 @@ class _ErrorPanel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        ErrorBanner(failure: failure, dense: true),
+        ErrorBanner(
+          failure: failure,
+          dense: true,
+          showCode: false,
+          title: updateFailureTitle(context, failure),
+          message: describeUpdateFailure(context, failure),
+        ),
         const SizedBox(height: 12),
         Row(
           children: <Widget>[

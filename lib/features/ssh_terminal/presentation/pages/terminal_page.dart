@@ -12,6 +12,8 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/ssh/terminal_context_provider.dart';
+import '../../../ai_chat/domain/entities/ai_chat_extra.dart';
 import '../../../server_config/domain/entities/server_config.dart';
 import '../../../server_config/presentation/providers/server_config_providers.dart';
 import '../../domain/entities/connection_state.dart';
@@ -127,6 +129,88 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     });
   }
 
+  // ─── Ask AI ─────────────────────────────────────────────────────────────
+
+  /// Hands the current terminal selection (if any) off to the AI assistant.
+  ///
+  /// Always scopes the terminal-context provider to this server so the chat
+  /// page can attach live output. When text is selected a confirmation sheet
+  /// previews what will be sent; otherwise it navigates straight to the chat.
+  void _openAiAssistant() {
+    HapticFeedback.selectionClick();
+    final Terminal terminal = ref.read(terminalProvider);
+    final TerminalController controller = ref.read(terminalControllerProvider);
+
+    String? selected;
+    final BufferRange? range = controller.selection;
+    if (range != null) {
+      final String text = terminal.buffer.getText(range).trim();
+      if (text.isNotEmpty) selected = text;
+    }
+
+    // Scope context capture to this server before we leave the page.
+    ref.read(terminalContextProvider.notifier).setServer(widget.serverId);
+
+    if (selected != null) {
+      _showAskAiSheet(selected);
+    } else {
+      _navigateToAi(null);
+    }
+  }
+
+  void _navigateToAi(String? query) {
+    context.goNamed(
+      RouteNames.aiChat,
+      extra: AiChatExtra(
+        serverId: widget.serverId,
+        initialQuery: query,
+        attachedTerminalContext: true,
+      ),
+    );
+  }
+
+  void _showAskAiSheet(String selected) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 10, 8, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                child: Text(
+                  selected,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppTheme.monoFont,
+                    fontFamilyFallback: AppTheme.monoFallback,
+                    fontSize: 12,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.smart_toy_rounded, color: colors.primary),
+                title: Text(l10n.terminalAskAi),
+                subtitle: Text(l10n.terminalAskAiSubtitle),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _navigateToAi(selected);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // ─── Build ────────────────────────────────────────────────────────────────
 
   @override
@@ -153,6 +237,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
               identity: _config?.identity,
               fontSize: _fontSize,
               onBack: _disconnectAndPop,
+              onAskAi: _openAiAssistant,
               onDisconnect: conn.isConnected
                   ? () => unawaited(
                       ref.read(sshConnectionStateProvider.notifier).disconnect())
@@ -188,6 +273,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
             KeyboardToolbar(
               onSend: _sendInput,
               enabled: conn.isConnected,
+              onAskAi: _openAiAssistant,
             ),
           ],
         ),
@@ -326,6 +412,7 @@ class _TerminalTopBar extends StatelessWidget {
     required this.identity,
     required this.fontSize,
     required this.onBack,
+    required this.onAskAi,
     required this.onDisconnect,
     required this.onFontSmaller,
     required this.onFontLarger,
@@ -335,6 +422,7 @@ class _TerminalTopBar extends StatelessWidget {
   final String? identity;
   final double fontSize;
   final VoidCallback onBack;
+  final VoidCallback onAskAi;
   final VoidCallback? onDisconnect;
   final VoidCallback onFontSmaller;
   final VoidCallback onFontLarger;
@@ -385,6 +473,12 @@ class _TerminalTopBar extends StatelessWidget {
                   ),
               ],
             ),
+          ),
+          _BarButton(
+            icon: Icons.smart_toy_rounded,
+            tooltip: l10n.terminalTooltipAskAi,
+            color: colors.primary,
+            onTap: onAskAi,
           ),
           _BarButton(
             icon: Icons.text_decrease_rounded,

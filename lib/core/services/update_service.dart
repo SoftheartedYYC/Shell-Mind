@@ -10,8 +10,29 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../constants/app_constants.dart';
+import '../utils/release_selector.dart';
 import '../utils/result.dart';
 import '../utils/version_utils.dart';
+
+// ─── Failure reason markers ─────────────────────────────────────────────
+
+/// Stable string markers stored in [AppFailure.details] under the `reason`
+/// key. The service layer cannot reach `BuildContext`, so it tags failures
+/// with a machine-readable reason and the UI maps that to a localised string
+/// (see `describeUpdateFailure`). Keeping the vocabulary here means both the
+/// producer and the localiser agree on the exact tokens.
+abstract final class UpdateFailureReason {
+  /// GitHub reports no published release for the repository (both the
+  /// `/releases/latest` and the `/releases` fallback returned 404, or every
+  /// release was a filtered-out draft/pre-release).
+  static const String noReleases = 'noReleases';
+
+  /// Unauthenticated GitHub API rate limit (HTTP 403/429) was hit.
+  static const String rateLimit = 'rateLimit';
+
+  /// The response body could not be understood.
+  static const String badPayload = 'badPayload';
+}
 
 // ─── Value objects ────────────────────────────────────────────────────────
 
@@ -294,29 +315,65 @@ class UpdateService {
   /// Returns `Success(null)` when the app is already up to date and
   /// `Success(UpdateInfo)` when a newer release with an APK asset exists.
   /// Network/API problems come back as `Failure`.
+  ///
+  /// Robustness: GitHub's `/releases/latest` returns **404** in several
+  /// situations that do *not* mean "no release exists" — most notably when the
+  /// newest release is a draft/pre-release, or when the repository is private
+  /// and the request is unauthenticated. A bare 404 therefore triggers a
+  /// fallback to `/releases?per_page=10`, from which the newest eligible
+  /// (non-draft, and non-prerelease unless opted in) release is selected via
+  /// the pure [selectLatestRelease] helper. Only when the fallback *also*
+  /// yields nothing do we surface a genuine "no releases yet" state, tagged
+  /// with [UpdateFailureReason.noReleases] so the UI can localise it. Any
+  /// network/timeout/DNS failure is propagated untouched (never coerced into
+  /// `notFound`).
   Future<Result<UpdateInfo?>> checkForUpdate({
     bool includePrerelease = false,
     CancelToken? cancelToken,
   }) async {
     return Result.guard<UpdateInfo?>(
       () async {
-        final Response<dynamic> response = await _client.get<dynamic>(
-          '$_apiBase/releases/latest',
-          options: Options(headers: _githubHeaders),
-          cancelToken: cancelToken,
-        );
-
-        final dynamic data = response.data;
-        if (data is! Map<String, dynamic>) {
-          throw AppFailureException(
-            const AppFailure(
+        Map<String, dynamic>? release;
+        try {
+          final Response<dynamic> response = await _client.get<dynamic>(
+            '$_apiBase/releases/latest',
+            options: Options(headers: _githubHeaders),
+            cancelToken: cancelToken,
+          );
+          final dynamic data = response.data;
+          if (data is Map<String, dynamic>) {
+            release = data;
+          } else if (data is! List) {
+            throw AppFailureException(const AppFailure(
               kind: FailureKind.validation,
               message: 'GitHub returned an unexpected payload.',
-            ),
+              details: <String, dynamic>{
+                'reason': UpdateFailureReason.badPayload,
+              },
+            ));
+          }
+        } on DioException catch (e) {
+          if (!_isNotFound(e)) rethrow;
+          // `/releases/latest` 404 → fall back to the full release list.
+          release = await _fetchFallbackRelease(
+            includePrerelease: includePrerelease,
+            cancelToken: cancelToken,
           );
         }
 
-        final UpdateInfo info = _parseRelease(data);
+        if (release == null) {
+          // Both endpoints agree there is nothing installable to offer. This
+          // is a legitimate state, not a transport error.
+          throw AppFailureException(const AppFailure(
+            kind: FailureKind.notFound,
+            message: 'No releases published yet.',
+            details: <String, dynamic>{
+              'reason': UpdateFailureReason.noReleases,
+            },
+          ));
+        }
+
+        final UpdateInfo info = _parseRelease(release);
         _latestKnown = info;
 
         if (info.isPrerelease && !includePrerelease) return null;
@@ -332,6 +389,39 @@ class UpdateService {
       onError: (Object e, StackTrace st) => _mapError(e, st),
     );
   }
+
+  /// Fallback path: lists recent releases and picks the newest eligible one.
+  ///
+  /// Returns `null` when the list is empty or everything is filtered out
+  /// (draft/pre-release). A non-404 transport failure is rethrown so the
+  /// caller maps it to a network/timeout failure rather than "no releases".
+  Future<Map<String, dynamic>?> _fetchFallbackRelease({
+    required bool includePrerelease,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      final Response<dynamic> response = await _client.get<dynamic>(
+        '$_apiBase/releases',
+        queryParameters: const <String, dynamic>{'per_page': 10},
+        options: Options(headers: _githubHeaders),
+        cancelToken: cancelToken,
+      );
+      final dynamic data = response.data;
+      if (data is! List) return null;
+      return selectLatestRelease(
+        data,
+        includePrerelease: includePrerelease,
+      );
+    } on DioException catch (e) {
+      if (_isNotFound(e)) return null;
+      rethrow;
+    }
+  }
+
+  /// Whether [e] is a definitive HTTP 404 response (as opposed to a DNS,
+  /// timeout or connection error that merely *looks* like a miss).
+  static bool _isNotFound(DioException e) =>
+      e.type == DioExceptionType.badResponse && e.response?.statusCode == 404;
 
   UpdateInfo _parseRelease(Map<String, dynamic> json) {
     final String tagName = (json['tag_name'] ?? json['name'] ?? '') as String;
@@ -745,6 +835,62 @@ class UpdateService {
     return null;
   }
 
+  // ─── Download cache inspection ──────────────────────────────────
+
+  /// Absolute path of the directory where APK downloads are cached. Exposed so
+  /// the settings "storage & privacy" screen can report and clear it. Never
+  /// throws — resolves lazily and creates the directory on demand.
+  Future<Directory> downloadDirectory() => _downloadDirectory();
+
+  /// Lists every cached `.apk` currently on disk (newest downloads included).
+  ///
+  /// Best-effort: any I/O error yields an empty list rather than throwing, so
+  /// a size readout can never break the settings screen.
+  Future<List<File>> cachedApks() async {
+    try {
+      final Directory dir = await _downloadDirectory();
+      if (!await dir.exists()) return const <File>[];
+      final List<File> apks = <File>[];
+      await for (final FileSystemEntity e in dir.list(followLinks: false)) {
+        if (e is File && e.path.toLowerCase().endsWith('.apk')) apks.add(e);
+      }
+      return apks;
+    } catch (_) {
+      return const <File>[];
+    }
+  }
+
+  /// Total bytes occupied by cached update APKs.
+  Future<int> downloadCacheBytes() async {
+    int total = 0;
+    for (final File f in await cachedApks()) {
+      try {
+        total += await f.length();
+      } catch (_) {
+        // Skip unreadable entries.
+      }
+    }
+    return total;
+  }
+
+  /// Deletes every cached update APK, returning the number of bytes freed.
+  ///
+  /// Hive data and secure storage are untouched — this only reclaims the
+  /// sideloaded installer packages. Any in-flight download token is left
+  /// alone; callers cancel first if needed.
+  Future<int> clearDownloadCache() async {
+    int freed = 0;
+    for (final File f in await cachedApks()) {
+      try {
+        freed += await f.length();
+        await f.delete();
+      } catch (_) {
+        // A file that vanished mid-sweep is not worth surfacing.
+      }
+    }
+    return freed;
+  }
+
   // ─── Error mapping ──────────────────────────────────────────────────────
 
   AppFailure _mapError(Object error, StackTrace stack) {
@@ -811,12 +957,18 @@ class UpdateService {
               : 'GitHub API rate limit reached. Try again $reset.',
           code: status,
           cause: error,
+          details: const <String, dynamic>{
+            'reason': UpdateFailureReason.rateLimit,
+          },
+          recoverable: true,
         );
       case 404:
         return AppFailure.notFound(
           message: 'No releases published for $repoName yet.',
           cause: error,
-        );
+        ).copyWith(details: const <String, dynamic>{
+          'reason': UpdateFailureReason.noReleases,
+        });
       case 401:
         return AppFailure.auth(
           message: 'GitHub rejected the request.',

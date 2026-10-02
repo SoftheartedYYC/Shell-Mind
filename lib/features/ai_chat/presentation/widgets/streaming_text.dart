@@ -15,12 +15,14 @@ class StreamingText extends StatelessWidget {
     required this.isStreaming,
     this.selectable = true,
     this.textScale = 1.0,
+    this.onExecuteCode,
   });
 
   final String text;
   final bool isStreaming;
   final bool selectable;
   final double textScale;
+  final void Function(String code, String language)? onExecuteCode;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +37,7 @@ class StreamingText extends StatelessWidget {
             text: text,
             selectable: selectable && !isStreaming,
             textScale: textScale,
+            onExecuteCode: onExecuteCode,
           ),
         if (isStreaming) ...<Widget>[
           if (hasContent) const SizedBox(height: 4),

@@ -11,6 +11,8 @@ import '../../data/chat_repository_impl.dart';
 import '../../domain/entities/ai_provider.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/repositories/chat_repository.dart';
+import '../../../../shared/ssh/ssh_command_executor.dart';
+import '../../../../shared/ssh/ssh_session_registry.dart';
 
 // ─── Provider / model selection ─────────────────────────────────────────
 
@@ -59,9 +61,23 @@ final Provider<AiService> aiServiceProvider = Provider<AiService>((Ref ref) {
 });
 
 /// Concrete [ChatRepository] used across the feature.
+///
+/// Injects a live callback that resolves the currently connected servers from
+/// [sshSessionRegistryProvider], so every AI request carries an up-to-date
+/// server roster in its system prompt.
 final Provider<ChatRepository> chatRepositoryProvider =
     Provider<ChatRepository>((Ref ref) {
-  return ChatRepositoryImpl(ref.watch(aiServiceProvider));
+  return ChatRepositoryImpl(
+    ref.watch(aiServiceProvider),
+    activeServersGetter: () {
+      final Map<String, RegisteredSession> sessions =
+          ref.read(sshSessionRegistryProvider);
+      return sessions.values
+          .map((RegisteredSession s) =>
+              '${s.config.name} (${s.config.username}@${s.config.host}:${s.config.port})')
+          .toList();
+    },
+  );
 });
 
 /// True when a non-empty API key is present for the current provider.
@@ -272,6 +288,113 @@ class ChatNotifier extends Notifier<ChatState> {
       _patchMessage(streaming.id, (ChatMessage m) => m.finish());
     }
     state = state.copyWith(isStreaming: false, isConnecting: false);
+  }
+
+  /// Sends a tool execution result to the conversation and triggers AI follow-up.
+  Future<void> sendToolResult(CommandResult result) async {
+    final ToolPayload payload = ToolPayload(
+      toolType: 'ssh_exec',
+      command: result.command,
+      serverId: result.serverId,
+      serverName: result.serverName,
+      stdout: result.stdout,
+      stderr: result.stderr,
+      exitCode: result.exitCode,
+      elapsed: result.elapsed,
+    );
+
+    final ChatMessage toolMessage = ChatMessage.toolResult(
+      id: _nextId('t'),
+      payload: payload,
+    );
+
+    // Append tool message
+    final List<ChatMessage> updatedMessages = [...state.messages, toolMessage];
+    state = state.copyWith(
+      messages: updatedMessages,
+      isStreaming: true,
+      isConnecting: true,
+      clearFailure: true,
+    );
+
+    // Trigger AI response
+    await _continueAfterToolResult(updatedMessages);
+  }
+
+  /// Batch send multiple tool results (for parallel execution).
+  Future<void> sendToolResults(List<CommandResult> results) async {
+    final List<ChatMessage> toolMessages = [];
+    for (final CommandResult result in results) {
+      final ToolPayload payload = ToolPayload(
+        toolType: 'ssh_exec',
+        command: result.command,
+        serverId: result.serverId,
+        serverName: result.serverName,
+        stdout: result.stdout,
+        stderr: result.stderr,
+        exitCode: result.exitCode,
+        elapsed: result.elapsed,
+      );
+      toolMessages.add(ChatMessage.toolResult(
+        id: _nextId('t'),
+        payload: payload,
+      ));
+    }
+
+    // Append all tool messages
+    final List<ChatMessage> updatedMessages = [
+      ...state.messages,
+      ...toolMessages,
+    ];
+    state = state.copyWith(
+      messages: updatedMessages,
+      isStreaming: true,
+      isConnecting: true,
+      clearFailure: true,
+    );
+
+    // Trigger AI response once
+    await _continueAfterToolResult(updatedMessages);
+  }
+
+  /// Internal: continue conversation after tool results.
+  Future<void> _continueAfterToolResult(List<ChatMessage> messages) async {
+    final ChatMessage assistantMsg = ChatMessage.assistantStreaming(
+      id: _nextId('a'),
+    );
+
+    state = state.copyWith(
+      messages: [...messages, assistantMsg],
+    );
+
+    final StringBuffer buffer = StringBuffer();
+
+    _subscription = ref
+        .read(chatRepositoryProvider)
+        .sendMessageStream(
+          history: messages,
+          userMessage: '', // Empty user message triggers continuation based on tool results
+        )
+        .listen(
+      (String delta) {
+        buffer.write(delta);
+        if (state.isConnecting) {
+          state = state.copyWith(isConnecting: false);
+        }
+        _patchMessage(
+          assistantMsg.id,
+          (ChatMessage m) => m.copyWith(content: buffer.toString()),
+        );
+      },
+      onError: (Object error, StackTrace stack) => _onStreamError(
+        assistantMsg.id,
+        buffer.toString(),
+        error,
+        stack,
+      ),
+      onDone: () => _onStreamDone(assistantMsg.id, buffer.toString()),
+      cancelOnError: true,
+    );
   }
 
   /// Wipes the conversation and any error state.

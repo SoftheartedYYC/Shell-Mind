@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/constants/app_constants.dart';
 import '../features/ai_chat/presentation/pages/ai_chat_page.dart';
+import '../features/ai_chat/domain/entities/ai_chat_extra.dart';
 import '../features/server_config/presentation/pages/server_edit_page.dart';
 import '../features/server_config/presentation/pages/servers_page.dart';
 import '../features/settings/presentation/pages/settings_page.dart';
@@ -70,8 +71,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RoutePaths.aiChat,
                 name: RouteNames.aiChat,
-                pageBuilder: (context, state) =>
-                    _fadeThrough(const AiChatPage(), state),
+                pageBuilder: (context, state) => _fadeThrough(
+                  AiChatPage(extra: state.extra as AiChatExtra?),
+                  state,
+                ),
               ),
             ],
           ),

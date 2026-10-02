@@ -194,6 +194,16 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String serverTestHandshakeFailed(String host, int port) {
+    return '$host:$port SSH 握手失败';
+  }
+
+  @override
+  String serverTestAuthFailed(String host, int port) {
+    return '$host:$port 认证失败，请检查用户名与凭据';
+  }
+
+  @override
   String get serverLoading => '加载中';
 
   @override
@@ -515,6 +525,64 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsFooter => 'SSH + AI 助手，为现代工作流打造';
 
   @override
+  String get settingsSecretsDialogTitle => '密钥与加密';
+
+  @override
+  String get settingsSecretsDialogBody =>
+      '凭据（服务器密码、私钥和 AI 密钥）始终通过平台密钥库（Android Keystore / iOS Keychain）加密存储。该保护为设计行为，无法关闭。如需更换凭据，请前往服务器编辑页或 AI 设置中修改或删除。';
+
+  @override
+  String get settingsDialogOk => '知道了';
+
+  @override
+  String get settingsDialogClose => '关闭';
+
+  @override
+  String get settingsCacheDialogTitle => '本地缓存';
+
+  @override
+  String get settingsCacheHiveData => '应用数据';
+
+  @override
+  String get settingsCacheDownloads => '已下载的更新包';
+
+  @override
+  String get settingsCacheTotal => '合计';
+
+  @override
+  String get settingsCacheDialogHint =>
+      '清理下载缓存会删除已下载的更新安装包（APK），你的服务器、密钥和聊天记录将被保留。';
+
+  @override
+  String get settingsCacheClearDownloads => '清理下载缓存';
+
+  @override
+  String settingsCacheCleared(String freed) {
+    return '已释放 $freed';
+  }
+
+  @override
+  String get settingsClearDataTitle => '清除所有数据？';
+
+  @override
+  String get settingsClearDataMessage =>
+      '此操作将永久删除本设备上的所有服务器、存储的凭据、AI 密钥、聊天记录和偏好设置，且无法撤销。';
+
+  @override
+  String get settingsClearDataConfirm => '全部清除';
+
+  @override
+  String get settingsDataCleared => '已清除所有数据';
+
+  @override
+  String settingsClearDataFailed(String message) {
+    return '无法清除数据：$message';
+  }
+
+  @override
+  String get settingsIssueLinkCopied => '问题反馈链接已复制到剪贴板。';
+
+  @override
   String aiSettingsApiKeyTitle(String provider) {
     return '$provider API 密钥';
   }
@@ -627,6 +695,39 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get modelDescRlEnhanced => '强化学习增强';
+
+  @override
+  String get aiModelsTitle => '模型';
+
+  @override
+  String get aiModelsRefresh => '刷新模型列表';
+
+  @override
+  String get aiModelsAddCustom => '添加自定义模型';
+
+  @override
+  String get aiModelsAddCustomHint => '输入模型 ID，如 deepseek-chat';
+
+  @override
+  String get aiModelsAdd => '添加';
+
+  @override
+  String get aiModelsCustomBadge => '自定义';
+
+  @override
+  String get aiModelsFetchFailed => '模型列表获取失败，已显示内置模型';
+
+  @override
+  String get aiModelsRemoveCustom => '移除自定义模型';
+
+  @override
+  String get aiModelsEmpty => '暂无模型';
+
+  @override
+  String get aiModelsInvalidId => '请输入模型 ID';
+
+  @override
+  String get aiModelsDuplicate => '该模型已存在';
 
   @override
   String get updateVersion => '版本';
@@ -746,6 +847,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateCheckFailed => '更新检查失败。';
 
   @override
+  String get updateErrorTitleNoReleases => '暂无发布版本';
+
+  @override
+  String get updateErrorTitleGeneric => '更新检查失败';
+
+  @override
+  String get updateErrNoReleases => 'Shell-Mind 目前还没有发布任何版本。';
+
+  @override
+  String get updateErrRateLimit => '已达到 GitHub API 访问频率限制，请稍后重试。';
+
+  @override
+  String get updateErrTimeout => '请求 GitHub 超时，请检查网络后重试。';
+
+  @override
+  String get updateErrNetwork => '无法连接 GitHub，请检查网络连接。';
+
+  @override
+  String get updateErrAuth => 'GitHub 拒绝了本次更新请求。';
+
+  @override
+  String get updateErrPermission => '更新请求被拒绝。';
+
+  @override
+  String get updateErrStorage => '存储空间不足，无法完成更新。';
+
+  @override
   String get updateRetry => '重试';
 
   @override
@@ -803,4 +931,149 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get commonNothingToShow => '这里还没有内容。';
+
+  @override
+  String get commonOk => '确定';
+
+  @override
+  String get settingsAiAutoExecuteTitle => '自动执行命令';
+
+  @override
+  String get settingsAiAutoExecuteSubtitle => '允许 AI 智能体无需逐次确认即可运行解析出的命令';
+
+  @override
+  String get settingsAiMaxAutoLoopsTitle => '最大自动循环次数';
+
+  @override
+  String get settingsAiMaxAutoLoopsSub => '限制每次响应后的自动命令执行次数上限';
+
+  @override
+  String get terminalAskAi => '询问 AI';
+
+  @override
+  String get terminalAskAiSubtitle => '将选中的文本发送给 AI 助手';
+
+  @override
+  String get terminalTooltipAskAi => '询问 AI';
+
+  @override
+  String get aiChatNoConnection => '请先在服务器页面连接终端';
+
+  @override
+  String get aiChatAnalyzePrompt => '请分析上面命令的执行输出，说明结果含义并在必要时给出后续建议。';
+
+  @override
+  String get aiExecuteButton => '在服务器执行';
+
+  @override
+  String get aiExecuteTitle => '确认执行命令';
+
+  @override
+  String get aiExecuteConfirmButton => '确认执行';
+
+  @override
+  String get aiExecuteConfirmAnyway => '仍要执行';
+
+  @override
+  String get aiExecuteDangerWarning => '⚠ 危险命令警告';
+
+  @override
+  String get aiExecuteDangerText => '此命令可能具有破坏性，可能导致数据丢失或系统损坏。';
+
+  @override
+  String get aiExecuteCommandLabel => '要执行的命令：';
+
+  @override
+  String get aiExecuteTargetServer => '目标服务器：';
+
+  @override
+  String get aiExecuteSelectServer => '选择目标服务器';
+
+  @override
+  String get aiExecuteNoServer => '请先在服务器页面连接终端';
+
+  @override
+  String get aiExecuteAtLeastOne => '请至少选择一个服务器';
+
+  @override
+  String get aiExecuteSelectHint => '请选择要执行命令的服务器';
+
+  @override
+  String aiExecuteRunCount(int count) {
+    return '执行（$count）';
+  }
+
+  @override
+  String get aiExecuteSelectAll => '全选';
+
+  @override
+  String get aiExecuteClearSelection => '清除';
+
+  @override
+  String aiExecuteUptime(int hours, int minutes) {
+    return '在线 $hours 小时 $minutes 分钟';
+  }
+
+  @override
+  String get aiExecuteSuccess => '命令执行成功';
+
+  @override
+  String get aiExecuteFailed => '命令执行失败';
+
+  @override
+  String get aiToolResultCommand => '命令';
+
+  @override
+  String get aiToolResultOutput => '命令输出';
+
+  @override
+  String aiToolResultExitCode(int code) {
+    return '退出码：$code';
+  }
+
+  @override
+  String get aiToolResultElapsed => '执行耗时';
+
+  @override
+  String get aiToolResultAnalyzeButton => '让 AI 分析输出';
+
+  @override
+  String aiToolResultCollapsedShow(int total) {
+    return '展开其余 $total 行';
+  }
+
+  @override
+  String get aiToolResultExpandedHide => '收起输出';
+
+  @override
+  String get aiToolResultStderrLabel => '错误输出：';
+
+  @override
+  String get aiContextToggleAttach => '附加终端上下文';
+
+  @override
+  String get aiContextToggleDetach => '终端上下文已开启';
+
+  @override
+  String get aiContextBadge => '上下文';
+
+  @override
+  String aiContextLines(int lines) {
+    return '来自终端的 $lines 行';
+  }
+
+  @override
+  String get aiAgentAutoModeOn => '自动模式：开';
+
+  @override
+  String get aiAgentAutoModeOff => '自动模式：关';
+
+  @override
+  String get aiAgentStop => '停止自动模式';
+
+  @override
+  String get aiAgentExecuting => '执行中…';
+
+  @override
+  String get aiAgentDefaultServer => '服务器';
 }

@@ -130,6 +130,20 @@
       "port": { "type": "int" }
     }
   },
+  "serverTestHandshakeFailed": "{host}:{port} SSH handshake failed",
+  "@serverTestHandshakeFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestAuthFailed": "{host}:{port} authentication failed - check username and credentials",
+  "@serverTestAuthFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
   "serverLoading": "Loading",
   "serverSaveChanges": "Save changes",
   "serverSectionIdentity": "Identity",
@@ -272,6 +286,34 @@
   "settingsTileReportIssue": "Report an issue",
   "settingsFooter": "SSH + AI Assistant for modern workflows",
 
+  "settingsSecretsDialogTitle": "Secrets & encryption",
+  "settingsSecretsDialogBody": "Credentials — server passwords, private keys and AI API keys — are always encrypted at rest using the platform keystore (Android Keystore / iOS Keychain). This protection is by design and cannot be turned off. To change a credential, edit or remove it on the server edit page or in AI settings.",
+  "settingsDialogOk": "OK",
+  "settingsDialogClose": "Close",
+  "settingsCacheDialogTitle": "Local cache",
+  "settingsCacheHiveData": "App data",
+  "settingsCacheDownloads": "Downloaded updates",
+  "settingsCacheTotal": "Total",
+  "settingsCacheDialogHint": "Clearing the download cache removes downloaded update packages (APKs). Your servers, keys and chat history are kept.",
+  "settingsCacheClearDownloads": "Clear download cache",
+  "settingsCacheCleared": "Freed {freed}",
+  "@settingsCacheCleared": {
+    "placeholders": {
+      "freed": { "type": "String" }
+    }
+  },
+  "settingsClearDataTitle": "Clear all data?",
+  "settingsClearDataMessage": "This permanently deletes every server, stored credential, AI key, chat history and preference on this device. This action cannot be undone.",
+  "settingsClearDataConfirm": "Clear everything",
+  "settingsDataCleared": "All data cleared",
+  "settingsClearDataFailed": "Couldn't clear data: {message}",
+  "@settingsClearDataFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "settingsIssueLinkCopied": "Issue link copied to clipboard.",
+
   "aiSettingsApiKeyTitle": "{provider} API key",
   "@aiSettingsApiKeyTitle": {
     "placeholders": {
@@ -337,6 +379,18 @@
   "modelDescStandard": "Standard",
   "modelDescLightweight": "Lightweight",
   "modelDescRlEnhanced": "RL enhanced",
+  
+   "aiModelsTitle": "Model",
+   "aiModelsRefresh": "Refresh model list",
+   "aiModelsAddCustom": "Add custom model",
+   "aiModelsAddCustomHint": "Model ID, e.g. deepseek-chat",
+   "aiModelsAdd": "Add",
+   "aiModelsCustomBadge": "Custom",
+   "aiModelsFetchFailed": "Couldn't fetch models — showing the built-in list.",
+   "aiModelsRemoveCustom": "Remove custom model",
+   "aiModelsEmpty": "No models",
+   "aiModelsInvalidId": "Enter a model ID.",
+   "aiModelsDuplicate": "This model is already in the list.",
 
   "updateVersion": "Version",
   "updateSoftwareUpdate": "Software update",
@@ -399,6 +453,15 @@
   "updateNotNow": "Not now",
   "updateInstall": "Install",
   "updateCheckFailed": "The update check failed.",
+  "updateErrorTitleNoReleases": "No releases",
+  "updateErrorTitleGeneric": "Update check failed",
+  "updateErrNoReleases": "No releases have been published for Shell-Mind yet.",
+  "updateErrRateLimit": "GitHub's API rate limit was reached. Please try again later.",
+  "updateErrTimeout": "The request to GitHub timed out. Check your connection and retry.",
+  "updateErrNetwork": "Couldn't reach GitHub. Check your network connection.",
+  "updateErrAuth": "GitHub rejected the update request.",
+  "updateErrPermission": "The update request was denied.",
+  "updateErrStorage": "Not enough storage space to complete the update.",
   "updateRetry": "Retry",
   "updateDismiss": "Dismiss",
   "updateReleaseNotes": "Release {tag}",
@@ -427,5 +490,83 @@
   "commonRetry": "Retry",
   "commonLoading": "Loading...",
   "commonNoData": "No data",
-  "commonNothingToShow": "Nothing to show here yet."
+  "commonNothingToShow": "Nothing to show here yet.",
+  "commonOk": "OK",
+
+  "settingsAiAutoExecuteTitle": "Auto-execute commands",
+  "settingsAiAutoExecuteSubtitle": "Allow the AI agent to run parsed commands without asking each time",
+  "settingsAiMaxAutoLoopsTitle": "Max auto-loop iterations",
+  "settingsAiMaxAutoLoopsSub": "Cap the number of automatic command executions per response",
+
+  "terminalAskAi": "Ask AI",
+  "terminalAskAiSubtitle": "Send the selected text to the AI assistant",
+  "terminalTooltipAskAi": "Ask AI",
+
+  "aiChatNoConnection": "Connect to a server terminal first",
+  "aiChatAnalyzePrompt": "Please analyze the command output above, explain what the result means and give follow-up suggestions where needed.",
+
+  "aiExecuteButton": "Run on server",
+  "aiExecuteTitle": "Confirm command execution",
+  "aiExecuteConfirmButton": "Execute",
+  "aiExecuteConfirmAnyway": "Execute anyway",
+  "aiExecuteDangerWarning": "⚠ Dangerous command",
+  "aiExecuteDangerText": "This command may be destructive and could cause data loss or system damage.",
+  "aiExecuteCommandLabel": "Command to run:",
+  "aiExecuteTargetServer": "Target server(s):",
+  "aiExecuteSelectServer": "Select target server(s)",
+  "aiExecuteNoServer": "Please connect to a server first",
+  "aiExecuteAtLeastOne": "Select at least one server",
+  "aiExecuteSelectHint": "Choose the server(s) to run this command on",
+  "aiExecuteRunCount": "Execute ({count})",
+  "@aiExecuteRunCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiExecuteSelectAll": "Select all",
+  "aiExecuteClearSelection": "Clear",
+  "aiExecuteUptime": "{hours}h {minutes}m online",
+  "@aiExecuteUptime": {
+    "placeholders": {
+      "hours": { "type": "int" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "aiExecuteSuccess": "Command executed successfully",
+  "aiExecuteFailed": "Command execution failed",
+
+  "aiToolResultCommand": "Command",
+  "aiToolResultOutput": "Command output",
+  "aiToolResultExitCode": "Exit code: {code}",
+  "@aiToolResultExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "aiToolResultElapsed": "Time elapsed",
+  "aiToolResultAnalyzeButton": "Let AI analyze output",
+  "aiToolResultCollapsedShow": "{total} more lines",
+  "@aiToolResultCollapsedShow": {
+    "placeholders": {
+      "total": { "type": "int" }
+    }
+  },
+  "aiToolResultExpandedHide": "Hide output",
+  "aiToolResultStderrLabel": "Error output:",
+
+  "aiContextToggleAttach": "Attach terminal context",
+  "aiContextToggleDetach": "Terminal context attached",
+  "aiContextBadge": "Context",
+  "aiContextLines": "{lines} lines from terminal",
+  "@aiContextLines": {
+    "placeholders": {
+      "lines": { "type": "int" }
+    }
+  },
+
+  "aiAgentAutoModeOn": "Auto mode: on",
+  "aiAgentAutoModeOff": "Auto mode: off",
+  "aiAgentStop": "Stop auto mode",
+  "aiAgentExecuting": "Executing…",
+  "aiAgentDefaultServer": "server"
 }

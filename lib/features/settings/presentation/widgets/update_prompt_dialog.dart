@@ -323,17 +323,21 @@ class _Body extends StatelessWidget {
 
   Widget _error(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
+    final AppFailure failure = state.failure ??
+        AppFailure(
+          kind: FailureKind.unexpected,
+          message: l10n.updateCouldNotComplete,
+        );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         ErrorBanner(
-          failure: state.failure ??
-              AppFailure(
-                kind: FailureKind.unexpected,
-                message: l10n.updateCouldNotComplete,
-              ),
+          failure: failure,
           dense: true,
+          showCode: false,
+          title: updateFailureTitle(context, failure),
+          message: describeUpdateFailure(context, failure),
         ),
         const SizedBox(height: 16),
         Row(

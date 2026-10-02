@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/services/storage_inspector.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/ai_settings_section.dart';
+import '../widgets/storage_dialogs.dart';
 import '../widgets/update_section.dart';
 
 /// Settings page — clean Material 3 design with theme switching.
@@ -37,17 +40,15 @@ class SettingsPage extends ConsumerWidget {
                   icon: Icons.shield_outlined,
                   title: l10n.settingsTileSecrets,
                   value: l10n.settingsTileEncrypted,
+                  onTap: () => showSecretsInfoDialog(context),
                 ),
-                _SettingsTile(
-                  icon: Icons.storage_rounded,
-                  title: l10n.settingsTileLocalCache,
-                  value: '4.2 MB',
-                ),
+                const _LocalCacheTile(),
                 _SettingsTile(
                   icon: Icons.delete_sweep_outlined,
                   title: l10n.settingsTileClearData,
                   value: '',
                   destructive: true,
+                  onTap: () => confirmClearAllData(context, ref),
                 ),
               ],
             ),
@@ -58,11 +59,13 @@ class SettingsPage extends ConsumerWidget {
                   icon: Icons.code_rounded,
                   title: l10n.settingsTileLicenses,
                   value: '',
+                  onTap: () => showOpenSourceLicences(context),
                 ),
                 _SettingsTile(
                   icon: Icons.bug_report_outlined,
                   title: l10n.settingsTileReportIssue,
                   value: '',
+                  onTap: () => openIssueTracker(context),
                 ),
               ],
             ),
@@ -381,18 +384,60 @@ class _Section extends StatelessWidget {
 
 // ─── Tile ─────────────────────────────────────────────────────────────────
 
+/// "Local cache" tile that reports the real on-disk footprint. The size is
+/// resolved asynchronously (Hive files + cached update APKs) and refreshed
+/// after the cache dialog closes, so a cleanup is reflected immediately.
+class _LocalCacheTile extends ConsumerStatefulWidget {
+  const _LocalCacheTile();
+
+  @override
+  ConsumerState<_LocalCacheTile> createState() => _LocalCacheTileState();
+}
+
+class _LocalCacheTileState extends ConsumerState<_LocalCacheTile> {
+  String _size = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _measure();
+  }
+
+  Future<void> _measure() async {
+    final CacheBreakdown breakdown =
+        await ref.read(storageInspectorProvider).inspect();
+    if (!mounted) return;
+    setState(() => _size = formatBytes(breakdown.totalBytes));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _SettingsTile(
+      icon: Icons.storage_rounded,
+      title: AppLocalizations.of(context).settingsTileLocalCache,
+      value: _size,
+      onTap: () async {
+        await showStorageCacheDialog(context);
+        await _measure();
+      },
+    );
+  }
+}
+
 class _SettingsTile extends StatelessWidget {
   const _SettingsTile({
     required this.icon,
     required this.title,
     required this.value,
     this.destructive = false,
+    this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String value;
   final bool destructive;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -404,7 +449,7 @@ class _SettingsTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {},
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(

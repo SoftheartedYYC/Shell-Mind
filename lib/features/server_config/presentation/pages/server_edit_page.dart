@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,9 +5,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../ssh_terminal/data/ssh_connection_tester.dart';
 import '../../domain/entities/server_config.dart';
 import '../providers/server_config_providers.dart';
 
@@ -239,10 +238,19 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
     final String host = _host.text.trim();
     final int port =
         int.tryParse(_port.text.trim()) ?? AppConstants.defaultSshPort;
+    final String username = _user.text.trim();
     if (host.isEmpty) {
       setState(() {
         _testStatus = _TestStatus.failure;
         _testMessage = l10n.serverTestEnterHost;
+      });
+      return;
+    }
+    if (username.isEmpty) {
+      // A real authentication test needs a username.
+      setState(() {
+        _testStatus = _TestStatus.failure;
+        _testMessage = l10n.serverValidationUsernameRequired;
       });
       return;
     }
@@ -254,34 +262,71 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
       _testMessage = l10n.serverTestProbing(host, port);
     });
 
-    try {
-      final Socket socket = await Socket.connect(
-        host,
-        port,
-        timeout: const Duration(seconds: 6),
-      );
-      socket.destroy();
-      if (!mounted) return;
-      setState(() {
-        _testing = false;
-        _testStatus = _TestStatus.success;
-        _testMessage = l10n.serverTestReachable(host, port);
-      });
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _testing = false;
-        _testStatus = _TestStatus.failure;
-        _testMessage = _describeError(l10n, error, host, port);
-      });
+    // Resolve credentials from the *current form* so unsaved edits are tested.
+    // When editing and a secret field is left blank, fall back to the value
+    // already stored in the secure keystore ("leave blank to keep").
+    String? password =
+        _authType == AuthType.password ? _password.text : null;
+    String? privateKey =
+        _authType == AuthType.privateKey ? _privateKey.text : null;
+    String? passphrase =
+        _authType == AuthType.privateKey ? _passphrase.text : null;
+
+    final ServerConfig? existing = _existing;
+    if (_isEditing && existing != null) {
+      final SecureStorageService secure =
+          ref.read(secureStorageServiceProvider);
+      if (_authType == AuthType.password &&
+          (password == null || password.isEmpty)) {
+        password = await secure.getPassword(existing.id);
+      } else if (_authType == AuthType.privateKey &&
+          (privateKey == null || privateKey.trim().isEmpty)) {
+        privateKey = await secure.getPrivateKey(existing.id);
+        if (passphrase == null || passphrase.isEmpty) {
+          passphrase = await secure.getPassphrase(existing.id);
+        }
+      }
     }
+    if (!mounted) return;
+
+    final SshTestResult result = await SshConnectionTester.test(
+      host: host,
+      port: port,
+      username: username,
+      authType: _authType,
+      password: password,
+      privateKey: privateKey,
+      passphrase: passphrase,
+    );
+    if (!mounted) return;
+
+    setState(() {
+      _testing = false;
+      _testStatus = result == SshTestResult.success
+          ? _TestStatus.success
+          : _TestStatus.failure;
+      _testMessage = _describeResult(l10n, result, host, port);
+    });
   }
 
-  static String _describeError(
-      AppLocalizations l10n, Object error, String host, int port) {
-    if (error is TimeoutException) return l10n.serverTestTimedOut(host, port);
-    if (error is SocketException) return l10n.serverTestRefused(host, port);
-    return l10n.serverTestProbeFailed(host, port);
+  String _describeResult(
+    AppLocalizations l10n,
+    SshTestResult result,
+    String host,
+    int port,
+  ) {
+    switch (result) {
+      case SshTestResult.success:
+        return l10n.serverTestReachable(host, port);
+      case SshTestResult.unreachable:
+        return l10n.serverTestRefused(host, port);
+      case SshTestResult.timeout:
+        return l10n.serverTestTimedOut(host, port);
+      case SshTestResult.handshakeFailed:
+        return l10n.serverTestHandshakeFailed(host, port);
+      case SshTestResult.authFailed:
+        return l10n.serverTestAuthFailed(host, port);
+    }
   }
 
   // ─── Build ──────────────────────────────────────────────────────────────

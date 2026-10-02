@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../app/theme.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// A dependency-free Markdown renderer tuned for the Material theme.
 ///
@@ -16,6 +17,7 @@ class MarkdownView extends StatelessWidget {
     required this.text,
     this.selectable = true,
     this.textScale = 1.0,
+    this.onExecuteCode,
   });
 
   final String text;
@@ -25,6 +27,10 @@ class MarkdownView extends StatelessWidget {
 
   /// Multiplier applied to base font sizes.
   final double textScale;
+
+  /// Optional callback to execute code blocks.
+  /// Called with (code, language) when user clicks execute on a runnable block.
+  final void Function(String code, String language)? onExecuteCode;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +52,14 @@ class MarkdownView extends StatelessWidget {
   Widget _renderBlock(BuildContext context, _Block block) {
     return switch (block) {
       _CodeBlock(:final String lang, :final String content) =>
-        _CodeBlockView(language: lang, code: content, textScale: textScale),
+        _CodeBlockView(
+          language: lang,
+          code: content,
+          textScale: textScale,
+          onExecute: onExecuteCode != null && _isExecutableLanguage(lang)
+              ? () => onExecuteCode!(content, lang)
+              : null,
+        ),
       _Heading(:final int level, :final String content) =>
         _HeadingView(level: level, content: content, textScale: textScale),
       _ListBlock(:final List<String> items, :final bool ordered) =>
@@ -436,11 +449,13 @@ class _CodeBlockView extends StatefulWidget {
     required this.language,
     required this.code,
     required this.textScale,
+    this.onExecute,
   });
 
   final String language;
   final String code;
   final double textScale;
+  final VoidCallback? onExecute;
 
   @override
   State<_CodeBlockView> createState() => _CodeBlockViewState();
@@ -507,6 +522,21 @@ class _CodeBlockViewState extends State<_CodeBlockView> {
                   ),
                 ),
                 const Spacer(),
+                // Execute button for shell scripts
+                if (widget.onExecute != null)
+                  IconButton(
+                    icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                    tooltip: AppLocalizations.of(context).aiExecuteButton,
+                    onPressed: widget.onExecute,
+                    iconSize: 18,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    visualDensity: VisualDensity.compact,
+                    style: IconButton.styleFrom(
+                      foregroundColor: Colors.green.shade600,
+                    ),
+                  ),
+                const SizedBox(width: 4),
                 _CopyButton(copied: _copied, onTap: _copy),
               ],
             ),
@@ -533,6 +563,7 @@ class _CopyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color tint = copied ? const Color(0xFF4CAF50) : Colors.white54;
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(5),
@@ -551,7 +582,7 @@ class _CopyButton extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                copied ? 'Copied' : 'Copy',
+                copied ? l10n.aiChatCopied : l10n.aiChatCopy,
                 style: TextStyle(
                   fontSize: 10,
                   letterSpacing: 0.3,
@@ -567,6 +598,13 @@ class _CopyButton extends StatelessWidget {
 }
 
 // ─── Shared helpers ─────────────────────────────────────────────────────
+
+/// Checks if language is executable (bash/shell/sh).
+bool _isExecutableLanguage(String? lang) {
+  if (lang == null || lang.isEmpty) return false;
+  final String lower = lang.toLowerCase();
+  return lower == 'bash' || lower == 'shell' || lower == 'sh';
+}
 
 TextStyle _mono(BuildContext context, double size) => TextStyle(
       fontFamily: AppTheme.monoFont,

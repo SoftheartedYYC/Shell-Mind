@@ -131,6 +131,16 @@ class PreferencesService {
   Future<void> setSelectedModel(String providerId, String modelId) =>
       setString(AppConstants.aiModelKey(providerId), modelId);
 
+  /// User-added custom model ids for [providerId], in insertion order.
+  /// Stored as a plain string list under `ai_custom_models_<providerId>`.
+  List<String> getCustomModels(String providerId) =>
+      getStringList(AppConstants.aiCustomModelsKey(providerId)) ??
+      const <String>[];
+
+  /// Replaces the custom model list for [providerId].
+  Future<void> setCustomModels(String providerId, List<String> modelIds) =>
+      setStringList(AppConstants.aiCustomModelsKey(providerId), modelIds);
+
   /// Legacy provider/model accessors retained for backward compatibility.
   String get aiProvider =>
       getStringOr(AppConstants.prefKeyAiProvider, AppConstants.defaultAiProviderId);
@@ -145,6 +155,27 @@ class PreferencesService {
 
   Future<void> setAiTemperature(double t) =>
       setDouble(AppConstants.prefKeyAiTemperature, t.clamp(0.0, 2.0));
+
+  /// Whether the AI agent may run parsed commands autonomously.
+  bool get aiAutoExecute => getBoolOr(
+        AppConstants.prefKeyAiAutoExecute,
+        AppConstants.defaultAiAutoExecute,
+      );
+
+  Future<void> setAiAutoExecute(bool value) =>
+      setBool(AppConstants.prefKeyAiAutoExecute, value);
+
+  /// Maximum number of automatic command-execution loops per response.
+  int get aiMaxAutoLoops => getIntOr(
+        AppConstants.prefKeyAiMaxAutoLoops,
+        AppConstants.kDefaultMaxAutoLoops,
+      );
+
+  Future<void> setAiMaxAutoLoops(int value) {
+    final int clamped =
+        value.clamp(AppConstants.kMinMaxAutoLoops, AppConstants.kMaxMaxAutoLoops);
+    return setInt(AppConstants.prefKeyAiMaxAutoLoops, clamped);
+  }
 
   // ─── Session state ──────────────────────────────────────────────────────
 

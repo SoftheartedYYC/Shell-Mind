@@ -5,6 +5,7 @@ import '../../../../app/theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/chat_message.dart';
 import 'streaming_text.dart';
+import 'tool_result_bubble.dart';
 
 /// A single chat turn rendered in a clean Material style.
 ///
@@ -16,16 +17,31 @@ class MessageBubble extends StatelessWidget {
     super.key,
     required this.message,
     this.showTimestamp = true,
+    this.onExecuteCode,
+    this.onAnalyzeTool,
   });
 
   final ChatMessage message;
   final bool showTimestamp;
+  final void Function(String code, String language)? onExecuteCode;
+  final VoidCallback? onAnalyzeTool;
 
   @override
   Widget build(BuildContext context) {
+    // Special handling for tool results
+    if (message.role == MessageRole.tool && message.toolPayload != null) {
+      return ToolResultBubble(
+        payload: message.toolPayload!,
+        onAnalyze: onAnalyzeTool,
+      );
+    }
     return message.isUser
         ? _UserBubble(message: message, showTimestamp: showTimestamp)
-        : _AssistantBubble(message: message, showTimestamp: showTimestamp);
+        : _AssistantBubble(
+            message: message,
+            showTimestamp: showTimestamp,
+            onExecuteCode: onExecuteCode,
+          );
   }
 }
 
@@ -82,10 +98,11 @@ class _UserBubble extends StatelessWidget {
 // ─── Assistant bubble ───────────────────────────────────────────────────
 
 class _AssistantBubble extends StatelessWidget {
-  const _AssistantBubble({required this.message, required this.showTimestamp});
+  const _AssistantBubble({required this.message, required this.showTimestamp, this.onExecuteCode});
 
   final ChatMessage message;
   final bool showTimestamp;
+  final void Function(String code, String language)? onExecuteCode;
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +179,10 @@ class _AssistantBubble extends StatelessWidget {
                                 : colors.outlineVariant.withValues(alpha: 0.5),
                           ),
                         ),
-                        child: _AssistantBody(message: message),
+                        child: _AssistantBody(
+                          message: message,
+                          onExecuteCode: onExecuteCode,
+                        ),
                       ),
                       if (showTimestamp || !message.isStreaming)
                         Padding(
@@ -182,9 +202,10 @@ class _AssistantBubble extends StatelessWidget {
 }
 
 class _AssistantBody extends StatelessWidget {
-  const _AssistantBody({required this.message});
+  const _AssistantBody({required this.message, this.onExecuteCode});
 
   final ChatMessage message;
+  final void Function(String code, String language)? onExecuteCode;
 
   @override
   Widget build(BuildContext context) {
@@ -197,6 +218,7 @@ class _AssistantBody extends StatelessWidget {
       text: message.content,
       isStreaming: message.isStreaming,
       selectable: true,
+      onExecuteCode: onExecuteCode,
     );
   }
 }

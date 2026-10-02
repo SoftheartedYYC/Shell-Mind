@@ -6,8 +6,8 @@ abstract final class AppConstants {
   // ─── Identity ───────────────────────────────────────────────────────────
   static const String appName = 'Shell-Mind';
   static const String appTagline = 'SSH · AI · Command';
-  static const String appVersion = '1.0.0';
-  static const int appBuildNumber = 1;
+  static const String appVersion = '1.2.0';
+  static const int appBuildNumber = 3;
 
   /// Emitted at the top of exported terminal transcripts.
   static const String userAgent = '$appName/$appVersion';
@@ -38,6 +38,13 @@ abstract final class AppConstants {
   /// providers (OpenAI, DeepSeek, Qwen, GLM, MiMo) are OpenAI-compatible and
   /// share this endpoint shape.
   static const String aiChatCompletionsPath = '/chat/completions';
+
+  /// Model catalogue path appended to a provider's base URL for the
+  /// OpenAI-compatible `GET /models` listing endpoint.
+  static const String aiModelsPath = '/models';
+
+  /// Timeout for the (non-streaming) model catalogue request.
+  static const Duration modelsRequestTimeout = Duration(seconds: 10);
 
   /// Provider used before the user makes an explicit choice.
   static const String defaultAiProviderId = 'openai';
@@ -104,8 +111,18 @@ abstract final class AppConstants {
   /// Currently selected AI provider id.
   static const String prefKeyAiSelectedProvider = 'pref.ai_selected_provider';
 
+  /// When true, the AI agent may run parsed commands autonomously.
+  static const String prefKeyAiAutoExecute = 'pref.ai_auto_execute';
+
+  /// Upper bound on automatic command-execution loops per assistant response.
+  static const String prefKeyAiMaxAutoLoops = 'pref.ai_max_auto_loops';
+
   /// Per-provider remembered model: `pref.ai_model_<providerId>`.
   static String aiModelKey(String providerId) => 'pref.ai_model_$providerId';
+
+  /// Per-provider user-added custom model ids: `ai_custom_models_<providerId>`.
+  static String aiCustomModelsKey(String providerId) =>
+      'ai_custom_models_$providerId';
   static const String prefKeyLastOpenedServerId = 'pref.last_server_id';
   static const String prefKeyOnboardingComplete = 'pref.onboarding_complete';
   static const String prefKeyLocale = 'pref.locale';
@@ -115,6 +132,18 @@ abstract final class AppConstants {
   static const double minTerminalFontSize = 9.0;
   static const double maxTerminalFontSize = 22.0;
   static const double defaultAiTemperature = 0.4;
+
+  // ─── AI agent auto-execution defaults ───────────────────────────────────
+  /// Auto-execute is opt-in and therefore defaults to off.
+  static const bool defaultAiAutoExecute = false;
+
+  /// Default cap on automatic command-execution loops.
+  static const int kDefaultMaxAutoLoops = 10;
+  static const int kMinMaxAutoLoops = 1;
+  static const int kMaxMaxAutoLoops = 20;
+
+  /// Default per-command execution timeout.
+  static const int kDefaultCommandTimeoutSeconds = 30;
 
   // ─── Layout ─────────────────────────────────────────────────────────────
   static const double gutterSm = 12;

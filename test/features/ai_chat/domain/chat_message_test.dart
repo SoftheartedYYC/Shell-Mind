@@ -4,22 +4,25 @@ import 'package:shell_mind/features/ai_chat/domain/entities/chat_message.dart';
 void main() {
   group('MessageRole', () {
     test('has expected values', () {
-      expect(MessageRole.values.length, 3);
+      expect(MessageRole.values.length, 4);
       expect(MessageRole.system.index, 0);
       expect(MessageRole.user.index, 1);
       expect(MessageRole.assistant.index, 2);
+      expect(MessageRole.tool.index, 3);
     });
 
     test('wire returns name', () {
       expect(MessageRole.system.wire, 'system');
       expect(MessageRole.user.wire, 'user');
       expect(MessageRole.assistant.wire, 'assistant');
+      expect(MessageRole.tool.wire, 'tool');
     });
 
     test('fromWire parses correctly', () {
       expect(MessageRole.fromWire('system'), MessageRole.system);
       expect(MessageRole.fromWire('user'), MessageRole.user);
       expect(MessageRole.fromWire('assistant'), MessageRole.assistant);
+      expect(MessageRole.fromWire('tool'), MessageRole.tool);
     });
 
     test('fromWire falls back to user for unknown', () {

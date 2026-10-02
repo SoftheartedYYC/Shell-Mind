@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../shared/ssh/ssh_session_registry.dart';
 import '../../../server_config/domain/entities/server_config.dart';
 import '../../../server_config/presentation/providers/server_config_providers.dart';
 import '../../data/ssh_client_manager.dart';
@@ -40,12 +41,26 @@ final AutoDisposeNotifierProvider<SshConnectionController, SshConnectionState>
 );
 
 class SshConnectionController extends AutoDisposeNotifier<SshConnectionState> {
+  /// Server id of the session this controller currently owns, used to
+  /// unregister from the global [SshSessionRegistry] on disconnect/dispose.
+  String? _activeServerId;
+
   @override
   SshConnectionState build() {
     final SshRepository repo = ref.watch(sshRepositoryProvider);
     final StreamSubscription<SshConnectionState> sub =
         repo.stateStream.listen((SshConnectionState next) => state = next);
     ref.onDispose(sub.cancel);
+    // Safety net: if the terminal page is torn down without an explicit
+    // disconnect, drop our registry entry so no stale session lingers. The
+    // registry's own state-stream watcher usually beats this, but the two are
+    // idempotent.
+    ref.onDispose(() {
+      final String? id = _activeServerId;
+      if (id != null) {
+        ref.read(sshSessionRegistryProvider.notifier).unregister(id);
+      }
+    });
     return repo.currentState;
   }
 
@@ -108,6 +123,14 @@ class SshConnectionController extends AutoDisposeNotifier<SshConnectionState> {
 
     await result.when(
       success: (_) async {
+        // Publish the live session to the global registry so other modules
+        // (e.g. the AI assistant) can discover and run commands on it.
+        _activeServerId = config.id;
+        ref.read(sshSessionRegistryProvider.notifier).register(
+              config.id,
+              ref.read(sshClientManagerProvider),
+              config,
+            );
         // Stamp lastConnectedAt so the fleet list reflects the fresh session.
         await ref
             .read(serverConfigListProvider.notifier)
@@ -128,6 +151,15 @@ class SshConnectionController extends AutoDisposeNotifier<SshConnectionState> {
   }
 
   /// Tears the shell down and returns to the idle state.
-  Future<void> disconnect() =>
-      ref.read(sshRepositoryProvider).disconnect();
+  Future<void> disconnect() {
+    // Drop the registry entry eagerly; the manager's state stream will also
+    // emit `disconnected`, but unregistering here keeps the two in lockstep
+    // and makes the intent explicit.
+    final String? id = _activeServerId;
+    if (id != null) {
+      ref.read(sshSessionRegistryProvider.notifier).unregister(id);
+      _activeServerId = null;
+    }
+    return ref.read(sshRepositoryProvider).disconnect();
+  }
 }

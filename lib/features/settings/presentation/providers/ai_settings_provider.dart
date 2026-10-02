@@ -5,6 +5,7 @@ import '../../../../core/storage/preferences_service.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../ai_chat/domain/entities/ai_provider.dart';
 import '../../../ai_chat/presentation/providers/chat_providers.dart';
+import '../../../ai_chat/presentation/providers/models_provider.dart';
 
 /// UI state for the AI settings section (multi-provider aware).
 class AiSettingsState {
@@ -14,6 +15,8 @@ class AiSettingsState {
     this.hasKey = false,
     this.maskedKey,
     this.temperature = AppConstants.defaultAiTemperature,
+    this.aiAutoExecute = AppConstants.defaultAiAutoExecute,
+    this.aiMaxAutoLoops = AppConstants.kDefaultMaxAutoLoops,
     this.configuredProviderIds = const <String>{},
     this.isLoading = true,
   });
@@ -27,6 +30,12 @@ class AiSettingsState {
   final bool hasKey;
   final String? maskedKey;
   final double temperature;
+
+  /// Whether the AI agent may run parsed commands autonomously.
+  final bool aiAutoExecute;
+
+  /// Cap on automatic command-execution loops per assistant response.
+  final int aiMaxAutoLoops;
 
   /// Ids of providers that already have a stored key — drives the green tick
   /// in the provider list.
@@ -43,6 +52,8 @@ class AiSettingsState {
     String? maskedKey,
     bool clearKey = false,
     double? temperature,
+    bool? aiAutoExecute,
+    int? aiMaxAutoLoops,
     Set<String>? configuredProviderIds,
     bool? isLoading,
   }) =>
@@ -52,6 +63,8 @@ class AiSettingsState {
         hasKey: hasKey ?? this.hasKey,
         maskedKey: clearKey ? null : (maskedKey ?? this.maskedKey),
         temperature: temperature ?? this.temperature,
+        aiAutoExecute: aiAutoExecute ?? this.aiAutoExecute,
+        aiMaxAutoLoops: aiMaxAutoLoops ?? this.aiMaxAutoLoops,
         configuredProviderIds: configuredProviderIds ?? this.configuredProviderIds,
         isLoading: isLoading ?? this.isLoading,
       );
@@ -84,6 +97,8 @@ class AiSettingsController extends Notifier<AiSettingsState> {
       hasKey: key != null && key.trim().isNotEmpty,
       maskedKey: key == null ? null : maskApiKey(key),
       temperature: _prefs.aiTemperature,
+      aiAutoExecute: _prefs.aiAutoExecute,
+      aiMaxAutoLoops: _prefs.aiMaxAutoLoops,
       configuredProviderIds: configured,
       isLoading: false,
     );
@@ -164,6 +179,21 @@ class AiSettingsController extends Notifier<AiSettingsState> {
     ref.invalidate(aiServiceProvider);
   }
 
+  /// Toggles the AI agent's autonomous command-execution mode.
+  Future<void> setAiAutoExecute(bool value) async {
+    await _prefs.setAiAutoExecute(value);
+    state = state.copyWith(aiAutoExecute: value);
+  }
+
+  /// Sets the cap on automatic command-execution loops (clamped to the
+  /// [AppConstants.kMinMaxAutoLoops, AppConstants.kMaxMaxAutoLoops] range).
+  Future<void> setMaxAutoLoops(int value) async {
+    final int clamped =
+        value.clamp(AppConstants.kMinMaxAutoLoops, AppConstants.kMaxMaxAutoLoops);
+    await _prefs.setAiMaxAutoLoops(clamped);
+    state = state.copyWith(aiMaxAutoLoops: clamped);
+  }
+
   /// The chat page caches provider/model/key status; keep them in sync.
   void _invalidateDependents() {
     ref.invalidate(selectedProviderProvider);
@@ -171,6 +201,10 @@ class AiSettingsController extends Notifier<AiSettingsState> {
     ref.invalidate(apiKeyProvider);
     ref.invalidate(aiServiceProvider);
     ref.invalidate(apiKeyConfiguredProvider);
+    // Model catalogue depends on provider + key + custom list; refresh it so a
+    // provider switch or key change re-fetches the live `/models` listing.
+    ref.invalidate(customModelsProvider);
+    ref.invalidate(availableModelsProvider);
   }
 }
 

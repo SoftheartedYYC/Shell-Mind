@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme.dart';
+import '../../../../core/services/update_service.dart';
+import '../../../../core/utils/result.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// Reusable UI primitives shared by the update panel in Settings
@@ -639,3 +641,39 @@ class UpdateCommandLine extends StatelessWidget {
     );
   }
 }
+
+// ─── Localised error mapping ──────────────────────────────────
+
+/// Maps a transport-level [AppFailure] from the update flow onto a short,
+/// user-facing heading. The raw [FailureKind] enum name (e.g. `NOTFOUND`) is
+/// never shown — only translated copy.
+String updateFailureTitle(BuildContext context, AppFailure failure) {
+  final AppLocalizations l10n = AppLocalizations.of(context);
+  if (_isNoReleases(failure)) return l10n.updateErrorTitleNoReleases;
+  return l10n.updateErrorTitleGeneric;
+}
+
+/// Maps a transport-level [AppFailure] from the update flow onto a full,
+/// localised explanation. Prefers the machine-readable `reason` marker set by
+/// [UpdateService], then falls back to the [FailureKind].
+String describeUpdateFailure(BuildContext context, AppFailure failure) {
+  final AppLocalizations l10n = AppLocalizations.of(context);
+  final Object? reason = failure.details['reason'];
+
+  if (reason == UpdateFailureReason.noReleases) return l10n.updateErrNoReleases;
+  if (reason == UpdateFailureReason.rateLimit) return l10n.updateErrRateLimit;
+
+  return switch (failure.kind) {
+    FailureKind.notFound => l10n.updateErrNoReleases,
+    FailureKind.timeout => l10n.updateErrTimeout,
+    FailureKind.network => l10n.updateErrNetwork,
+    FailureKind.auth => l10n.updateErrAuth,
+    FailureKind.permission => l10n.updateErrPermission,
+    FailureKind.storage => l10n.updateErrStorage,
+    _ => l10n.updateCheckFailed,
+  };
+}
+
+bool _isNoReleases(AppFailure failure) =>
+    failure.details['reason'] == UpdateFailureReason.noReleases ||
+    failure.kind == FailureKind.notFound;

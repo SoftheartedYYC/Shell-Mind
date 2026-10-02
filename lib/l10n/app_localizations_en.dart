@@ -198,6 +198,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String serverTestHandshakeFailed(String host, int port) {
+    return '$host:$port SSH handshake failed';
+  }
+
+  @override
+  String serverTestAuthFailed(String host, int port) {
+    return '$host:$port authentication failed - check username and credentials';
+  }
+
+  @override
   String get serverLoading => 'Loading';
 
   @override
@@ -522,6 +532,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsFooter => 'SSH + AI Assistant for modern workflows';
 
   @override
+  String get settingsSecretsDialogTitle => 'Secrets & encryption';
+
+  @override
+  String get settingsSecretsDialogBody =>
+      'Credentials — server passwords, private keys and AI API keys — are always encrypted at rest using the platform keystore (Android Keystore / iOS Keychain). This protection is by design and cannot be turned off. To change a credential, edit or remove it on the server edit page or in AI settings.';
+
+  @override
+  String get settingsDialogOk => 'OK';
+
+  @override
+  String get settingsDialogClose => 'Close';
+
+  @override
+  String get settingsCacheDialogTitle => 'Local cache';
+
+  @override
+  String get settingsCacheHiveData => 'App data';
+
+  @override
+  String get settingsCacheDownloads => 'Downloaded updates';
+
+  @override
+  String get settingsCacheTotal => 'Total';
+
+  @override
+  String get settingsCacheDialogHint =>
+      'Clearing the download cache removes downloaded update packages (APKs). Your servers, keys and chat history are kept.';
+
+  @override
+  String get settingsCacheClearDownloads => 'Clear download cache';
+
+  @override
+  String settingsCacheCleared(String freed) {
+    return 'Freed $freed';
+  }
+
+  @override
+  String get settingsClearDataTitle => 'Clear all data?';
+
+  @override
+  String get settingsClearDataMessage =>
+      'This permanently deletes every server, stored credential, AI key, chat history and preference on this device. This action cannot be undone.';
+
+  @override
+  String get settingsClearDataConfirm => 'Clear everything';
+
+  @override
+  String get settingsDataCleared => 'All data cleared';
+
+  @override
+  String settingsClearDataFailed(String message) {
+    return 'Couldn\'t clear data: $message';
+  }
+
+  @override
+  String get settingsIssueLinkCopied => 'Issue link copied to clipboard.';
+
+  @override
   String aiSettingsApiKeyTitle(String provider) {
     return '$provider API key';
   }
@@ -637,6 +705,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get modelDescRlEnhanced => 'RL enhanced';
+
+  @override
+  String get aiModelsTitle => 'Model';
+
+  @override
+  String get aiModelsRefresh => 'Refresh model list';
+
+  @override
+  String get aiModelsAddCustom => 'Add custom model';
+
+  @override
+  String get aiModelsAddCustomHint => 'Model ID, e.g. deepseek-chat';
+
+  @override
+  String get aiModelsAdd => 'Add';
+
+  @override
+  String get aiModelsCustomBadge => 'Custom';
+
+  @override
+  String get aiModelsFetchFailed =>
+      'Couldn\'t fetch models — showing the built-in list.';
+
+  @override
+  String get aiModelsRemoveCustom => 'Remove custom model';
+
+  @override
+  String get aiModelsEmpty => 'No models';
+
+  @override
+  String get aiModelsInvalidId => 'Enter a model ID.';
+
+  @override
+  String get aiModelsDuplicate => 'This model is already in the list.';
 
   @override
   String get updateVersion => 'Version';
@@ -757,6 +859,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateCheckFailed => 'The update check failed.';
 
   @override
+  String get updateErrorTitleNoReleases => 'No releases';
+
+  @override
+  String get updateErrorTitleGeneric => 'Update check failed';
+
+  @override
+  String get updateErrNoReleases =>
+      'No releases have been published for Shell-Mind yet.';
+
+  @override
+  String get updateErrRateLimit =>
+      'GitHub\'s API rate limit was reached. Please try again later.';
+
+  @override
+  String get updateErrTimeout =>
+      'The request to GitHub timed out. Check your connection and retry.';
+
+  @override
+  String get updateErrNetwork =>
+      'Couldn\'t reach GitHub. Check your network connection.';
+
+  @override
+  String get updateErrAuth => 'GitHub rejected the update request.';
+
+  @override
+  String get updateErrPermission => 'The update request was denied.';
+
+  @override
+  String get updateErrStorage =>
+      'Not enough storage space to complete the update.';
+
+  @override
   String get updateRetry => 'Retry';
 
   @override
@@ -814,4 +948,155 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonNothingToShow => 'Nothing to show here yet.';
+
+  @override
+  String get commonOk => 'OK';
+
+  @override
+  String get settingsAiAutoExecuteTitle => 'Auto-execute commands';
+
+  @override
+  String get settingsAiAutoExecuteSubtitle =>
+      'Allow the AI agent to run parsed commands without asking each time';
+
+  @override
+  String get settingsAiMaxAutoLoopsTitle => 'Max auto-loop iterations';
+
+  @override
+  String get settingsAiMaxAutoLoopsSub =>
+      'Cap the number of automatic command executions per response';
+
+  @override
+  String get terminalAskAi => 'Ask AI';
+
+  @override
+  String get terminalAskAiSubtitle =>
+      'Send the selected text to the AI assistant';
+
+  @override
+  String get terminalTooltipAskAi => 'Ask AI';
+
+  @override
+  String get aiChatNoConnection => 'Connect to a server terminal first';
+
+  @override
+  String get aiChatAnalyzePrompt =>
+      'Please analyze the command output above, explain what the result means and give follow-up suggestions where needed.';
+
+  @override
+  String get aiExecuteButton => 'Run on server';
+
+  @override
+  String get aiExecuteTitle => 'Confirm command execution';
+
+  @override
+  String get aiExecuteConfirmButton => 'Execute';
+
+  @override
+  String get aiExecuteConfirmAnyway => 'Execute anyway';
+
+  @override
+  String get aiExecuteDangerWarning => '⚠ Dangerous command';
+
+  @override
+  String get aiExecuteDangerText =>
+      'This command may be destructive and could cause data loss or system damage.';
+
+  @override
+  String get aiExecuteCommandLabel => 'Command to run:';
+
+  @override
+  String get aiExecuteTargetServer => 'Target server(s):';
+
+  @override
+  String get aiExecuteSelectServer => 'Select target server(s)';
+
+  @override
+  String get aiExecuteNoServer => 'Please connect to a server first';
+
+  @override
+  String get aiExecuteAtLeastOne => 'Select at least one server';
+
+  @override
+  String get aiExecuteSelectHint =>
+      'Choose the server(s) to run this command on';
+
+  @override
+  String aiExecuteRunCount(int count) {
+    return 'Execute ($count)';
+  }
+
+  @override
+  String get aiExecuteSelectAll => 'Select all';
+
+  @override
+  String get aiExecuteClearSelection => 'Clear';
+
+  @override
+  String aiExecuteUptime(int hours, int minutes) {
+    return '${hours}h ${minutes}m online';
+  }
+
+  @override
+  String get aiExecuteSuccess => 'Command executed successfully';
+
+  @override
+  String get aiExecuteFailed => 'Command execution failed';
+
+  @override
+  String get aiToolResultCommand => 'Command';
+
+  @override
+  String get aiToolResultOutput => 'Command output';
+
+  @override
+  String aiToolResultExitCode(int code) {
+    return 'Exit code: $code';
+  }
+
+  @override
+  String get aiToolResultElapsed => 'Time elapsed';
+
+  @override
+  String get aiToolResultAnalyzeButton => 'Let AI analyze output';
+
+  @override
+  String aiToolResultCollapsedShow(int total) {
+    return '$total more lines';
+  }
+
+  @override
+  String get aiToolResultExpandedHide => 'Hide output';
+
+  @override
+  String get aiToolResultStderrLabel => 'Error output:';
+
+  @override
+  String get aiContextToggleAttach => 'Attach terminal context';
+
+  @override
+  String get aiContextToggleDetach => 'Terminal context attached';
+
+  @override
+  String get aiContextBadge => 'Context';
+
+  @override
+  String aiContextLines(int lines) {
+    return '$lines lines from terminal';
+  }
+
+  @override
+  String get aiAgentAutoModeOn => 'Auto mode: on';
+
+  @override
+  String get aiAgentAutoModeOff => 'Auto mode: off';
+
+  @override
+  String get aiAgentStop => 'Stop auto mode';
+
+  @override
+  String get aiAgentExecuting => 'Executing…';
+
+  @override
+  String get aiAgentDefaultServer => 'server';
 }

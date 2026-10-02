@@ -34,6 +34,23 @@ String formatDuration(Duration d) {
   return h > 0 ? '$h:$m:$s' : '$m:$s';
 }
 
+/// Formats an elapsed [Duration] as a compact, human-friendly execution time.
+///
+/// Tuned for the sub-minute durations a shell command typically takes:
+/// `850 ms`, `1.24 s`, `2 min 5 s`. Returns `—` for negative input so call
+/// sites can render a placeholder instead of a bogus value.
+String formatElapsed(Duration d) {
+  if (d.isNegative) return '—';
+  final int ms = d.inMilliseconds;
+  if (ms < 1000) return '$ms ms';
+  if (d.inMinutes < 1) {
+    return '${(ms / 1000).toStringAsFixed(2)} s';
+  }
+  final int m = d.inMinutes;
+  final int s = d.inSeconds % 60;
+  return '$m min $s s';
+}
+
 /// Relative "time ago" phrasing for release timestamps (`3 days ago`).
 String formatTimeAgo(DateTime time, {DateTime? now}) {
   final Duration diff = (now ?? DateTime.now()).difference(time);

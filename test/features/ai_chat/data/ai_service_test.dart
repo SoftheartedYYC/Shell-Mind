@@ -553,4 +553,160 @@ void main() {
       expect(ex.toString(), contains('Key expired'));
     });
   });
+
+  group('AiService.fetchModels', () {
+    void stubGet(Object? data, {int statusCode = 200}) {
+      when(() => mockClient.get<dynamic>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenAnswer((_) async => Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            data: data,
+            statusCode: statusCode,
+          ));
+    }
+
+    test('returns auth failure when API key is missing', () async {
+      service = buildService(apiKey: '  ');
+      final result = await service.fetchModels();
+      expect(result.isFailure, isTrue);
+      expect(result.failureOrNull!.failure.kind, FailureKind.auth);
+    });
+
+    test('parses data[*].id into a string list', () async {
+      stubGet({
+        'data': [
+          {'id': 'gpt-4o-mini', 'object': 'model'},
+          {'id': 'gpt-4o'},
+          {'id': 'gpt-3.5-turbo'},
+        ],
+      });
+      final result = await service.fetchModels();
+      expect(result.isSuccess, isTrue);
+      expect(result.valueOrNull, <String>[
+        'gpt-4o-mini',
+        'gpt-4o',
+        'gpt-3.5-turbo',
+      ]);
+    });
+
+    test('skips non-string / blank / duplicate ids', () async {
+      stubGet({
+        'data': [
+          {'id': 'a'},
+          {'id': 'a'},
+          {'id': '  '},
+          {'id': 42},
+          {'nope': true},
+          'not-a-map',
+          {'id': 'b'},
+        ],
+      });
+      final result = await service.fetchModels();
+      expect(result.valueOrNull, <String>['a', 'b']);
+    });
+
+    test('returns empty success when data is missing', () async {
+      stubGet({'object': 'list'});
+      final result = await service.fetchModels();
+      expect(result.isSuccess, isTrue);
+      expect(result.valueOrNull, isEmpty);
+    });
+
+    test('returns empty success when data is not a list', () async {
+      stubGet({'data': 'unexpected'});
+      final result = await service.fetchModels();
+      expect(result.isSuccess, isTrue);
+      expect(result.valueOrNull, isEmpty);
+    });
+
+    test('returns empty success when body is not a map', () async {
+      stubGet('plain string body');
+      final result = await service.fetchModels();
+      expect(result.isSuccess, isTrue);
+      expect(result.valueOrNull, isEmpty);
+    });
+
+    test('targets the {baseUrl}/models endpoint', () async {
+      stubGet({
+        'data': [
+          {'id': 'x'}
+        ],
+      });
+      await service.fetchModels();
+      final captured = verify(() => mockClient.get<dynamic>(
+            captureAny(),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).captured;
+      expect(
+        captured.first,
+        '${AiProviders.openai.baseUrl}${AppConstants.aiModelsPath}',
+      );
+    });
+
+    test('sends the Bearer authorization header', () async {
+      stubGet({
+        'data': [
+          {'id': 'x'}
+        ],
+      });
+      await service.fetchModels();
+      final captured = verify(() => mockClient.get<dynamic>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            options: captureAny(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).captured;
+      final options = captured.first as Options;
+      expect(options.headers!['Authorization'], 'Bearer sk-test-key');
+    });
+
+    test('maps a 401 DioException to an auth failure', () async {
+      when(() => mockClient.get<dynamic>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenThrow(DioException(
+            requestOptions: RequestOptions(path: '/models'),
+            type: DioExceptionType.badResponse,
+            response: Response(
+              requestOptions: RequestOptions(path: ''),
+              statusCode: 401,
+              data: {
+                'error': {'message': 'Invalid API key'}
+              },
+            ),
+          ));
+
+      final result = await service.fetchModels();
+      expect(result.isFailure, isTrue);
+      expect(result.failureOrNull!.failure.kind, FailureKind.auth);
+      expect(result.failureOrNull!.failure.message, 'Invalid API key');
+    });
+
+    test('maps a connection error to a network failure', () async {
+      when(() => mockClient.get<dynamic>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenThrow(DioException(
+            requestOptions: RequestOptions(path: '/models'),
+            type: DioExceptionType.connectionError,
+          ));
+
+      final result = await service.fetchModels();
+      expect(result.failureOrNull!.failure.kind, FailureKind.network);
+    });
+  });
 }

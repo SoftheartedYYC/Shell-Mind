@@ -404,6 +404,18 @@ abstract class AppLocalizations {
   /// **'{host}:{port} — probe failed'**
   String serverTestProbeFailed(String host, int port);
 
+  /// No description provided for @serverTestHandshakeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{host}:{port} SSH handshake failed'**
+  String serverTestHandshakeFailed(String host, int port);
+
+  /// No description provided for @serverTestAuthFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{host}:{port} authentication failed - check username and credentials'**
+  String serverTestAuthFailed(String host, int port);
+
   /// No description provided for @serverLoading.
   ///
   /// In en, this message translates to:
@@ -1016,6 +1028,108 @@ abstract class AppLocalizations {
   /// **'SSH + AI Assistant for modern workflows'**
   String get settingsFooter;
 
+  /// No description provided for @settingsSecretsDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Secrets & encryption'**
+  String get settingsSecretsDialogTitle;
+
+  /// No description provided for @settingsSecretsDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Credentials — server passwords, private keys and AI API keys — are always encrypted at rest using the platform keystore (Android Keystore / iOS Keychain). This protection is by design and cannot be turned off. To change a credential, edit or remove it on the server edit page or in AI settings.'**
+  String get settingsSecretsDialogBody;
+
+  /// No description provided for @settingsDialogOk.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get settingsDialogOk;
+
+  /// No description provided for @settingsDialogClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get settingsDialogClose;
+
+  /// No description provided for @settingsCacheDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local cache'**
+  String get settingsCacheDialogTitle;
+
+  /// No description provided for @settingsCacheHiveData.
+  ///
+  /// In en, this message translates to:
+  /// **'App data'**
+  String get settingsCacheHiveData;
+
+  /// No description provided for @settingsCacheDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded updates'**
+  String get settingsCacheDownloads;
+
+  /// No description provided for @settingsCacheTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get settingsCacheTotal;
+
+  /// No description provided for @settingsCacheDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Clearing the download cache removes downloaded update packages (APKs). Your servers, keys and chat history are kept.'**
+  String get settingsCacheDialogHint;
+
+  /// No description provided for @settingsCacheClearDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear download cache'**
+  String get settingsCacheClearDownloads;
+
+  /// No description provided for @settingsCacheCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Freed {freed}'**
+  String settingsCacheCleared(String freed);
+
+  /// No description provided for @settingsClearDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all data?'**
+  String get settingsClearDataTitle;
+
+  /// No description provided for @settingsClearDataMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This permanently deletes every server, stored credential, AI key, chat history and preference on this device. This action cannot be undone.'**
+  String get settingsClearDataMessage;
+
+  /// No description provided for @settingsClearDataConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear everything'**
+  String get settingsClearDataConfirm;
+
+  /// No description provided for @settingsDataCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'All data cleared'**
+  String get settingsDataCleared;
+
+  /// No description provided for @settingsClearDataFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t clear data: {message}'**
+  String settingsClearDataFailed(String message);
+
+  /// No description provided for @settingsIssueLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue link copied to clipboard.'**
+  String get settingsIssueLinkCopied;
+
   /// No description provided for @aiSettingsApiKeyTitle.
   ///
   /// In en, this message translates to:
@@ -1219,6 +1333,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'RL enhanced'**
   String get modelDescRlEnhanced;
+
+  /// No description provided for @aiModelsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get aiModelsTitle;
+
+  /// No description provided for @aiModelsRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh model list'**
+  String get aiModelsRefresh;
+
+  /// No description provided for @aiModelsAddCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom model'**
+  String get aiModelsAddCustom;
+
+  /// No description provided for @aiModelsAddCustomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Model ID, e.g. deepseek-chat'**
+  String get aiModelsAddCustomHint;
+
+  /// No description provided for @aiModelsAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get aiModelsAdd;
+
+  /// No description provided for @aiModelsCustomBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get aiModelsCustomBadge;
+
+  /// No description provided for @aiModelsFetchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t fetch models — showing the built-in list.'**
+  String get aiModelsFetchFailed;
+
+  /// No description provided for @aiModelsRemoveCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove custom model'**
+  String get aiModelsRemoveCustom;
+
+  /// No description provided for @aiModelsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No models'**
+  String get aiModelsEmpty;
+
+  /// No description provided for @aiModelsInvalidId.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a model ID.'**
+  String get aiModelsInvalidId;
+
+  /// No description provided for @aiModelsDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'This model is already in the list.'**
+  String get aiModelsDuplicate;
 
   /// No description provided for @updateVersion.
   ///
@@ -1430,6 +1610,60 @@ abstract class AppLocalizations {
   /// **'The update check failed.'**
   String get updateCheckFailed;
 
+  /// No description provided for @updateErrorTitleNoReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'No releases'**
+  String get updateErrorTitleNoReleases;
+
+  /// No description provided for @updateErrorTitleGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Update check failed'**
+  String get updateErrorTitleGeneric;
+
+  /// No description provided for @updateErrNoReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'No releases have been published for Shell-Mind yet.'**
+  String get updateErrNoReleases;
+
+  /// No description provided for @updateErrRateLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub\'s API rate limit was reached. Please try again later.'**
+  String get updateErrRateLimit;
+
+  /// No description provided for @updateErrTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The request to GitHub timed out. Check your connection and retry.'**
+  String get updateErrTimeout;
+
+  /// No description provided for @updateErrNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach GitHub. Check your network connection.'**
+  String get updateErrNetwork;
+
+  /// No description provided for @updateErrAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub rejected the update request.'**
+  String get updateErrAuth;
+
+  /// No description provided for @updateErrPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'The update request was denied.'**
+  String get updateErrPermission;
+
+  /// No description provided for @updateErrStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough storage space to complete the update.'**
+  String get updateErrStorage;
+
   /// No description provided for @updateRetry.
   ///
   /// In en, this message translates to:
@@ -1537,6 +1771,276 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nothing to show here yet.'**
   String get commonNothingToShow;
+
+  /// No description provided for @commonOk.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get commonOk;
+
+  /// No description provided for @settingsAiAutoExecuteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-execute commands'**
+  String get settingsAiAutoExecuteTitle;
+
+  /// No description provided for @settingsAiAutoExecuteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow the AI agent to run parsed commands without asking each time'**
+  String get settingsAiAutoExecuteSubtitle;
+
+  /// No description provided for @settingsAiMaxAutoLoopsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Max auto-loop iterations'**
+  String get settingsAiMaxAutoLoopsTitle;
+
+  /// No description provided for @settingsAiMaxAutoLoopsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Cap the number of automatic command executions per response'**
+  String get settingsAiMaxAutoLoopsSub;
+
+  /// No description provided for @terminalAskAi.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask AI'**
+  String get terminalAskAi;
+
+  /// No description provided for @terminalAskAiSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send the selected text to the AI assistant'**
+  String get terminalAskAiSubtitle;
+
+  /// No description provided for @terminalTooltipAskAi.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask AI'**
+  String get terminalTooltipAskAi;
+
+  /// No description provided for @aiChatNoConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to a server terminal first'**
+  String get aiChatNoConnection;
+
+  /// No description provided for @aiChatAnalyzePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Please analyze the command output above, explain what the result means and give follow-up suggestions where needed.'**
+  String get aiChatAnalyzePrompt;
+
+  /// No description provided for @aiExecuteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Run on server'**
+  String get aiExecuteButton;
+
+  /// No description provided for @aiExecuteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm command execution'**
+  String get aiExecuteTitle;
+
+  /// No description provided for @aiExecuteConfirmButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Execute'**
+  String get aiExecuteConfirmButton;
+
+  /// No description provided for @aiExecuteConfirmAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Execute anyway'**
+  String get aiExecuteConfirmAnyway;
+
+  /// No description provided for @aiExecuteDangerWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠ Dangerous command'**
+  String get aiExecuteDangerWarning;
+
+  /// No description provided for @aiExecuteDangerText.
+  ///
+  /// In en, this message translates to:
+  /// **'This command may be destructive and could cause data loss or system damage.'**
+  String get aiExecuteDangerText;
+
+  /// No description provided for @aiExecuteCommandLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Command to run:'**
+  String get aiExecuteCommandLabel;
+
+  /// No description provided for @aiExecuteTargetServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Target server(s):'**
+  String get aiExecuteTargetServer;
+
+  /// No description provided for @aiExecuteSelectServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Select target server(s)'**
+  String get aiExecuteSelectServer;
+
+  /// No description provided for @aiExecuteNoServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Please connect to a server first'**
+  String get aiExecuteNoServer;
+
+  /// No description provided for @aiExecuteAtLeastOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one server'**
+  String get aiExecuteAtLeastOne;
+
+  /// No description provided for @aiExecuteSelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the server(s) to run this command on'**
+  String get aiExecuteSelectHint;
+
+  /// No description provided for @aiExecuteRunCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Execute ({count})'**
+  String aiExecuteRunCount(int count);
+
+  /// No description provided for @aiExecuteSelectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get aiExecuteSelectAll;
+
+  /// No description provided for @aiExecuteClearSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get aiExecuteClearSelection;
+
+  /// No description provided for @aiExecuteUptime.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m online'**
+  String aiExecuteUptime(int hours, int minutes);
+
+  /// No description provided for @aiExecuteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Command executed successfully'**
+  String get aiExecuteSuccess;
+
+  /// No description provided for @aiExecuteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Command execution failed'**
+  String get aiExecuteFailed;
+
+  /// No description provided for @aiToolResultCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'Command'**
+  String get aiToolResultCommand;
+
+  /// No description provided for @aiToolResultOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'Command output'**
+  String get aiToolResultOutput;
+
+  /// No description provided for @aiToolResultExitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit code: {code}'**
+  String aiToolResultExitCode(int code);
+
+  /// No description provided for @aiToolResultElapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Time elapsed'**
+  String get aiToolResultElapsed;
+
+  /// No description provided for @aiToolResultAnalyzeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Let AI analyze output'**
+  String get aiToolResultAnalyzeButton;
+
+  /// No description provided for @aiToolResultCollapsedShow.
+  ///
+  /// In en, this message translates to:
+  /// **'{total} more lines'**
+  String aiToolResultCollapsedShow(int total);
+
+  /// No description provided for @aiToolResultExpandedHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide output'**
+  String get aiToolResultExpandedHide;
+
+  /// No description provided for @aiToolResultStderrLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Error output:'**
+  String get aiToolResultStderrLabel;
+
+  /// No description provided for @aiContextToggleAttach.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach terminal context'**
+  String get aiContextToggleAttach;
+
+  /// No description provided for @aiContextToggleDetach.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminal context attached'**
+  String get aiContextToggleDetach;
+
+  /// No description provided for @aiContextBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Context'**
+  String get aiContextBadge;
+
+  /// No description provided for @aiContextLines.
+  ///
+  /// In en, this message translates to:
+  /// **'{lines} lines from terminal'**
+  String aiContextLines(int lines);
+
+  /// No description provided for @aiAgentAutoModeOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto mode: on'**
+  String get aiAgentAutoModeOn;
+
+  /// No description provided for @aiAgentAutoModeOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto mode: off'**
+  String get aiAgentAutoModeOff;
+
+  /// No description provided for @aiAgentStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop auto mode'**
+  String get aiAgentStop;
+
+  /// No description provided for @aiAgentExecuting.
+  ///
+  /// In en, this message translates to:
+  /// **'Executing…'**
+  String get aiAgentExecuting;
+
+  /// No description provided for @aiAgentDefaultServer.
+  ///
+  /// In en, this message translates to:
+  /// **'server'**
+  String get aiAgentDefaultServer;
 }
 
 class _AppLocalizationsDelegate

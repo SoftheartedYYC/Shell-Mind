@@ -1,7 +1,7 @@
 name: shell_mind
 description: "SSH + AI Assistant mobile app built with Flutter"
 publish_to: 'none'
-version: 1.1.0+2
+version: 1.2.0+3
 
 environment:
   sdk: ^3.13.4
@@ -27,6 +27,7 @@ dependencies:
   path_provider: ^2.1.0        # writable dir for the downloaded APK
   open_filex: ^4.5.0           # hands the APK to the system installer
   permission_handler: ^11.3.0  # REQUEST_INSTALL_PACKAGES flow
+  url_launcher: ^6.3.0         # open GitHub issues page from Settings
   flutter_localizations:
     sdk: flutter
   intl: any
