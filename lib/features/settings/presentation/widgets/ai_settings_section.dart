@@ -485,7 +485,9 @@ class _ModelPickerTile extends StatelessWidget {
                     ),
               ),
             ),
-            Flexible(
+            // Expanded (not Flexible) so the value hugs the trailing edge —
+            // same right-aligned treatment as the temperature readout above.
+            Expanded(
               child: Text(
                 modelName.isEmpty ? l10n.aiModelsEmpty : modelName,
                 maxLines: 1,

@@ -387,7 +387,7 @@
   "modelDescStandard": "Standard",
   "modelDescLightweight": "Lightweight",
   "modelDescRlEnhanced": "RL enhanced",
-  
+
    "aiModelsTitle": "Model",
    "aiModelsRefresh": "Refresh model list",
    "aiModelsAddCustom": "Add custom model",
@@ -839,5 +839,86 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+
+  "serverActionDisconnect": "Disconnect",
+
+  "aiAgentAutoModeDisabledHint": "Auto-execute is disabled in Settings",
+
+  "exportChatAction": "Export as Markdown",
+  "exportChatEmpty": "Nothing to export yet",
+  "exportChatSuccess": "Conversation exported to {path}",
+  "@exportChatSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "exportChatFailed": "Export failed: {error}",
+  "@exportChatFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "diagTitle": "Diagnostics",
+  "diagTileDesc": "App errors & diagnostic export",
+  "diagEmptyTitle": "No errors captured",
+  "diagEmptyMessage": "Uncaught exceptions are recorded here to help with issue reports.",
+  "diagEntriesCount": "{count} errors",
+  "@diagEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagSourceFlutter": "UI error",
+  "diagSourcePlatform": "Runtime error",
+  "diagSourceZone": "Async task",
+  "diagStackTrace": "Stack trace",
+  "diagNoStackTrace": "No stack trace",
+  "diagExportAction": "Export diagnostic report",
+  "diagExportEmpty": "Nothing to report — exporting basic info",
+  "diagExportSuccess": "Diagnostic report exported to {path}",
+  "@diagExportSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "diagExportFailed": "Export failed: {error}",
+  "@diagExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "diagPrivacyNote": "Diagnostic content is redacted — no passwords, private keys or API keys are included.",
+  "diagClearTooltip": "Clear error records",
+  "diagClearConfirmTitle": "Clear error records",
+  "diagClearConfirmMessage": "All {count} error records will be permanently removed.",
+  "@diagClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagClearAction": "Clear",
+  "diagCleared": "Error records cleared",
+  "diagAppInfoTitle": "App info",
+  "diagAppInfoVersion": "Version",
+  "diagAppInfoPlatform": "Platform",
+  "diagAppInfoLocale": "Language",
+  "diagAppInfoStorage": "Local data size",
+
+  "authLockToggleTitle": "Biometric lock",
+  "authLockToggleDesc": "Require fingerprint or face unlock when opening the app",
+  "authLockEnableFailed": "Verification failed — lock stays off",
+  "authLockUnavailableDesc": "No biometrics enrolled on this device",
+  "authLockScreenTitle": "ShellMind is locked",
+  "authLockScreenSubtitle": "Verify to continue",
+  "authLockUnlockAction": "Unlock",
+
+  "authLockUnlockFailed": "Verification failed — try again",
+
+  "terminalTabPickerTitle": "Switch terminal",
+  "terminalTabPickerSubtitle": "Pick a server to open as a terminal tab — online servers join instantly, offline ones dial first",
+  "terminalTabPickerEmpty": "No servers configured yet",
+  "terminalTabNewTooltip": "New terminal tab",
+  "terminalTabCloseTooltip": "Close tab"
 }

@@ -15,9 +15,6 @@ import 'update_controls.dart';
 class UpdateSection extends ConsumerWidget {
   const UpdateSection({super.key});
 
-  static const String repoPath =
-      '${UpdateService.repoOwner}/${UpdateService.repoName}';
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final UpdateState s = ref.watch(updateProvider);
@@ -121,8 +118,15 @@ class UpdateSection extends ConsumerWidget {
       s.status == UpdateStatus.downloading ||
       s.status == UpdateStatus.readyToInstall;
 
+  // The status panel is reserved for actionable states only. "Up to date"
+  // and the transient "checking" feedback already live in the row's trailing
+  // control, so a full-width banner for them would just duplicate the line.
   static bool _panelVisible(UpdateState s) =>
-      s.status != UpdateStatus.idle || s.failure != null;
+      s.status == UpdateStatus.updateAvailable ||
+      s.status == UpdateStatus.downloading ||
+      s.status == UpdateStatus.readyToInstall ||
+      s.status == UpdateStatus.error ||
+      s.failure != null;
 
   static String _panelKey(UpdateState s) =>
       '${s.status.name}-${s.updateInfo?.tagName ?? ''}';
@@ -248,8 +252,11 @@ class _StatusPanel extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: switch (state.status) {
-          UpdateStatus.checking => const _CheckingPanel(),
-          UpdateStatus.upToDate => _UpToDatePanel(state: state),
+          // `checking` surfaces through the row's trailing spinner; the
+          // panel only renders for actionable states (see _panelVisible).
+          // `upToDate` never reaches the panel for the same reason.
+          UpdateStatus.checking || UpdateStatus.upToDate =>
+            const SizedBox.shrink(),
           UpdateStatus.updateAvailable =>
             _AvailablePanel(state: state, controller: controller),
           UpdateStatus.downloading =>
@@ -261,76 +268,6 @@ class _StatusPanel extends StatelessWidget {
           UpdateStatus.idle => const SizedBox.shrink(),
         },
       ),
-    );
-  }
-}
-
-// ─── Checking ─────────────────────────────────────────────────────────────
-
-class _CheckingPanel extends StatelessWidget {
-  const _CheckingPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        UpdateCommandLine(
-          text: 'curl -s api.github.com/repos/${UpdateSection.repoPath}'
-              '/releases/latest',
-        ),
-        const SizedBox(height: 12),
-        AppLoader(
-            height: 4,
-            label: AppLocalizations.of(context).updateAwaitingResponse,
-            compact: true),
-      ],
-    );
-  }
-}
-
-// ─── Up to date ───────────────────────────────────────────────────────────
-
-class _UpToDatePanel extends StatelessWidget {
-  const _UpToDatePanel({required this.state});
-
-  final UpdateState state;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme colors = Theme.of(context).colorScheme;
-    final AppLocalizations l10n = AppLocalizations.of(context);
-    final String? latest = state.latestKnownVersion;
-    final DateTime? checked = state.lastCheckedAt;
-
-    return UpdatePanelHeading(
-      icon: Icons.verified_rounded,
-      color: context.sem.success,
-      title: l10n.updateAlreadyLatest,
-      children: <Widget>[
-        const SizedBox(height: 8),
-        Text(
-          latest == null
-              ? l10n.updateCurrentVersionLatest(state.currentVersion)
-              : l10n.updateRunningVersion(state.currentVersion, latest),
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colors.onSurfaceVariant,
-                height: 1.5,
-              ),
-        ),
-        if (checked != null) ...<Widget>[
-          const SizedBox(height: 6),
-          Text(
-            l10n.updateCheckedAgo(formatTimeAgo(checked)),
-            style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontSize: 10,
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ],
     );
   }
 }

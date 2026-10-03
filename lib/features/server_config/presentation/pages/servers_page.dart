@@ -99,6 +99,16 @@ class _ServersPageState extends ConsumerState<ServersPage> {
     context.push('/terminal/${config.id}');
   }
 
+  /// Manually tears down the live session for [config].
+  ///
+  /// Goes through [SshSessionRegistry.disconnect] — the authoritative manual
+  /// path — which cancels any running auto-reconnect coordinator before
+  /// dropping the transport. The registry's state change instantly repaints
+  /// the card back to offline (providers are reactive).
+  Future<void> _disconnect(ServerConfig config) async {
+    await ref.read(sshSessionRegistryProvider.notifier).disconnect(config.id);
+  }
+
   // ─── Delete flow ────────────────────────────────────────────────────────
 
   Future<bool> _confirmDelete(ServerConfig config) async {
@@ -304,6 +314,7 @@ class _ServersPageState extends ConsumerState<ServersPage> {
       onRefresh: () =>
           ref.read(serverConfigListProvider.notifier).refresh(),
       onConnect: _connect,
+      onDisconnect: _disconnect,
       onEdit: _openEdit,
       onDelete: _requestDelete,
       onSwipeDelete: _deleteNow,
@@ -323,6 +334,7 @@ class _FleetList extends StatelessWidget {
     required this.maskAddress,
     required this.onRefresh,
     required this.onConnect,
+    required this.onDisconnect,
     required this.onEdit,
     required this.onDelete,
     required this.onSwipeDelete,
@@ -345,6 +357,7 @@ class _FleetList extends StatelessWidget {
 
   final Future<void> Function() onRefresh;
   final void Function(ServerConfig) onConnect;
+  final Future<void> Function(ServerConfig) onDisconnect;
   final void Function(ServerConfig) onEdit;
   final void Function(ServerConfig) onDelete;
   final Future<void> Function(ServerConfig) onSwipeDelete;
@@ -385,6 +398,7 @@ class _FleetList extends StatelessWidget {
                 connecting: connectingIds.contains(config.id),
                 maskAddress: maskAddress,
                 onConnect: () => onConnect(config),
+                onDisconnect: () => onDisconnect(config),
                 onEdit: () => onEdit(config),
                 onDelete: () => onDelete(config),
               ),

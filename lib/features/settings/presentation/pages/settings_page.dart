@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/auth_lock.dart';
 import '../../../../app/router.dart';
 import '../../../../app/theme.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -29,9 +30,10 @@ class SettingsPage extends ConsumerWidget {
       body: SafeArea(
         bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 32),
+          // Top inset mirrors the 16px breathing room other tabs give their
+          // headers (SafeArea already clears the status bar).
+          padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
           children: <Widget>[
-            const _SettingsHeader(),
             const _IdentityCard(),
             const SizedBox(height: 8),
             const _AppearanceSection(),
@@ -62,6 +64,7 @@ class SettingsPage extends ConsumerWidget {
             _Section(
               label: l10n.settingsSectionStoragePrivacy,
               children: <Widget>[
+                const _AuthLockTile(),
                 _SettingsTile(
                   icon: Icons.receipt_long_outlined,
                   title: l10n.auditTitle,
@@ -85,9 +88,15 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
             _Section(
-              label: l10n.settingsSectionAboutUpdate,
+              label: l10n.settingsSectionResources,
               children: <Widget>[
                 const UpdateSection(),
+                _SettingsTile(
+                  icon: Icons.monitor_heart_outlined,
+                  title: l10n.diagTitle,
+                  value: l10n.diagTileDesc,
+                  onTap: () => context.pushNamed(RouteNames.diagnostics),
+                ),
                 _SettingsTile(
                   icon: Icons.code_rounded,
                   title: l10n.settingsTileLicenses,
@@ -106,38 +115,6 @@ class SettingsPage extends ConsumerWidget {
             const _FooterSignature(),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ─── Header ───────────────────────────────────────────────────────────────
-
-class _SettingsHeader extends StatelessWidget {
-  const _SettingsHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme colors = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Text(
-              l10n.settingsTitle,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.search_rounded, color: colors.onSurfaceVariant),
-            tooltip: l10n.settingsSearchTooltip,
-          ),
-        ],
       ),
     );
   }
@@ -632,6 +609,108 @@ class _HideIpTile extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+// ─── Biometric app-lock tile ──────────────────────────────────────────────
+
+/// Switch tile for the biometric app lock ("Storage & Privacy" section).
+///
+/// Enabling runs a verification round-trip first — see
+/// [AuthLockController.setEnabled]. When the device cannot verify (no
+/// hardware / nothing enrolled) or the user cancels, the switch snaps back
+/// and a hint explains why the lock stays off.
+class _AuthLockTile extends ConsumerStatefulWidget {
+  const _AuthLockTile();
+
+  @override
+  ConsumerState<_AuthLockTile> createState() => _AuthLockTileState();
+}
+
+class _AuthLockTileState extends ConsumerState<_AuthLockTile> {
+  /// Whether the enable round-trip is in flight (disables the switch).
+  bool _busy = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AuthLockState lock = ref.watch(authLockProvider);
+    final AppLocalizations l10n = AppLocalizations.of(context);
+
+    return Material(
+      color: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.fingerprint_rounded,
+                size: 20, color: colors.onSurfaceVariant),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    l10n.authLockToggleTitle,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colors.onSurface,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  Text(
+                    _subtitle(l10n),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (_busy)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              Switch(
+                value: lock.enabled,
+                onChanged: (bool value) async {
+                  // Captured before the async gap so the snackbar never uses
+                  // a BuildContext across the verification round-trip.
+                  final ScaffoldMessengerState messenger =
+                      ScaffoldMessenger.of(context);
+                  setState(() => _busy = true);
+                  final AuthLockToggleResult result = await ref
+                      .read(authLockProvider.notifier)
+                      .setEnabled(value);
+                  if (!mounted) return;
+                  setState(() => _busy = false);
+                  final String? message = switch (result) {
+                    AuthLockToggleResult.applied => null,
+                    AuthLockToggleResult.unavailable =>
+                      l10n.authLockUnavailableDesc,
+                    AuthLockToggleResult.failed => l10n.authLockEnableFailed,
+                  };
+                  if (message != null) {
+                    messenger.showSnackBar(SnackBar(content: Text(message)));
+                  }
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Explanatory copy under the title: the setting description when the lock
+  /// is on, the device-capability hint when the device cannot verify.
+  String _subtitle(AppLocalizations l10n) {
+    final bool deviceCapable =
+        ref.watch(biometricCapabilityProvider).valueOrNull ?? false;
+    if (!deviceCapable) return l10n.authLockUnavailableDesc;
+    return l10n.authLockToggleDesc;
   }
 }
 

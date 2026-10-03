@@ -17,6 +17,7 @@ class ServerCard extends StatelessWidget {
     super.key,
     required this.config,
     required this.onConnect,
+    required this.onDisconnect,
     required this.onEdit,
     required this.onDelete,
     this.connected = false,
@@ -26,6 +27,11 @@ class ServerCard extends StatelessWidget {
 
   final ServerConfig config;
   final VoidCallback onConnect;
+
+  /// Tears down a live session. Only reachable while [connected] is true —
+  /// an in-flight dial cannot be cancelled mid-handshake, so `connecting`
+  /// cards offer no disconnect affordance.
+  final VoidCallback onDisconnect;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -44,6 +50,8 @@ class ServerCard extends StatelessWidget {
     switch (action) {
       case _CardAction.connect:
         onConnect();
+      case _CardAction.disconnect:
+        onDisconnect();
       case _CardAction.edit:
         onEdit();
       case _CardAction.copy:
@@ -67,6 +75,7 @@ class ServerCard extends StatelessWidget {
       context: context,
       builder: (BuildContext sheetContext) => _ActionSheet(
         config: config,
+        connected: connected,
         maskAddress: maskAddress,
         onAction: (_CardAction action) {
           Navigator.of(sheetContext).pop();
@@ -98,7 +107,21 @@ class ServerCard extends StatelessWidget {
                   maskAddress: maskAddress,
                 ),
               ),
-              _OverflowMenu(onSelected: (_CardAction a) => _run(context, a)),
+              // Quick disconnect affordance for live sessions — one tap
+              // without opening the menu. Hidden while offline/dialing.
+              if (connected)
+                IconButton(
+                  onPressed: onDisconnect,
+                  tooltip:
+                      AppLocalizations.of(context).serverActionDisconnect,
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(Icons.link_off_rounded,
+                      size: 20, color: Theme.of(context).colorScheme.error),
+                ),
+              _OverflowMenu(
+                connected: connected,
+                onSelected: (_CardAction a) => _run(context, a),
+              ),
             ],
           ),
         ),
@@ -329,7 +352,14 @@ class _StatusDot extends StatelessWidget {
 }
 
 class _OverflowMenu extends StatelessWidget {
-  const _OverflowMenu({required this.onSelected});
+  const _OverflowMenu({
+    required this.connected,
+    required this.onSelected,
+  });
+
+  /// Whether a live session exists for this server — adds the disconnect
+  /// entry to the menu when true.
+  final bool connected;
 
   final ValueChanged<_CardAction> onSelected;
 
@@ -345,6 +375,14 @@ class _OverflowMenu extends StatelessWidget {
       itemBuilder: (BuildContext context) => <PopupMenuEntry<_CardAction>>[
         _menuEntry(
             context, _CardAction.connect, Icons.terminal_rounded, l10n.serverActionConnect),
+        if (connected)
+          _menuEntry(
+            context,
+            _CardAction.disconnect,
+            Icons.link_off_rounded,
+            l10n.serverActionDisconnect,
+            danger: true,
+          ),
         _menuEntry(
             context, _CardAction.edit, Icons.edit_rounded, l10n.serverActionEdit),
         _menuEntry(context, _CardAction.copy, Icons.copy_all_rounded,
@@ -378,12 +416,18 @@ PopupMenuItem<_CardAction> _menuEntry(
       children: <Widget>[
         Icon(icon, size: 18, color: danger ? colors.error : colors.onSurfaceVariant),
         const SizedBox(width: 12),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: tint,
+        // Constrained so long labels ellipsize instead of overflowing the
+        // menu's fixed max width.
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: tint,
+            ),
           ),
         ),
       ],
@@ -393,16 +437,21 @@ PopupMenuItem<_CardAction> _menuEntry(
 
 // ─── Action sheet (long-press) ────────────────────────────────────────────
 
-enum _CardAction { connect, edit, copy, delete }
+enum _CardAction { connect, disconnect, edit, copy, delete }
 
 class _ActionSheet extends StatelessWidget {
   const _ActionSheet({
     required this.config,
+    required this.connected,
     required this.maskAddress,
     required this.onAction,
   });
 
   final ServerConfig config;
+
+  /// Whether a live session exists — adds the disconnect entry when true.
+  final bool connected;
+
   final bool maskAddress;
   final ValueChanged<_CardAction> onAction;
 
@@ -461,6 +510,13 @@ class _ActionSheet extends StatelessWidget {
             color: colors.primary,
             onTap: () => onAction(_CardAction.connect),
           ),
+          if (connected)
+            _SheetTile(
+              icon: Icons.link_off_rounded,
+              label: l10n.serverActionDisconnect,
+              color: colors.error,
+              onTap: () => onAction(_CardAction.disconnect),
+            ),
           _SheetTile(
             icon: Icons.edit_rounded,
             label: l10n.serverActionEditDetails,

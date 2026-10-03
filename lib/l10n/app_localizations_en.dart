@@ -1575,4 +1575,153 @@ class AppLocalizationsEn extends AppLocalizations {
   String auditEntriesCount(int count) {
     return '$count entries';
   }
+
+  @override
+  String get serverActionDisconnect => 'Disconnect';
+
+  @override
+  String get aiAgentAutoModeDisabledHint =>
+      'Auto-execute is disabled in Settings';
+
+  @override
+  String get exportChatAction => 'Export as Markdown';
+
+  @override
+  String get exportChatEmpty => 'Nothing to export yet';
+
+  @override
+  String exportChatSuccess(String path) {
+    return 'Conversation exported to $path';
+  }
+
+  @override
+  String exportChatFailed(String error) {
+    return 'Export failed: $error';
+  }
+
+  @override
+  String get diagTitle => 'Diagnostics';
+
+  @override
+  String get diagTileDesc => 'App errors & diagnostic export';
+
+  @override
+  String get diagEmptyTitle => 'No errors captured';
+
+  @override
+  String get diagEmptyMessage =>
+      'Uncaught exceptions are recorded here to help with issue reports.';
+
+  @override
+  String diagEntriesCount(int count) {
+    return '$count errors';
+  }
+
+  @override
+  String get diagSourceFlutter => 'UI error';
+
+  @override
+  String get diagSourcePlatform => 'Runtime error';
+
+  @override
+  String get diagSourceZone => 'Async task';
+
+  @override
+  String get diagStackTrace => 'Stack trace';
+
+  @override
+  String get diagNoStackTrace => 'No stack trace';
+
+  @override
+  String get diagExportAction => 'Export diagnostic report';
+
+  @override
+  String get diagExportEmpty => 'Nothing to report — exporting basic info';
+
+  @override
+  String diagExportSuccess(String path) {
+    return 'Diagnostic report exported to $path';
+  }
+
+  @override
+  String diagExportFailed(String error) {
+    return 'Export failed: $error';
+  }
+
+  @override
+  String get diagPrivacyNote =>
+      'Diagnostic content is redacted — no passwords, private keys or API keys are included.';
+
+  @override
+  String get diagClearTooltip => 'Clear error records';
+
+  @override
+  String get diagClearConfirmTitle => 'Clear error records';
+
+  @override
+  String diagClearConfirmMessage(int count) {
+    return 'All $count error records will be permanently removed.';
+  }
+
+  @override
+  String get diagClearAction => 'Clear';
+
+  @override
+  String get diagCleared => 'Error records cleared';
+
+  @override
+  String get diagAppInfoTitle => 'App info';
+
+  @override
+  String get diagAppInfoVersion => 'Version';
+
+  @override
+  String get diagAppInfoPlatform => 'Platform';
+
+  @override
+  String get diagAppInfoLocale => 'Language';
+
+  @override
+  String get diagAppInfoStorage => 'Local data size';
+
+  @override
+  String get authLockToggleTitle => 'Biometric lock';
+
+  @override
+  String get authLockToggleDesc =>
+      'Require fingerprint or face unlock when opening the app';
+
+  @override
+  String get authLockEnableFailed => 'Verification failed — lock stays off';
+
+  @override
+  String get authLockUnavailableDesc => 'No biometrics enrolled on this device';
+
+  @override
+  String get authLockScreenTitle => 'ShellMind is locked';
+
+  @override
+  String get authLockScreenSubtitle => 'Verify to continue';
+
+  @override
+  String get authLockUnlockAction => 'Unlock';
+
+  @override
+  String get authLockUnlockFailed => 'Verification failed — try again';
+
+  @override
+  String get terminalTabPickerTitle => 'Switch terminal';
+
+  @override
+  String get terminalTabPickerSubtitle =>
+      'Pick a server to open as a terminal tab — online servers join instantly, offline ones dial first';
+
+  @override
+  String get terminalTabPickerEmpty => 'No servers configured yet';
+
+  @override
+  String get terminalTabNewTooltip => 'New terminal tab';
+
+  @override
+  String get terminalTabCloseTooltip => 'Close tab';
 }

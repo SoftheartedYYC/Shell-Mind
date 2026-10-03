@@ -394,6 +394,10 @@ class SnackBarActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
+    // Tinted surface + primary foreground. The app-level FilledButtonTheme
+    // forces backgroundColor to scheme.primary, which would otherwise render
+    // this tonal button as blue-on-blue (label invisible) — an explicit
+    // background restores the intended tonal look (M3 secondaryContainer-ish).
     return FilledButton.tonalIcon(
       onPressed: onPressed,
       icon: Icon(icon, size: 16),
@@ -403,6 +407,7 @@ class SnackBarActionButton extends StatelessWidget {
         textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         foregroundColor: colors.primary,
+        backgroundColor: colors.primary.withValues(alpha: 0.10),
       ),
     );
   }

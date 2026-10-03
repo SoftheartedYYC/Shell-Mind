@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../../app/router.dart';
 import '../../../../app/theme.dart';
@@ -11,10 +14,12 @@ import '../../../../shared/ssh/agent_controller.dart';
 import '../../../../shared/ssh/ssh_command_executor.dart';
 import '../../../../shared/ssh/ssh_session_registry.dart';
 import '../../../../shared/ssh/terminal_context_provider.dart';
+import '../../domain/chat_exporter.dart';
 import '../../domain/entities/ai_provider.dart';
 import '../../domain/entities/ai_chat_extra.dart';
 import '../../domain/entities/chat_message.dart';
 import '../providers/chat_providers.dart';
+import '../../../settings/presentation/providers/ai_settings_provider.dart';
 import '../widgets/command_confirm_dialog.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/server_selector_sheet.dart';
@@ -177,6 +182,63 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     await AgentTimelineSheet.show(context);
   }
 
+  /// Exports the transcript to Markdown.
+  ///
+  /// Renders via the pure [ChatExporter], writes to the app documents
+  /// directory (`exports/`), and surfaces the absolute path in a SnackBar.
+  /// Guarded against empty transcripts and streaming turns (a half-received
+  /// reply would freeze a truncated snapshot into the file).
+  Future<void> _exportChat() async {
+    final ChatState chat = ref.read(chatMessagesProvider);
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    if (chat.messages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.exportChatEmpty),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    if (chat.isStreaming) {
+      ref.read(chatMessagesProvider.notifier).stopStreaming();
+    }
+
+    final DateTime now = DateTime.now();
+    final String markdown = ChatExporter.export(chat.messages, exportedAt: now);
+    final String fileName = 'shell-mind-chat-${ChatExporter.fileStamp(now)}.md';
+
+    try {
+      final Directory dir = await getApplicationDocumentsDirectory();
+      final Directory exportDir = Directory(
+        '${dir.path}${Platform.pathSeparator}exports',
+      );
+      if (!exportDir.existsSync()) {
+        await exportDir.create(recursive: true);
+      }
+      final File file = File(
+        '${exportDir.path}${Platform.pathSeparator}$fileName',
+      );
+      await file.writeAsString(markdown, flush: true);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.exportChatSuccess(file.path)),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.exportChatFailed(e.toString())),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   /// Handles the "run on server" action for an executable code block.
   ///
   /// Flow: pick target server(s) → confirm → hand off to [AgentController].
@@ -235,6 +297,10 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   }
 
   /// Toggles the hands-off auto-execution loop.
+  ///
+  /// The controller may reject the start request when the settings master
+  /// switch is off — the returned flag is ignored here because the agent bar
+  /// keeps the toggle disabled/hidden in that situation anyway.
   void _toggleAutoMode() {
     final AgentController controller = ref.read(agentControllerProvider.notifier);
     if (ref.read(agentControllerProvider).isAutoMode) {
@@ -251,6 +317,9 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     final bool hasKey = keyStatus.valueOrNull ?? false;
     final AiProvider provider = ref.watch(selectedProviderProvider);
     final AgentState agent = ref.watch(agentControllerProvider);
+    // Master gate: the settings "auto-execute commands" switch. The bar is a
+    // pure renderer — the state flows in, no decisions are made here.
+    final bool autoExecuteEnabled = ref.watch(aiSettingsProvider).aiAutoExecute;
 
     // When a streamed assistant reply finishes, hand its content to the agent
     // so the auto-loop can pick up any command blocks it contains.
@@ -281,7 +350,9 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
               isStreaming: chat.isStreaming,
               hasKey: hasKey,
               canClear: chat.messages.isNotEmpty,
+              canExport: chat.messages.isNotEmpty,
               onClear: _clear,
+              onExport: _exportChat,
               onManageServers: _openServerManager,
             ),
             Expanded(
@@ -322,6 +393,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
               ),
             _AgentBar(
               state: agent,
+              autoExecuteEnabled: autoExecuteEnabled,
               onToggleAutoMode: _toggleAutoMode,
               onOpenTimeline: _openTimeline,
             ),
@@ -354,14 +426,21 @@ class _ChatHeader extends ConsumerWidget {
     required this.isStreaming,
     required this.hasKey,
     required this.canClear,
+    required this.canExport,
     required this.onClear,
+    required this.onExport,
     required this.onManageServers,
   });
 
   final bool isStreaming;
   final bool hasKey;
   final bool canClear;
+
+  /// True when the transcript is non-empty — the export action is disabled
+  /// for an empty conversation (nothing to write).
+  final bool canExport;
   final VoidCallback onClear;
+  final VoidCallback onExport;
   final VoidCallback onManageServers;
 
   @override
@@ -405,6 +484,16 @@ class _ChatHeader extends ConsumerWidget {
             ),
           ),
           StatusPill(label: label, color: color, pulse: pulse),
+          // Export transcript to Markdown (disabled on an empty transcript).
+          IconButton(
+            onPressed: canExport ? onExport : null,
+            tooltip: l10n.exportChatAction,
+            icon: Icon(
+              Icons.ios_share_rounded,
+              size: 22,
+              color: canExport ? colors.onSurfaceVariant : colors.outline,
+            ),
+          ),
           IconButton(
             onPressed: onManageServers,
             tooltip: l10n.aiServerManageTitle,
@@ -731,11 +820,18 @@ class _ErrorStrip extends StatelessWidget {
 class _AgentBar extends StatelessWidget {
   const _AgentBar({
     required this.state,
+    required this.autoExecuteEnabled,
     required this.onToggleAutoMode,
     required this.onOpenTimeline,
   });
 
   final AgentState state;
+
+  /// Settings master switch ("auto-execute commands"). When off the session
+  /// toggle is rendered as an inert, dimmed chip with an explanatory hint —
+  /// and the running-mode affordances are hidden entirely, since the gate
+  /// rejects any start request at the controller level.
+  final bool autoExecuteEnabled;
   final VoidCallback onToggleAutoMode;
   final VoidCallback onOpenTimeline;
 
@@ -755,37 +851,47 @@ class _AgentBar extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          // Auto-mode toggle.
-          InkWell(
-            onTap: onToggleAutoMode,
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Icon(
-                    state.isAutoMode
-                        ? Icons.autorenew_rounded
-                        : Icons.bolt_outlined,
-                    size: 16,
-                    color: state.isAutoMode
-                        ? colors.primary
-                        : colors.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    state.isAutoMode
-                        ? l10n.aiAgentAutoModeOn
-                        : l10n.aiAgentAutoModeOff,
-                    style: context.text.labelMedium?.copyWith(
-                      color: state.isAutoMode
-                          ? colors.primary
-                          : colors.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
+          // Auto-mode toggle. Master switch off → disabled + hint tooltip.
+          Tooltip(
+            message: autoExecuteEnabled ? '' : l10n.aiAgentAutoModeDisabledHint,
+            triggerMode: TooltipTriggerMode.longPress,
+            child: InkWell(
+              onTap: autoExecuteEnabled ? onToggleAutoMode : null,
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Icon(
+                      state.isAutoMode
+                          ? Icons.autorenew_rounded
+                          : Icons.bolt_outlined,
+                      size: 16,
+                      color: !autoExecuteEnabled
+                          ? colors.onSurfaceVariant.withValues(alpha: 0.4)
+                          : state.isAutoMode
+                              ? colors.primary
+                              : colors.onSurfaceVariant,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Text(
+                      !autoExecuteEnabled
+                          ? l10n.aiAgentAutoModeDisabledHint
+                          : state.isAutoMode
+                              ? l10n.aiAgentAutoModeOn
+                              : l10n.aiAgentAutoModeOff,
+                      style: context.text.labelMedium?.copyWith(
+                        color: !autoExecuteEnabled
+                            ? colors.onSurfaceVariant.withValues(alpha: 0.5)
+                            : state.isAutoMode
+                                ? colors.primary
+                                : colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -849,7 +955,9 @@ class _AgentBar extends StatelessWidget {
               ),
             ),
           ],
-          // Loop progress + stop button while auto mode is on.
+          // Loop progress + stop button while auto mode is on. Stopping is
+          // never gated: turning the master switch off mid-run must still
+          // leave the user in control of the loop that already started.
           if (state.isAutoMode) ...<Widget>[
             const SizedBox(width: 8),
             Text(

@@ -6,8 +6,8 @@ abstract final class AppConstants {
   // ─── Identity ───────────────────────────────────────────────────────────
   static const String appName = 'ShellMind';
   static const String appTagline = 'SSH · AI · Command';
-  static const String appVersion = '1.4.1';
-  static const int appBuildNumber = 8;
+  static const String appVersion = '1.5.0';
+  static const int appBuildNumber = 9;
 
   /// Emitted at the top of exported terminal transcripts.
   static const String userAgent = '$appName/$appVersion';
@@ -140,6 +140,18 @@ abstract final class AppConstants {
   /// first-in-first-out when the list exceeds this bound.
   static const int kMaxCommandAuditEntries = 500;
 
+  /// Hive key inside [hiveBoxMeta] holding the JSON array of captured
+  /// crash/uncaught-error entries (most recent first). See
+  /// `CrashReportService`.
+  static const String hiveKeyCrashReports = 'crash_reports';
+
+  /// Maximum number of crash report entries retained in the ring buffer;
+  /// older entries are evicted when the list exceeds this bound.
+  static const int kMaxCrashReportEntries = 50;
+
+  /// Maximum characters of a crash report stack trace kept per entry.
+  static const int kCrashReportStackMaxChars = 2000;
+
   /// Prefix for the stable ids generated for user-defined AI providers:
   /// `custom_<uuid>`.
   static const String customAiProviderIdPrefix = 'custom_';
@@ -156,6 +168,10 @@ abstract final class AppConstants {
   /// Maximum reconnect attempts per dropped session before giving up.
   /// `0` means retry forever (until the user disconnects manually).
   static const String prefKeySshReconnectMaxAttempts = 'pref.ssh_reconnect_max_attempts';
+
+  /// When true, the app requires fingerprint/face verification at launch and
+  /// whenever it returns to the foreground (biometric app lock).
+  static const String prefKeyAuthLockEnabled = 'pref.auth_lock_enabled';
 
   // ─── Defaults (used as fallbacks when prefs are absent) ─────────────────
   static const double defaultTerminalFontSize = 13.5;

@@ -8,6 +8,7 @@ import '../features/ai_chat/domain/entities/ai_chat_extra.dart';
 import '../features/server_config/presentation/pages/server_edit_page.dart';
 import '../features/server_config/presentation/pages/servers_page.dart';
 import '../features/settings/presentation/pages/audit_log_page.dart';
+import '../features/settings/presentation/pages/diagnostic_page.dart';
 import '../features/settings/presentation/pages/settings_page.dart';
 import '../features/settings/presentation/widgets/update_prompt_dialog.dart';
 import '../features/ssh_terminal/presentation/pages/terminal_page.dart';
@@ -20,6 +21,7 @@ abstract final class RouteNames {
   static const String aiChat = 'aiChat';
   static const String settings = 'settings';
   static const String auditLog = 'auditLog';
+  static const String diagnostics = 'diagnostics';
   static const String terminal = 'terminal';
 }
 
@@ -30,6 +32,7 @@ abstract final class RoutePaths {
   static const String aiChat = '/ai';
   static const String settings = '/settings';
   static const String auditLog = '/settings/audit';
+  static const String diagnostics = '/settings/diagnostics';
   static const String terminal = '/terminal';
 
   static String terminalFor(String serverId) => '$terminal/$serverId';
@@ -112,6 +115,15 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: rootKey,
         pageBuilder: (context, state) =>
             _fadeThrough(const AuditLogPage(), state),
+      ),
+
+      // ─── Diagnostics (crash log + export) ───
+      GoRoute(
+        path: RoutePaths.diagnostics,
+        name: RouteNames.diagnostics,
+        parentNavigatorKey: rootKey,
+        pageBuilder: (context, state) =>
+            _fadeThrough(const DiagnosticPage(), state),
       ),
 
       // ─── Full-screen terminal ───

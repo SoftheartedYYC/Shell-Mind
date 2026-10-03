@@ -616,5 +616,86 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+
+  "serverActionDisconnect": "断开连接",
+
+  "aiAgentAutoModeDisabledHint": "自动执行已在设置中关闭",
+
+  "exportChatAction": "导出为 Markdown",
+  "exportChatEmpty": "暂无可导出的对话",
+  "exportChatSuccess": "对话已导出到 {path}",
+  "@exportChatSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "exportChatFailed": "导出失败: {error}",
+  "@exportChatFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "authLockToggleTitle": "生物识别锁",
+  "authLockToggleDesc": "打开应用时需通过指纹或面部验证",
+  "authLockEnableFailed": "验证未通过，锁定保持关闭",
+  "authLockUnavailableDesc": "此设备未录入生物识别信息",
+  "authLockScreenTitle": "ShellMind 已锁定",
+  "authLockScreenSubtitle": "验证身份以继续",
+  "authLockUnlockAction": "解锁",
+
+  "authLockUnlockFailed": "验证未通过，请重试",
+
+  "diagTitle": "诊断信息",
+  "diagTileDesc": "应用错误与诊断导出",
+  "diagEmptyTitle": "暂无捕获的错误",
+  "diagEmptyMessage": "应用运行中的未捕获异常会记录在这里，便于报障时排查。",
+  "diagEntriesCount": "共 {count} 条错误",
+  "@diagEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagSourceFlutter": "界面错误",
+  "diagSourcePlatform": "运行时错误",
+  "diagSourceZone": "异步任务",
+  "diagStackTrace": "堆栈",
+  "diagNoStackTrace": "无堆栈信息",
+  "diagExportAction": "导出诊断报告",
+  "diagExportEmpty": "诊断内容为空，已导出基础信息",
+  "diagExportSuccess": "诊断报告已导出到 {path}",
+  "@diagExportSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "diagExportFailed": "导出失败: {error}",
+  "@diagExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "diagPrivacyNote": "诊断内容经过脱敏处理，不会包含密码、私钥或 API Key。",
+  "diagClearTooltip": "清除错误记录",
+  "diagClearConfirmTitle": "清除错误记录",
+  "diagClearConfirmMessage": "全部 {count} 条错误记录将被永久删除。",
+  "@diagClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagClearAction": "清除",
+  "diagCleared": "错误记录已清除",
+  "diagAppInfoTitle": "应用信息",
+  "diagAppInfoVersion": "版本",
+  "diagAppInfoPlatform": "平台",
+  "diagAppInfoLocale": "语言",
+  "diagAppInfoStorage": "本地数据占用",
+
+  "terminalTabPickerTitle": "切换终端",
+  "terminalTabPickerSubtitle": "选择一个服务器打开为终端标签 — 在线的立即接入，离线的先拨号",
+  "terminalTabPickerEmpty": "尚未配置任何服务器",
+  "terminalTabNewTooltip": "新建终端标签",
+  "terminalTabCloseTooltip": "关闭标签"
 }

@@ -584,64 +584,6 @@ class _NotesLine extends StatelessWidget {
       );
 }
 
-// ─── Command line ─────────────────────────────────────────────────────────
-
-/// A monospace command display line.
-class UpdateCommandLine extends StatelessWidget {
-  const UpdateCommandLine({
-    super.key,
-    required this.text,
-    this.cursor = true,
-  });
-
-  final String text;
-  final bool cursor;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme colors = Theme.of(context).colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          '\$',
-          style: TextStyle(
-            fontFamily: AppTheme.monoFont,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: colors.primary,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontFamilyFallback: AppTheme.monoFallback,
-              fontSize: 10.5,
-              height: 1.5,
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ),
-        if (cursor)
-          Container(
-            width: 7,
-            height: 13,
-            margin: const EdgeInsets.only(left: 4, top: 1),
-            decoration: BoxDecoration(
-              color: colors.primary,
-              borderRadius: BorderRadius.circular(1),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
 // ─── Localised error mapping ──────────────────────────────────
 
 /// Maps a transport-level [AppFailure] from the update flow onto a short,

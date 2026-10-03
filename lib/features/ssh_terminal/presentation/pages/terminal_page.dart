@@ -22,20 +22,22 @@ import '../../../server_config/domain/entities/server_config.dart';
 import '../../../server_config/presentation/providers/server_config_providers.dart';
 import '../../domain/entities/connection_state.dart';
 import '../providers/ssh_providers.dart';
-import '../providers/terminal_providers.dart';
+import '../providers/terminal_tab_providers.dart';
 import '../widgets/keyboard_toolbar.dart';
+import '../widgets/terminal_server_picker_sheet.dart';
 import '../widgets/terminal_view.dart';
 
 /// Terminal background constant — the terminal area is always dark.
 const Color _kTerminalBg = Color(0xFF1A1B26);
 
-/// Live SSH terminal for a single server.
+/// Live SSH terminal with multi-tab session switching.
 ///
-/// Mounted from `/terminal/:serverId`. On first frame it resolves the
-/// [ServerConfig] and opens an interactive shell; the xterm [Terminal] is wired
-/// bidirectionally to the socket by `terminalForServerProvider`. The chrome around it —
-/// status bar, auxiliary keyboard — follows the app theme, while the terminal
-/// itself stays dark.
+/// Mounted from `/terminal/:serverId` (backward compatible with the single-
+/// server route). The entered server is seeded as the focused tab; further
+/// tabs are opened via the "+" button in the tab strip, each backed by its
+/// own app-wide cached xterm [Terminal] (`terminalTabCacheProvider`) so
+/// switching never loses scrollback and never drops a connection — sessions
+/// live in the global [SshSessionRegistry], not in this page.
 class TerminalPage extends ConsumerStatefulWidget {
   const TerminalPage({super.key, required this.serverId});
 
@@ -49,15 +51,23 @@ class TerminalPage extends ConsumerStatefulWidget {
 class _TerminalPageState extends ConsumerState<TerminalPage> {
   final FocusNode _focusNode = FocusNode();
 
+  /// Per-tab selection controllers (one per open server id) so each tab keeps
+  /// its own selection state. Created lazily, disposed with the page.
+  final Map<String, TerminalController> _tabControllers =
+      <String, TerminalController>{};
+
+  /// Tabs whose shell has gone live at least once while this page could see
+  /// it — lets a re-focused tab show "session closed" instead of a spinner.
+  final Set<String> _everConnected = <String>{};
+
+  /// Server the mirrored chrome state is currently attached to.
+  String? _chromeServerId;
+
   /// Resolved target server (null until the fleet lookup completes).
   ServerConfig? _config;
 
   /// Set when [widget.serverId] matches no saved server.
   bool _notFound = false;
-
-  /// Latches once a shell has gone live, so a later drop shows the
-  /// "session closed / reconnect" surface instead of the initial spinner.
-  bool _hasConnectedOnce = false;
 
   double _fontSize = AppConstants.defaultTerminalFontSize;
 
@@ -77,19 +87,19 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     // so the terminal widget is laid out (and its size known) before PTY opens.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      // If the registry already has a live session for this server, just attach.
+      // Seed the entry server as the focused tab (keeps previously-open tabs).
+      ref.read(terminalTabsProvider.notifier).seed(widget.serverId);
+      // If the registry already has a live session for this server, remember
+      // it so a later drop shows the "session closed" surface, not a spinner.
       final RegisteredSession? existing =
           ref.read(sshSessionRegistryProvider)[widget.serverId];
       if (existing != null) {
-        ref.read(sshConnectionStateProvider.notifier).attach(widget.serverId);
-        setState(() {
-          _hasConnectedOnce = true;
-        });
-        // Resolve config for display purposes.
-        unawaited(_resolveConfig());
-      } else {
-        unawaited(_startConnection());
+        _everConnected.add(widget.serverId);
       }
+      _focusTab(widget.serverId);
+      // Backward compatibility: entering from the servers list with no live
+      // session starts the dial right here (as this page always has).
+      if (existing == null) unawaited(_startConnectionFor(widget.serverId));
     });
   }
 
@@ -97,18 +107,65 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   void dispose() {
     _uptimeTicker?.cancel();
     _focusNode.dispose();
+    for (final TerminalController controller in _tabControllers.values) {
+      controller.dispose();
+    }
+    _tabControllers.clear();
     super.dispose();
   }
 
-  // ─── Connection control ───────────────────────────────────────────────────
+  // ─── Tab management ─────────────────────────────────────────────────────
 
-  /// Resolves the [ServerConfig] for display (name, identity) without
-  /// initiating a connection.
-  Future<void> _resolveConfig() async {
-    if (_config != null) return;
+  /// The currently focused tab (entry server as a fallback).
+  String get _activeTabId =>
+      ref.read(terminalTabsProvider).activeId ?? widget.serverId;
+
+  /// Lazily creates the per-tab [TerminalController] for [serverId].
+  TerminalController _controllerFor(String serverId) {
+    return _tabControllers.putIfAbsent(serverId, () => TerminalController());
+  }
+
+  /// Makes [serverId] the visible tab: opens it, re-attaches the mirrored
+  /// chrome state (always, so a freshly registered session's stream is
+  /// picked up) and resolves its config for the top bar / status strip.
+  void _focusTab(String serverId) {
+    ref.read(terminalTabsProvider.notifier).openTab(serverId);
+    _attachChromeTo(serverId, force: true);
+    final RegisteredSession? session =
+        ref.read(sshSessionRegistryProvider)[serverId];
+    if (session != null &&
+        session.isConnected &&
+        !_everConnected.contains(serverId)) {
+      setState(() => _everConnected.add(serverId));
+    }
+    unawaited(_resolveConfigFor(serverId));
+  }
+
+  /// Points the mirrored connection state at [serverId] so the status strip
+  /// and overlays follow the visible tab's session. [force] re-subscribes
+  /// even when already attached (needed after the registry replaced the
+  /// manager or registered a session post-attach).
+  void _attachChromeTo(String serverId, {bool force = false}) {
+    if (!force && _chromeServerId == serverId) return;
+    _chromeServerId = serverId;
+    ref.read(sshConnectionStateProvider.notifier).attach(serverId);
+  }
+
+  /// Opens the server picker behind the "+" button; the chosen server becomes
+  /// the focused tab (dialing first when it is still offline).
+  Future<void> _openServerPicker() async {
+    HapticFeedback.selectionClick();
+    await TerminalServerPickerSheet.show(
+      context,
+      onSelect: _focusTab,
+    );
+  }
+
+  /// Resolves the config of an arbitrary tab target for display purposes.
+  Future<void> _resolveConfigFor(String serverId) async {
     final ServerConfig? resolved = await ref
         .read(serverConfigListProvider.notifier)
-        .resolveById(widget.serverId);
+        .resolveById(serverId);
     if (!mounted) return;
     if (resolved == null) {
       setState(() => _notFound = true);
@@ -120,12 +177,35 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     });
   }
 
-  /// Resolves the server (once) and opens the shell via the global registry.
-  /// Safe to call again to retry — the registry tears down any prior session.
-  Future<void> _startConnection() async {
-    await _resolveConfig();
-    if (!mounted || _config == null) return;
-    await ref.read(sshConnectionStateProvider.notifier).connect(_config!);
+  /// Closes a tab, keeping its session alive in the registry (connections are
+  /// registry-owned, never page-owned). Disposes the tab's selection
+  /// controller; when the last tab closes the page pops back to the servers
+  /// list.
+  void _closeTab(String serverId) {
+    final bool wasActive =
+        ref.read(terminalTabsProvider).activeId == serverId;
+    ref.read(terminalTabsProvider.notifier).closeTab(serverId);
+    _tabControllers.remove(serverId)?.dispose();
+    if (!wasActive) return;
+    final String? next = ref.read(terminalTabsProvider).activeId;
+    if (next != null) {
+      _focusTab(next);
+    } else {
+      _popWithoutDisconnect();
+    }
+  }
+
+  // ─── Connection control ───────────────────────────────────────────────────
+
+  /// Resolves [serverId]'s config and opens the shell via the global
+  /// registry. Safe to call again to retry — the registry tears down any
+  /// prior session. The mirrored chrome state follows the dialing server.
+  Future<void> _startConnectionFor(String serverId) async {
+    final ServerConfig? config =
+        await ref.read(serverConfigListProvider.notifier).resolveById(serverId);
+    if (!mounted || config == null) return;
+    _chromeServerId = serverId;
+    await ref.read(sshConnectionStateProvider.notifier).connect(config);
   }
 
   /// Navigates back without disconnecting — the session stays alive in the
@@ -138,15 +218,8 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     }
   }
 
-  /// Explicitly disconnects the SSH session and pops the page.
-  void _disconnectAndPop() {
-    unawaited(
-        ref.read(sshConnectionStateProvider.notifier).disconnectServer(widget.serverId));
-    _popWithoutDisconnect();
-  }
-
   void _sendInput(String data) {
-    final session = ref.read(sshSessionRegistryProvider)[widget.serverId];
+    final session = ref.read(sshSessionRegistryProvider)[_activeTabId];
     session?.manager.sendInput(data);
   }
 
@@ -169,12 +242,16 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   /// previews what will be sent; otherwise it navigates straight to the chat.
   void _openAiAssistant() {
     HapticFeedback.selectionClick();
-    final Terminal terminal = ref.read(terminalForServerProvider(widget.serverId));
-    final TerminalController controller = ref.read(terminalControllerProvider);
+    // The assistant always targets the *active* tab's shell.
+    final String activeId = _activeTabId;
+    final CachedTerminal? cached =
+        ref.read(terminalTabCacheProvider)[activeId];
+    final Terminal? terminal = cached?.terminal;
+    final TerminalController controller = _controllerFor(activeId);
 
     String? selected;
     final BufferRange? range = controller.selection;
-    if (range != null) {
+    if (range != null && terminal != null) {
       final String text = terminal.buffer.getText(range).trim();
       if (text.isNotEmpty) selected = text;
     }
@@ -257,27 +334,28 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Track first successful connection to switch the idle surface.
-    ref.listen<SshConnectionState>(sshConnectionStateProvider, (_, next) {
-      if (next.isConnected && !_hasConnectedOnce) {
-        setState(() => _hasConnectedOnce = true);
-      }
-    });
+    final TerminalTabsState tabs = ref.watch(terminalTabsProvider);
+    // Fall back to the entry server until the post-frame seed runs.
+    final String activeId = tabs.activeId ?? widget.serverId;
+    final TerminalTabStatus tabStatus =
+        ref.watch(terminalTabStatusProvider(activeId));
+    final CachedTerminal? cached = ref.watch(terminalTabCacheProvider)[activeId];
 
-    // Auto-reconnect feedback: re-attach to the resumed session on success
-    // (the registry replaced the manager) and toast the recovery.
+    // Auto-reconnect feedback: re-attach the mirrored chrome state to the
+    // resumed session on success (the registry replaced the manager) and
+    // toast the recovery.
     ref.listen<Map<String, SshReconnectState>>(
         sshReconnectStateProvider, (prev, next) {
-      final SshReconnectState? before = prev?[widget.serverId];
-      final SshReconnectState? after = next[widget.serverId];
+      final SshReconnectState? before = prev?[activeId];
+      final SshReconnectState? after = next[activeId];
 
       // A live entry vanishing means the loop published idle → reconnected.
       if (before != null && after == null) {
-        if (!_hasConnectedOnce) {
-          setState(() => _hasConnectedOnce = true);
+        if (!_everConnected.contains(activeId)) {
+          setState(() => _everConnected.add(activeId));
         }
         // Re-attach the mirrored state to the fresh manager.
-        ref.read(sshConnectionStateProvider.notifier).attach(widget.serverId);
+        ref.read(sshConnectionStateProvider.notifier).attach(activeId);
         final String? name = _config?.name;
         if (name != null && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -292,12 +370,16 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       }
     });
 
-    final SshConnectionState conn = ref.watch(sshConnectionStateProvider);
+    // Mark the visible tab as "went live" once its shell connects, so a
+    // later drop shows the "session closed" surface instead of a spinner.
+    if (tabStatus.isConnected && !_everConnected.contains(activeId)) {
+      _everConnected.add(activeId);
+    }
+
+    final bool live = tabStatus.isConnected;
     final SshReconnectState reconnect =
-        ref.watch(sshReconnectStateProvider)[widget.serverId] ??
+        ref.watch(sshReconnectStateProvider)[activeId] ??
             const SshReconnectState.idle();
-    final Terminal terminal = ref.watch(terminalForServerProvider(widget.serverId));
-    final TerminalController controller = ref.watch(terminalControllerProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -306,22 +388,41 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             _TerminalTopBar(
-              serverName: _config?.name ?? conn.serverName ?? widget.serverId,
+              serverName: _config?.name ?? activeId,
               identity: _config?.identity,
               fontSize: _fontSize,
               onBack: _popWithoutDisconnect,
               onAskAi: _openAiAssistant,
-              onDisconnect: conn.isConnected
+              onDisconnect: live
                   ? () => unawaited(ref
                       .read(sshConnectionStateProvider.notifier)
-                      .disconnectServer(widget.serverId))
+                      .disconnectServer(activeId))
                   : null,
               onFontSmaller: () => _bumpFontSize(-1),
               onFontLarger: () => _bumpFontSize(1),
             ),
+            _TerminalTabStrip(
+              openIds: tabs.openIds,
+              activeId: activeId,
+              onSelect: _focusTab,
+              onClose: _closeTab,
+              onAdd: _openServerPicker,
+            ),
             _StatusStrip(
-              state: conn,
-              connectedAt: conn.connectedAt,
+              state: SshConnectionState(
+                status: tabStatus.connectionStatus,
+                errorMessage: tabStatus.errorMessage,
+                serverName: _config?.name,
+                connectedAt: tabStatus.isConnected
+                    ? ref
+                        .watch(sshSessionRegistryProvider)[activeId]
+                        ?.connectedAt
+                    : null,
+                failureKind: tabStatus.failureKind,
+              ),
+              connectedAt: tabStatus.isConnected
+                  ? ref.watch(sshSessionRegistryProvider)[activeId]?.connectedAt
+                  : null,
               reconnect: reconnect,
             ),
             Expanded(
@@ -329,20 +430,26 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                 color: _kTerminalBg,
                 child: Stack(
                   children: <Widget>[
-                    // The terminal is always mounted so its I/O stays wired and
-                    // output paints even beneath a transient overlay.
-                    Positioned.fill(
-                      child: ShellTerminalView(
-                        terminal: terminal,
-                        controller: controller,
-                        fontSize: _fontSize,
-                        focusNode: _focusNode,
-                        readOnly: !conn.isConnected,
-                      ),
-                    ),
-                    if (!conn.isConnected)
+                    // The active tab's terminal is always mounted so its I/O
+                    // stays wired and output paints even beneath a transient
+                    // overlay. The ValueKey forces the viewport to rebuild
+                    // when switching tabs (the cache swaps buffers wholesale).
+                    if (cached != null)
                       Positioned.fill(
-                        child: _buildIdleSurface(conn, reconnect),
+                        child: ShellTerminalView(
+                          key: ValueKey<Terminal>(cached.terminal),
+                          terminal: cached.terminal,
+                          controller: _controllerFor(activeId),
+                          fontSize: _fontSize,
+                          focusNode: _focusNode,
+                          readOnly: !live,
+                        ),
+                      )
+                    else
+                      const Positioned.fill(child: ColoredBox(color: _kTerminalBg)),
+                    if (!live)
+                      Positioned.fill(
+                        child: _buildIdleSurface(activeId, tabStatus, reconnect),
                       ),
                   ],
                 ),
@@ -350,7 +457,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
             ),
             KeyboardToolbar(
               onSend: _sendInput,
-              enabled: conn.isConnected,
+              enabled: live,
               onAskAi: _openAiAssistant,
               onSnippets: _openSnippets,
             ),
@@ -360,18 +467,23 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     );
   }
 
-  /// Chooses the overlay shown while the shell is not live: loading, error,
-  /// reconnecting, gave-up, "session closed", or "host not found".
-  Widget _buildIdleSurface(SshConnectionState conn, SshReconnectState reconnect) {
+  /// Chooses the overlay shown while the active tab's shell is not live:
+  /// loading, error, reconnecting, gave-up, "session closed", or
+  /// "host not found".
+  Widget _buildIdleSurface(
+    String serverId,
+    TerminalTabStatus tabStatus,
+    SshReconnectState reconnect,
+  ) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     if (_notFound) {
       return _OverlayShell(
         child: EmptyState(
           title: l10n.terminalHostNotFound,
-          message: l10n.terminalHostNotFoundMessage(widget.serverId),
+          message: l10n.terminalHostNotFoundMessage(serverId),
           icon: Icons.dns_outlined,
           action: OutlinedButton.icon(
-            onPressed: _disconnectAndPop,
+            onPressed: () => _closeTab(serverId),
             icon: const Icon(Icons.arrow_back_rounded, size: 16),
             label: Text(l10n.terminalBackToServers),
           ),
@@ -379,110 +491,121 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       );
     }
 
-    if (conn.isError) {
-      // While an auto-reconnect loop is driving the recovery, show its
-      // progress instead of the plain error surface.
-      if (reconnect.isReconnecting) {
-        return _buildReconnectingOverlay(l10n, reconnect);
-      }
-      if (reconnect.hasGivenUp) {
-        return _buildGaveUpOverlay(l10n, reconnect);
-      }
-      final AppFailure failure = AppFailure(
-        kind: _kindFromName(conn.failureKind),
-        message: conn.errorMessage ?? l10n.terminalConnectionFailed,
-      );
-      return _OverlayShell(
-        opacity: 0.94,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
+    switch (tabStatus.phase) {
+      case TerminalTabPhase.error:
+        // While an auto-reconnect loop is driving the recovery, show its
+        // progress instead of the plain error surface.
+        if (reconnect.isReconnecting) {
+          return _buildReconnectingOverlay(l10n, reconnect, serverId);
+        }
+        if (reconnect.hasGivenUp) {
+          return _buildGaveUpOverlay(l10n, reconnect, serverId);
+        }
+        final AppFailure failure = AppFailure(
+          kind: _kindFromName(tabStatus.failureKind),
+          message:
+              tabStatus.errorMessage ?? l10n.terminalConnectionFailed,
+        );
+        return _OverlayShell(
+          opacity: 0.94,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                ErrorBanner(
+                  failure: failure,
+                  onRetry: () =>
+                      unawaited(_startConnectionFor(serverId)),
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () => _closeTab(serverId),
+                    icon: const Icon(Icons.arrow_back_rounded, size: 16),
+                    label: Text(l10n.terminalBackToServers),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      case TerminalTabPhase.reconnecting:
+        return _buildReconnectingOverlay(l10n, reconnect, serverId);
+      case TerminalTabPhase.gaveUp:
+        return _buildGaveUpOverlay(l10n, reconnect, serverId);
+      case TerminalTabPhase.closed:
+        // A previously-live shell that has since dropped → offer a reconnect.
+        if (_everConnected.contains(serverId)) {
+          return _OverlayShell(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                const Icon(Icons.link_off_rounded,
+                    size: 40, color: Colors.white54),
+                const SizedBox(height: 14),
+                Text(
+                  l10n.terminalSessionClosed,
+                  style: const TextStyle(fontSize: 14, color: Colors.white70),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.terminalSessionClosedMessage(
+                      _config?.name ?? serverId),
+                  textAlign: TextAlign.center,
+                  style:
+                      const TextStyle(fontSize: 12, color: Colors.white38),
+                ),
+                const SizedBox(height: 20),
+                FilledButton.icon(
+                  onPressed: () =>
+                      unawaited(_startConnectionFor(serverId)),
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: Text(l10n.terminalReconnect),
+                ),
+              ],
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      case TerminalTabPhase.connecting:
+      case TerminalTabPhase.connected:
+        // Dialing / handshaking (or the brief pre-connect frame).
+        final String label = tabStatus.authenticating
+            ? l10n.terminalAuthenticating
+            : l10n.terminalConnecting;
+        return _OverlayShell(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              ErrorBanner(
-                failure: failure,
-                onRetry: () => unawaited(_startConnection()),
+              const AppSpinner(size: 28),
+              const SizedBox(height: 18),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(height: 16),
-              Center(
-                child: TextButton.icon(
-                  onPressed: _disconnectAndPop,
-                  icon: const Icon(Icons.arrow_back_rounded, size: 16),
-                  label: Text(l10n.terminalBackToServers),
+              const SizedBox(height: 8),
+              Text(
+                _config == null
+                    ? l10n.terminalResolvingHost
+                    : '${_config!.identity}:${_config!.port}',
+                style: TextStyle(
+                  fontFamily: AppTheme.monoFont,
+                  fontFamilyFallback: AppTheme.monoFallback,
+                  fontSize: 11,
+                  letterSpacing: 0.4,
+                  color: Colors.white38,
                 ),
               ),
             ],
           ),
-        ),
-      );
+        );
     }
-
-    // A previously-live shell that has since dropped → offer a reconnect.
-    if (conn.isDisconnected && _hasConnectedOnce) {
-      return _OverlayShell(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const Icon(Icons.link_off_rounded, size: 40, color: Colors.white54),
-            const SizedBox(height: 14),
-            Text(
-              l10n.terminalSessionClosed,
-              style: const TextStyle(fontSize: 14, color: Colors.white70),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              l10n.terminalSessionClosedMessage(
-                  _config?.name ?? widget.serverId),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, color: Colors.white38),
-            ),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: () => unawaited(_startConnection()),
-              icon: const Icon(Icons.refresh_rounded, size: 16),
-              label: Text(l10n.terminalReconnect),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Otherwise: dialing / handshaking (or the brief pre-connect frame).
-    final String label = switch (conn.status) {
-      SshConnectionStatus.authenticating => l10n.terminalAuthenticating,
-      _ => l10n.terminalConnecting,
-    };
-    return _OverlayShell(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          const AppSpinner(size: 28),
-          const SizedBox(height: 18),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 13,
-              color: Colors.white70,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _config == null
-                ? l10n.terminalResolvingHost
-                : '${_config!.identity}:${_config!.port}',
-            style: TextStyle(
-              fontFamily: AppTheme.monoFont,
-              fontFamilyFallback: AppTheme.monoFallback,
-              fontSize: 11,
-              letterSpacing: 0.4,
-              color: Colors.white38,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   /// Overlay while the auto-reconnect loop is actively retrying: spinner,
@@ -491,6 +614,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   Widget _buildReconnectingOverlay(
     AppLocalizations l10n,
     SshReconnectState reconnect,
+    String serverId,
   ) {
     final String label = reconnect.maxAttempts != null
         ? l10n.sshReconnectStatusReconnectingOf(
@@ -525,7 +649,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
             onPressed: () => unawaited(
               ref
                   .read(sshConnectionStateProvider.notifier)
-                  .disconnectServer(widget.serverId),
+                  .disconnectServer(serverId),
             ),
             icon: const Icon(Icons.stop_rounded, size: 16),
             label: Text(l10n.sshReconnectStopAuto),
@@ -540,6 +664,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   Widget _buildGaveUpOverlay(
     AppLocalizations l10n,
     SshReconnectState reconnect,
+    String serverId,
   ) {
     final String name = _config?.name ?? _reconnectServerNameFallback(reconnect);
     final String message = reconnect.maxAttempts != null
@@ -563,13 +688,13 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
           ),
           const SizedBox(height: 20),
           FilledButton.icon(
-            onPressed: _retryReconnectNow,
+            onPressed: () => _retryReconnectNow(serverId),
             icon: const Icon(Icons.refresh_rounded, size: 16),
             label: Text(l10n.sshReconnectRetryNow),
           ),
           const SizedBox(height: 8),
           TextButton.icon(
-            onPressed: _disconnectAndPop,
+            onPressed: () => _closeTab(serverId),
             icon: const Icon(Icons.arrow_back_rounded, size: 16),
             label: Text(l10n.terminalBackToServers),
           ),
@@ -580,11 +705,11 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
 
   /// Restarts the gave-up auto-reconnect loop through the registry, or falls
   /// back to a fresh manual connection when no loop is left to retry.
-  void _retryReconnectNow() {
+  void _retryReconnectNow(String serverId) {
     final bool started = ref
         .read(sshSessionRegistryProvider.notifier)
-        .retryReconnect(widget.serverId);
-    if (!started) unawaited(_startConnection());
+        .retryReconnect(serverId);
+    if (!started) unawaited(_startConnectionFor(serverId));
   }
 
   static String _reconnectServerNameFallback(SshReconnectState reconnect) =>
@@ -691,6 +816,185 @@ class _TerminalTopBar extends StatelessWidget {
             onTap: onDisconnect,
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Tab strip ────────────────────────────────────────────────────────────
+
+/// Horizontal strip of open terminal tabs between the top bar and the status
+/// strip. Every open session gets a tab (status dot + server name + close
+/// button); a trailing "+" opens the server picker to add another session.
+class _TerminalTabStrip extends StatelessWidget {
+  const _TerminalTabStrip({
+    required this.openIds,
+    required this.activeId,
+    required this.onSelect,
+    required this.onClose,
+    required this.onAdd,
+  });
+
+  /// Open tab ids in opening order.
+  final List<String> openIds;
+
+  /// The visible tab.
+  final String activeId;
+
+  final ValueChanged<String> onSelect;
+  final ValueChanged<String> onClose;
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return Container(
+      height: 42,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(bottom: BorderSide(color: colors.outlineVariant)),
+      ),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+              itemCount: openIds.length,
+              itemBuilder: (BuildContext context, int index) {
+                final String id = openIds[index];
+                return _TerminalTab(
+                  key: ValueKey<String>(id),
+                  serverId: id,
+                  active: id == activeId,
+                  onTap: () => onSelect(id),
+                  onClose: () => onClose(id),
+                );
+              },
+            ),
+          ),
+          IconButton(
+            onPressed: onAdd,
+            icon: Icon(Icons.add_rounded, size: 20, color: colors.primary),
+            tooltip: l10n.terminalTabNewTooltip,
+            visualDensity: VisualDensity.compact,
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
+    );
+  }
+}
+
+/// One tab chip: connection status dot, server name, close button.
+///
+/// Watches [terminalTabStatusProvider] directly so every tab reflects its own
+/// session's lifecycle — including background tabs that are reconnecting or
+/// have dropped while not visible.
+class _TerminalTab extends ConsumerWidget {
+  const _TerminalTab({
+    super.key,
+    required this.serverId,
+    required this.active,
+    required this.onTap,
+    required this.onClose,
+  });
+
+  final String serverId;
+  final bool active;
+  final VoidCallback onTap;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final TerminalTabStatus status =
+        ref.watch(terminalTabStatusProvider(serverId));
+
+    String name = serverId;
+    for (final ServerConfig config
+        in ref.watch(serverConfigListProvider).valueOrNull ??
+            const <ServerConfig>[]) {
+      if (config.id == serverId) {
+        name = config.name;
+        break;
+      }
+    }
+
+    final Color dotColor = switch (status.phase) {
+      TerminalTabPhase.connected => context.sem.success,
+      TerminalTabPhase.connecting ||
+      TerminalTabPhase.reconnecting =>
+        context.sem.warning,
+      TerminalTabPhase.gaveUp ||
+      TerminalTabPhase.error =>
+        context.sem.danger,
+      TerminalTabPhase.closed => colors.onSurfaceVariant,
+    };
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Material(
+        color: active ? colors.surfaceContainerHighest : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: dotColor,
+                    boxShadow: status.isConnected
+                        ? <BoxShadow>[
+                            BoxShadow(
+                              color: dotColor.withValues(alpha: 0.4),
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                            ),
+                          ]
+                        : null,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 120),
+                  child: Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                      color:
+                          active ? colors.onSurface : colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: IconButton(
+                    onPressed: onClose,
+                    icon: Icon(Icons.close_rounded,
+                        size: 14, color: colors.onSurfaceVariant),
+                    tooltip: l10n.terminalTabCloseTooltip,
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

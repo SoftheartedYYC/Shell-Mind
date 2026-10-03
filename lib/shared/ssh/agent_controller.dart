@@ -260,7 +260,24 @@ class AgentController extends Notifier<AgentState> {
   /// The loop cap comes from [maxLoops] when given (tests / callers with an
   /// explicit budget); otherwise it is read live from the user's
   /// [PreferencesService] so a settings change applies without an app restart.
-  void startAutoMode({String? defaultServerId, int? maxLoops}) {
+  ///
+  /// Master gate: the settings "auto-execute commands" switch
+  /// (`aiAutoExecute`) must be on for auto mode to start. When it is off the
+  /// request is rejected, the state is left untouched and `false` is
+  /// returned. Unreadable preferences (plain unit tests without an
+  /// initialised [PreferencesService]) fail open so the loop mechanics stay
+  /// observable there — the production entry (chat page's agent bar) hides
+  /// the toggle entirely while the gate is off, so that fallback is
+  /// unreachable in real usage.
+  bool startAutoMode({String? defaultServerId, int? maxLoops}) {
+    bool gateOpen;
+    try {
+      gateOpen = ref.read(preferencesServiceProvider).aiAutoExecute;
+    } catch (_) {
+      gateOpen = true;
+    }
+    if (!gateOpen) return false;
+
     final int effectiveMax =
         maxLoops ?? ref.read(preferencesServiceProvider).aiMaxAutoLoops;
     state = state.copyWith(
@@ -270,6 +287,7 @@ class AgentController extends Notifier<AgentState> {
       maxAutoLoops: effectiveMax,
       clearError: true,
     );
+    return true;
   }
 
   /// Stops auto-loop mode immediately.

@@ -239,6 +239,16 @@ class PreferencesService {
     );
     return setInt(AppConstants.prefKeySshReconnectMaxAttempts, clamped);
   }
+
+  // ─── Security ───────────────────────────────────────────────────────────
+
+  /// When true, the app requires fingerprint/face verification at launch and
+  /// whenever it returns to the foreground (biometric app lock).
+  bool get authLockEnabled =>
+      getBoolOr(AppConstants.prefKeyAuthLockEnabled, false);
+
+  Future<void> setAuthLockEnabled(bool value) =>
+      setBool(AppConstants.prefKeyAuthLockEnabled, value);
 }
 
 /// Riverpod provider for the singleton.

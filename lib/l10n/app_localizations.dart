@@ -2809,6 +2809,270 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} entries'**
   String auditEntriesCount(int count);
+
+  /// No description provided for @serverActionDisconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get serverActionDisconnect;
+
+  /// No description provided for @aiAgentAutoModeDisabledHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-execute is disabled in Settings'**
+  String get aiAgentAutoModeDisabledHint;
+
+  /// No description provided for @exportChatAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as Markdown'**
+  String get exportChatAction;
+
+  /// No description provided for @exportChatEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to export yet'**
+  String get exportChatEmpty;
+
+  /// No description provided for @exportChatSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation exported to {path}'**
+  String exportChatSuccess(String path);
+
+  /// No description provided for @exportChatFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed: {error}'**
+  String exportChatFailed(String error);
+
+  /// No description provided for @diagTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics'**
+  String get diagTitle;
+
+  /// No description provided for @diagTileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'App errors & diagnostic export'**
+  String get diagTileDesc;
+
+  /// No description provided for @diagEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No errors captured'**
+  String get diagEmptyTitle;
+
+  /// No description provided for @diagEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncaught exceptions are recorded here to help with issue reports.'**
+  String get diagEmptyMessage;
+
+  /// No description provided for @diagEntriesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} errors'**
+  String diagEntriesCount(int count);
+
+  /// No description provided for @diagSourceFlutter.
+  ///
+  /// In en, this message translates to:
+  /// **'UI error'**
+  String get diagSourceFlutter;
+
+  /// No description provided for @diagSourcePlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Runtime error'**
+  String get diagSourcePlatform;
+
+  /// No description provided for @diagSourceZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Async task'**
+  String get diagSourceZone;
+
+  /// No description provided for @diagStackTrace.
+  ///
+  /// In en, this message translates to:
+  /// **'Stack trace'**
+  String get diagStackTrace;
+
+  /// No description provided for @diagNoStackTrace.
+  ///
+  /// In en, this message translates to:
+  /// **'No stack trace'**
+  String get diagNoStackTrace;
+
+  /// No description provided for @diagExportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Export diagnostic report'**
+  String get diagExportAction;
+
+  /// No description provided for @diagExportEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to report — exporting basic info'**
+  String get diagExportEmpty;
+
+  /// No description provided for @diagExportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostic report exported to {path}'**
+  String diagExportSuccess(String path);
+
+  /// No description provided for @diagExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed: {error}'**
+  String diagExportFailed(String error);
+
+  /// No description provided for @diagPrivacyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostic content is redacted — no passwords, private keys or API keys are included.'**
+  String get diagPrivacyNote;
+
+  /// No description provided for @diagClearTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear error records'**
+  String get diagClearTooltip;
+
+  /// No description provided for @diagClearConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear error records'**
+  String get diagClearConfirmTitle;
+
+  /// No description provided for @diagClearConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All {count} error records will be permanently removed.'**
+  String diagClearConfirmMessage(int count);
+
+  /// No description provided for @diagClearAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get diagClearAction;
+
+  /// No description provided for @diagCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Error records cleared'**
+  String get diagCleared;
+
+  /// No description provided for @diagAppInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App info'**
+  String get diagAppInfoTitle;
+
+  /// No description provided for @diagAppInfoVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get diagAppInfoVersion;
+
+  /// No description provided for @diagAppInfoPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get diagAppInfoPlatform;
+
+  /// No description provided for @diagAppInfoLocale.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get diagAppInfoLocale;
+
+  /// No description provided for @diagAppInfoStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Local data size'**
+  String get diagAppInfoStorage;
+
+  /// No description provided for @authLockToggleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric lock'**
+  String get authLockToggleTitle;
+
+  /// No description provided for @authLockToggleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Require fingerprint or face unlock when opening the app'**
+  String get authLockToggleDesc;
+
+  /// No description provided for @authLockEnableFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed — lock stays off'**
+  String get authLockEnableFailed;
+
+  /// No description provided for @authLockUnavailableDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'No biometrics enrolled on this device'**
+  String get authLockUnavailableDesc;
+
+  /// No description provided for @authLockScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'ShellMind is locked'**
+  String get authLockScreenTitle;
+
+  /// No description provided for @authLockScreenSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify to continue'**
+  String get authLockScreenSubtitle;
+
+  /// No description provided for @authLockUnlockAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get authLockUnlockAction;
+
+  /// No description provided for @authLockUnlockFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed — try again'**
+  String get authLockUnlockFailed;
+
+  /// No description provided for @terminalTabPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch terminal'**
+  String get terminalTabPickerTitle;
+
+  /// No description provided for @terminalTabPickerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a server to open as a terminal tab — online servers join instantly, offline ones dial first'**
+  String get terminalTabPickerSubtitle;
+
+  /// No description provided for @terminalTabPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No servers configured yet'**
+  String get terminalTabPickerEmpty;
+
+  /// No description provided for @terminalTabNewTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'New terminal tab'**
+  String get terminalTabNewTooltip;
+
+  /// No description provided for @terminalTabCloseTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Close tab'**
+  String get terminalTabCloseTooltip;
 }
 
 class _AppLocalizationsDelegate

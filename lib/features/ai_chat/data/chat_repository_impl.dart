@@ -6,6 +6,7 @@ import '../../../core/utils/result.dart';
 import '../domain/entities/chat_message.dart';
 import '../domain/repositories/chat_repository.dart';
 import 'ai_service.dart';
+import 'chat_context_compactor.dart';
 
 /// Agent-protocol system prompt injected as the leading `system` message.
 ///
@@ -47,9 +48,13 @@ When you need to run commands on a server:
 - After [tool-output] injection, provide analysis of the results
 ''';
 
-/// How many trailing messages are forwarded to the model. Bounds cost and
-/// latency while preserving enough context for coherent follow-ups.
-const int kMaxHistoryMessages = 20;
+/// How many trailing messages are forwarded to the model uncompressed.
+///
+/// Semantics preserved from the previous hard-window behaviour: it is the
+/// "keep recent, never compress" count. Older turns are folded into a
+/// synthesized summary turn instead of being dropped (see
+/// [chat_context_compactor.dart] for the full policy).
+const int kMaxHistoryMessages = kDefaultKeepRecentMessages;
 
 /// Default [ChatRepository] backed by [AiService].
 ///
@@ -66,62 +71,28 @@ class ChatRepositoryImpl implements ChatRepository {
   final List<String> Function()? _activeServersGetter;
 
   /// Converts domain messages into the `[{role, content}]` wire format,
-  /// dropping empty/system-noise and enforcing the history window.
+  /// dropping empty/system-noise and compacting long histories.
   ///
   /// [activeServers] is resolved dynamically via [_activeServersGetter] and
   /// appended to the system prompt so the model knows which servers are online.
+  ///
+  /// History longer than [kMaxHistoryMessages] turns is compacted: older turns
+  /// are folded into a single user-role summary message inserted right after
+  /// the system prompt, while the trailing [kMaxHistoryMessages] turns are
+  /// forwarded verbatim. The token budget keeps the whole context bounded.
   List<Map<String, String>> _buildMessages(
     List<ChatMessage> history,
     String userMessage,
   ) {
-    // Build dynamic system prompt with connected server info.
-    final String systemPrompt = _buildSystemPrompt();
-
-    final List<Map<String, String>> wire = <Map<String, String>>[
-      <String, String>{
-        'role': MessageRole.system.wire,
-        'content': systemPrompt,
-      },
-    ];
-
-    // Only forward real conversation turns (skip empty/placeholder content).
-    final List<ChatMessage> turns = history
-        .where((ChatMessage m) => !m.isSystem && m.content.trim().isNotEmpty)
-        .toList(growable: false);
-
-    final int start = turns.length > kMaxHistoryMessages
-        ? turns.length - kMaxHistoryMessages
-        : 0;
-    for (int i = start; i < turns.length; i++) {
-      final ChatMessage msg = turns[i];
-      if (msg.role == MessageRole.tool && msg.toolPayload != null) {
-        // Tool results travel as `user` turns: most OpenAI-compatible
-        // endpoints reject a standalone `tool` role outside function-calling.
-        // The [tool-output] envelope keeps them distinguishable for the model.
-        wire.add(<String, String>{
-          'role': MessageRole.user.wire,
-          'content': msg.toolPayload!.toWireContent(),
-        });
-      } else {
-        wire.add(<String, String>{
-          'role': msg.role.wire,
-          'content': msg.content,
-        });
-      }
-    }
-
-    // Skip the trailing user turn when empty — tool-result continuations
-    // call with `userMessage: ''` because the [tool-output] turns in
-    // [history] already carry the prompt; an empty user message would
-    // violate the alternation some providers enforce.
-    if (userMessage.trim().isNotEmpty) {
-      wire.add(<String, String>{
-        'role': MessageRole.user.wire,
-        'content': userMessage,
-      });
-    }
-
-    return wire;
+    final CompactedContext context = compactChatHistory(
+      history,
+      config: CompactionConfig(keepRecentMessages: kMaxHistoryMessages),
+    );
+    return buildWireMessages(
+      systemPrompt: _buildSystemPrompt(),
+      context: context,
+      userMessage: userMessage,
+    );
   }
 
   @override

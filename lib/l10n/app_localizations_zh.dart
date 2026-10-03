@@ -1538,4 +1538,148 @@ class AppLocalizationsZh extends AppLocalizations {
   String auditEntriesCount(int count) {
     return '$count 条记录';
   }
+
+  @override
+  String get serverActionDisconnect => '断开连接';
+
+  @override
+  String get aiAgentAutoModeDisabledHint => '自动执行已在设置中关闭';
+
+  @override
+  String get exportChatAction => '导出为 Markdown';
+
+  @override
+  String get exportChatEmpty => '暂无可导出的对话';
+
+  @override
+  String exportChatSuccess(String path) {
+    return '对话已导出到 $path';
+  }
+
+  @override
+  String exportChatFailed(String error) {
+    return '导出失败: $error';
+  }
+
+  @override
+  String get diagTitle => '诊断信息';
+
+  @override
+  String get diagTileDesc => '应用错误与诊断导出';
+
+  @override
+  String get diagEmptyTitle => '暂无捕获的错误';
+
+  @override
+  String get diagEmptyMessage => '应用运行中的未捕获异常会记录在这里，便于报障时排查。';
+
+  @override
+  String diagEntriesCount(int count) {
+    return '共 $count 条错误';
+  }
+
+  @override
+  String get diagSourceFlutter => '界面错误';
+
+  @override
+  String get diagSourcePlatform => '运行时错误';
+
+  @override
+  String get diagSourceZone => '异步任务';
+
+  @override
+  String get diagStackTrace => '堆栈';
+
+  @override
+  String get diagNoStackTrace => '无堆栈信息';
+
+  @override
+  String get diagExportAction => '导出诊断报告';
+
+  @override
+  String get diagExportEmpty => '诊断内容为空，已导出基础信息';
+
+  @override
+  String diagExportSuccess(String path) {
+    return '诊断报告已导出到 $path';
+  }
+
+  @override
+  String diagExportFailed(String error) {
+    return '导出失败: $error';
+  }
+
+  @override
+  String get diagPrivacyNote => '诊断内容经过脱敏处理，不会包含密码、私钥或 API Key。';
+
+  @override
+  String get diagClearTooltip => '清除错误记录';
+
+  @override
+  String get diagClearConfirmTitle => '清除错误记录';
+
+  @override
+  String diagClearConfirmMessage(int count) {
+    return '全部 $count 条错误记录将被永久删除。';
+  }
+
+  @override
+  String get diagClearAction => '清除';
+
+  @override
+  String get diagCleared => '错误记录已清除';
+
+  @override
+  String get diagAppInfoTitle => '应用信息';
+
+  @override
+  String get diagAppInfoVersion => '版本';
+
+  @override
+  String get diagAppInfoPlatform => '平台';
+
+  @override
+  String get diagAppInfoLocale => '语言';
+
+  @override
+  String get diagAppInfoStorage => '本地数据占用';
+
+  @override
+  String get authLockToggleTitle => '生物识别锁';
+
+  @override
+  String get authLockToggleDesc => '打开应用时需通过指纹或面部验证';
+
+  @override
+  String get authLockEnableFailed => '验证未通过，锁定保持关闭';
+
+  @override
+  String get authLockUnavailableDesc => '此设备未录入生物识别信息';
+
+  @override
+  String get authLockScreenTitle => 'ShellMind 已锁定';
+
+  @override
+  String get authLockScreenSubtitle => '验证身份以继续';
+
+  @override
+  String get authLockUnlockAction => '解锁';
+
+  @override
+  String get authLockUnlockFailed => '验证未通过，请重试';
+
+  @override
+  String get terminalTabPickerTitle => '切换终端';
+
+  @override
+  String get terminalTabPickerSubtitle => '选择一个服务器打开为终端标签 — 在线的立即接入，离线的先拨号';
+
+  @override
+  String get terminalTabPickerEmpty => '尚未配置任何服务器';
+
+  @override
+  String get terminalTabNewTooltip => '新建终端标签';
+
+  @override
+  String get terminalTabCloseTooltip => '关闭标签';
 }
