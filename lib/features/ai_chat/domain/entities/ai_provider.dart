@@ -180,19 +180,24 @@ abstract final class AiProviders {
     websiteUrl: 'https://open.bigmodel.cn/usercenter/apikeys',
   );
 
-  /// Xiaomi MiMo. NOTE: the public API host for MiMo is not fully documented;
-  /// this OpenAI-compatible endpoint is a best-effort placeholder and may need
-  /// updating once Xiaomi publishes the official base URL.
+  /// Xiaomi MiMo — official OpenAI-compatible platform
+  /// (https://platform.xiaomimimo.com).
   static const AiProvider mimo = AiProvider(
     id: 'mimo',
     name: 'MiMo (小米)',
     shortLabel: 'Mi',
-    baseUrl: 'https://api.mimo.xiaomi.com/v1',
+    baseUrl: 'https://api.xiaomimimo.com/v1',
     models: <AiModel>[
-      AiModel(id: 'mimo-7b', name: 'MiMo-7B', description: 'Lightweight'),
-      AiModel(id: 'mimo-7b-rl', name: 'MiMo-7B-RL', description: 'RL enhanced'),
+      AiModel(
+          id: 'mimo-v2.6-pro',
+          name: 'MiMo-V2.6 Pro',
+          description: 'Most capable'),
+      AiModel(
+          id: 'mimo-v2.6-flash',
+          name: 'MiMo-V2.6 Flash',
+          description: 'Fast & affordable'),
     ],
-    websiteUrl: 'https://platform.xiaomi.com/',
+    websiteUrl: 'https://platform.xiaomimimo.com/',
   );
 
   /// Every built-in provider, in display order.

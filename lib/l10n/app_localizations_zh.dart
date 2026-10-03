@@ -495,6 +495,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsSectionAiProvider => 'AI 服务商';
 
   @override
+  String get settingsSectionAiAgent => 'AI Agent';
+
+  @override
+  String get settingsSectionSsh => 'SSH';
+
+  @override
+  String get settingsSectionServers => '服务器';
+
+  @override
   String get settingsSectionAboutUpdate => '关于与更新';
 
   @override
@@ -740,6 +749,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiModelsDuplicate => '该模型已存在';
+
+  @override
+  String get aiModelsPickerTitle => '选择模型';
+
+  @override
+  String get aiModelsSearchHint => '搜索模型';
+
+  @override
+  String get aiModelsSearchEmpty => '没有匹配的模型';
 
   @override
   String get aiProvidersAddTile => '添加自定义服务商';
@@ -1017,6 +1035,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAiMaxAutoLoopsSub => '限制每次响应后的自动命令执行次数上限';
 
   @override
+  String get settingsAiMaxAutoLoopsTileDesc => 'AI 每次任务可自动执行命令的最大轮数';
+
+  @override
+  String get settingsAiMaxAutoLoopsHint =>
+      '这是 AI 每次任务的执行轮数上限，并非 SSH 断线后的自动重连次数（后者位于 SSH 分区）。';
+
+  @override
   String get terminalAskAi => '询问 AI';
 
   @override
@@ -1271,7 +1296,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sshReconnectMaxAttempts => '最大重试次数';
 
   @override
-  String get sshReconnectMaxAttemptsDesc => '0 表示一直重试直到成功';
+  String get sshReconnectMaxAttemptsDesc => 'SSH 断线后自动重连的最大尝试次数，0 表示一直重试直到成功';
 
   @override
   String sshReconnectMaxAttemptsValue(int count) {

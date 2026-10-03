@@ -502,6 +502,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionAiProvider => 'AI Provider';
 
   @override
+  String get settingsSectionAiAgent => 'AI Agent';
+
+  @override
+  String get settingsSectionSsh => 'SSH';
+
+  @override
+  String get settingsSectionServers => 'Servers';
+
+  @override
   String get settingsSectionAboutUpdate => 'About & Update';
 
   @override
@@ -752,6 +761,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiModelsDuplicate => 'This model is already in the list.';
+
+  @override
+  String get aiModelsPickerTitle => 'Choose model';
+
+  @override
+  String get aiModelsSearchHint => 'Search models';
+
+  @override
+  String get aiModelsSearchEmpty => 'No models match your search.';
 
   @override
   String get aiProvidersAddTile => 'Add custom provider';
@@ -1040,6 +1058,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Cap the number of automatic command executions per response';
 
   @override
+  String get settingsAiMaxAutoLoopsTileDesc =>
+      'Max command rounds the AI may run per task';
+
+  @override
+  String get settingsAiMaxAutoLoopsHint =>
+      'This is the upper limit of execution rounds per AI task — not the number of SSH reconnect attempts (that lives under SSH).';
+
+  @override
   String get terminalAskAi => 'Ask AI';
 
   @override
@@ -1302,7 +1328,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sshReconnectMaxAttempts => 'Max reconnect attempts';
 
   @override
-  String get sshReconnectMaxAttemptsDesc => '0 means retry until it succeeds';
+  String get sshReconnectMaxAttemptsDesc =>
+      'Max automatic reconnect attempts after a disconnect — 0 means retry until it succeeds';
 
   @override
   String sshReconnectMaxAttemptsValue(int count) {

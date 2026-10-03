@@ -275,6 +275,9 @@
   "settingsLanguageZh": "中文",
   "settingsLanguageEn": "English",
   "settingsSectionAiProvider": "AI Provider",
+  "settingsSectionAiAgent": "AI Agent",
+  "settingsSectionSsh": "SSH",
+  "settingsSectionServers": "Servers",
   "settingsSectionAboutUpdate": "About & Update",
   "settingsSectionStoragePrivacy": "Storage & Privacy",
   "settingsSectionResources": "Resources",
@@ -396,6 +399,9 @@
    "aiModelsEmpty": "No models",
    "aiModelsInvalidId": "Enter a model ID.",
    "aiModelsDuplicate": "This model is already in the list.",
+  "aiModelsPickerTitle": "Choose model",
+  "aiModelsSearchHint": "Search models",
+  "aiModelsSearchEmpty": "No models match your search.",
 
   "aiProvidersAddTile": "Add custom provider",
   "aiProvidersAddTitle": "Add custom provider",
@@ -526,6 +532,8 @@
   "settingsAiAutoExecuteSubtitle": "Allow the AI agent to run parsed commands without asking each time",
   "settingsAiMaxAutoLoopsTitle": "Max auto-loop iterations",
   "settingsAiMaxAutoLoopsSub": "Cap the number of automatic command executions per response",
+  "settingsAiMaxAutoLoopsTileDesc": "Max command rounds the AI may run per task",
+  "settingsAiMaxAutoLoopsHint": "This is the upper limit of execution rounds per AI task — not the number of SSH reconnect attempts (that lives under SSH).",
 
   "terminalAskAi": "Ask AI",
   "terminalAskAiSubtitle": "Send the selected text to the AI assistant",
@@ -669,7 +677,7 @@
   "sshReconnectToggle": "Auto-reconnect on disconnect",
   "sshReconnectToggleDesc": "Retry dropped SSH sessions with exponential backoff",
   "sshReconnectMaxAttempts": "Max reconnect attempts",
-  "sshReconnectMaxAttemptsDesc": "0 means retry until it succeeds",
+  "sshReconnectMaxAttemptsDesc": "Max automatic reconnect attempts after a disconnect — 0 means retry until it succeeds",
   "sshReconnectMaxAttemptsValue": "{count}",
   "@sshReconnectMaxAttemptsValue": {
     "placeholders": {

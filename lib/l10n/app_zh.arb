@@ -154,6 +154,9 @@
   "settingsLanguageZh": "中文",
   "settingsLanguageEn": "English",
   "settingsSectionAiProvider": "AI 服务商",
+  "settingsSectionAiAgent": "AI Agent",
+  "settingsSectionSsh": "SSH",
+  "settingsSectionServers": "服务器",
   "settingsSectionAboutUpdate": "关于与更新",
   "settingsSectionStoragePrivacy": "存储与隐私",
   "settingsSectionResources": "资源",
@@ -235,6 +238,9 @@
   "aiModelsEmpty": "暂无模型",
   "aiModelsInvalidId": "请输入模型 ID",
   "aiModelsDuplicate": "该模型已存在",
+  "aiModelsPickerTitle": "选择模型",
+  "aiModelsSearchHint": "搜索模型",
+  "aiModelsSearchEmpty": "没有匹配的模型",
 
   "aiProvidersAddTile": "添加自定义服务商",
   "aiProvidersAddTitle": "添加自定义服务商",
@@ -329,6 +335,8 @@
   "settingsAiAutoExecuteSubtitle": "允许 AI 智能体无需逐次确认即可运行解析出的命令",
   "settingsAiMaxAutoLoopsTitle": "最大自动循环次数",
   "settingsAiMaxAutoLoopsSub": "限制每次响应后的自动命令执行次数上限",
+  "settingsAiMaxAutoLoopsTileDesc": "AI 每次任务可自动执行命令的最大轮数",
+  "settingsAiMaxAutoLoopsHint": "这是 AI 每次任务的执行轮数上限，并非 SSH 断线后的自动重连次数（后者位于 SSH 分区）。",
 
   "terminalAskAi": "询问 AI",
   "terminalAskAiSubtitle": "将选中的文本发送给 AI 助手",
@@ -446,7 +454,7 @@
   "sshReconnectToggle": "SSH 断线自动重连",
   "sshReconnectToggleDesc": "连接意外断开时按指数退避自动重试",
   "sshReconnectMaxAttempts": "最大重试次数",
-  "sshReconnectMaxAttemptsDesc": "0 表示一直重试直到成功",
+  "sshReconnectMaxAttemptsDesc": "SSH 断线后自动重连的最大尝试次数，0 表示一直重试直到成功",
   "sshReconnectMaxAttemptsValue": "{count}",
   "@sshReconnectMaxAttemptsValue": {
     "placeholders": {

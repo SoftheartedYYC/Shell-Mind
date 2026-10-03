@@ -968,6 +968,24 @@ abstract class AppLocalizations {
   /// **'AI Provider'**
   String get settingsSectionAiProvider;
 
+  /// No description provided for @settingsSectionAiAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Agent'**
+  String get settingsSectionAiAgent;
+
+  /// No description provided for @settingsSectionSsh.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH'**
+  String get settingsSectionSsh;
+
+  /// No description provided for @settingsSectionServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers'**
+  String get settingsSectionServers;
+
   /// No description provided for @settingsSectionAboutUpdate.
   ///
   /// In en, this message translates to:
@@ -1423,6 +1441,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This model is already in the list.'**
   String get aiModelsDuplicate;
+
+  /// No description provided for @aiModelsPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose model'**
+  String get aiModelsPickerTitle;
+
+  /// No description provided for @aiModelsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search models'**
+  String get aiModelsSearchHint;
+
+  /// No description provided for @aiModelsSearchEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No models match your search.'**
+  String get aiModelsSearchEmpty;
 
   /// No description provided for @aiProvidersAddTile.
   ///
@@ -1934,6 +1970,18 @@ abstract class AppLocalizations {
   /// **'Cap the number of automatic command executions per response'**
   String get settingsAiMaxAutoLoopsSub;
 
+  /// No description provided for @settingsAiMaxAutoLoopsTileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Max command rounds the AI may run per task'**
+  String get settingsAiMaxAutoLoopsTileDesc;
+
+  /// No description provided for @settingsAiMaxAutoLoopsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the upper limit of execution rounds per AI task — not the number of SSH reconnect attempts (that lives under SSH).'**
+  String get settingsAiMaxAutoLoopsHint;
+
   /// No description provided for @terminalAskAi.
   ///
   /// In en, this message translates to:
@@ -2345,7 +2393,7 @@ abstract class AppLocalizations {
   /// No description provided for @sshReconnectMaxAttemptsDesc.
   ///
   /// In en, this message translates to:
-  /// **'0 means retry until it succeeds'**
+  /// **'Max automatic reconnect attempts after a disconnect — 0 means retry until it succeeds'**
   String get sshReconnectMaxAttemptsDesc;
 
   /// No description provided for @sshReconnectMaxAttemptsValue.

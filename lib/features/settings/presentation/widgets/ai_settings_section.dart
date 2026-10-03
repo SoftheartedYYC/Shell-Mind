@@ -3,13 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../ai_chat/data/custom_ai_provider_store.dart';
 import '../../../ai_chat/domain/entities/ai_provider.dart';
 import '../../../ai_chat/presentation/providers/chat_providers.dart';
-import '../../../ai_chat/presentation/providers/models_provider.dart';
 import '../providers/ai_settings_provider.dart';
+import 'model_picker_sheet.dart';
 
 /// Settings block for the AI backend: pick a provider, configure its API key,
 /// choose a model, and tune temperature. Clean Material 3 style.
@@ -104,10 +103,10 @@ class AiSettingsSection extends ConsumerWidget {
                   ),
                 ],
                 const _SectionDivider(),
-                _ModelSection(
+                _ModelPickerTile(
                   provider: provider,
                   selectedModelId: s.model ?? provider.defaultModel.id,
-                  onSelected: controller.setModel,
+                  onOpen: () => _openModelPicker(context, controller),
                 ),
                 const _SectionDivider(),
                 _Row(
@@ -130,75 +129,6 @@ class AiSettingsSection extends ConsumerWidget {
                     max: 2,
                     divisions: 20,
                     onChanged: controller.setTemperature,
-                  ),
-                ),
-                const _SectionDivider(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.smart_toy_rounded,
-                          size: 20, color: context.colors.onSurfaceVariant),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              l10n.settingsAiAutoExecuteTitle,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: context.colors.onSurface,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              l10n.settingsAiAutoExecuteSubtitle,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: context.colors.onSurfaceVariant,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Switch(
-                        value: s.aiAutoExecute,
-                        onChanged: controller.setAiAutoExecute,
-                      ),
-                    ],
-                  ),
-                ),
-                const _SectionDivider(),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () =>
-                      _openMaxLoopsDialog(context, ref, s.aiMaxAutoLoops),
-                  child: _Row(
-                    icon: Icons.repeat_rounded,
-                    title: l10n.settingsAiMaxAutoLoopsTitle,
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text(
-                          '${s.aiMaxAutoLoops}',
-                          style: TextStyle(
-                            fontFamily: AppTheme.monoFont,
-                            fontSize: 12,
-                            color: context.colors.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Icon(Icons.chevron_right_rounded,
-                            size: 16, color: context.colors.onSurfaceVariant),
-                      ],
-                    ),
                   ),
                 ),
                 if (s.hasKey) ...<Widget>[
@@ -281,66 +211,6 @@ class AiSettingsSection extends ConsumerWidget {
     }
   }
 
-  void _openMaxLoopsDialog(BuildContext context, WidgetRef ref, int current) {
-    final AppLocalizations l10n = AppLocalizations.of(context);
-    int selected = current;
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext ctx) => StatefulBuilder(
-        builder: (BuildContext ctx, StateSetter setState) => AlertDialog(
-          title: Text(l10n.settingsAiMaxAutoLoopsTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(l10n.settingsAiMaxAutoLoopsSub),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  IconButton.filledTonal(
-                    onPressed: selected > AppConstants.kMinMaxAutoLoops
-                        ? () => setState(() => selected--)
-                        : null,
-                    icon: const Icon(Icons.remove_rounded),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      '$selected',
-                      style: Theme.of(ctx).textTheme.headlineSmall?.copyWith(
-                            fontFamily: AppTheme.monoFont,
-                          ),
-                    ),
-                  ),
-                  IconButton.filledTonal(
-                    onPressed: selected < AppConstants.kMaxMaxAutoLoops
-                        ? () => setState(() => selected++)
-                        : null,
-                    icon: const Icon(Icons.add_rounded),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(l10n.commonCancel),
-            ),
-            TextButton(
-              onPressed: () {
-                ref.read(aiSettingsProvider.notifier).setMaxAutoLoops(selected);
-                Navigator.of(ctx).pop();
-              },
-              child: Text(l10n.commonOk),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> _openKeyDialog(
     BuildContext context,
     AiSettingsController controller,
@@ -394,6 +264,18 @@ class AiSettingsSection extends ConsumerWidget {
     if (ok == true) {
       await controller.clearKey();
     }
+  }
+
+  /// Opens the model picker sheet. The picked id is applied through the
+  /// controller (`setModel`) so the selection persists and propagates to the
+  /// chat surface immediately.
+  Future<void> _openModelPicker(
+    BuildContext context,
+    AiSettingsController controller,
+  ) async {
+    final String? picked = await ModelPickerSheet.show(context);
+    if (picked == null || picked.isEmpty || !context.mounted) return;
+    await controller.setModel(picked);
   }
 
   void _showWebsite(BuildContext context, AiProvider provider) {
@@ -558,374 +440,71 @@ class _ProviderTile extends StatelessWidget {
   }
 }
 
-// ─── Model list ─────────────────────────────────────────────────────────
+// ─── Model picker entry ─────────────────────────────────────────────────
 
-/// Model picker section: a header (title + add-custom + refresh), an optional
-/// fetch-error hint with retry, then the merged model rows. Reads the live
-/// catalogue from [availableModelsProvider]; falls back to the built-in list
-/// while loading or when the remote fetch failed.
-class _ModelSection extends ConsumerWidget {
-  const _ModelSection({
+/// Single settings row for model selection: shows the active model name and
+/// opens the [ModelPickerSheet] on tap. The full catalogue, search filtering
+/// and custom-model management live inside the sheet.
+class _ModelPickerTile extends StatelessWidget {
+  const _ModelPickerTile({
     required this.provider,
     required this.selectedModelId,
-    required this.onSelected,
+    required this.onOpen,
   });
 
   final AiProvider provider;
   final String selectedModelId;
-  final ValueChanged<String> onSelected;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final ColorScheme colors = Theme.of(context).colorScheme;
-    final AppLocalizations l10n = AppLocalizations.of(context);
-    final AsyncValue<AvailableModelsState> async =
-        ref.watch(availableModelsProvider);
-    final AvailableModelsState? current = async.valueOrNull;
-
-    return Column(
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 6, 2),
-          child: Row(
-            children: <Widget>[
-              Icon(Icons.memory_rounded,
-                  size: 20, color: colors.onSurfaceVariant),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  l10n.aiModelsTitle,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurface,
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
-              ),
-              IconButton(
-                tooltip: l10n.aiModelsAddCustom,
-                visualDensity: VisualDensity.compact,
-                onPressed: () => _openAddCustomDialog(context, ref),
-                icon: Icon(Icons.add_rounded,
-                    size: 20, color: colors.onSurfaceVariant),
-              ),
-              IconButton(
-                tooltip: l10n.aiModelsRefresh,
-                visualDensity: VisualDensity.compact,
-                onPressed: async.isLoading
-                    ? null
-                    : () =>
-                        ref.read(availableModelsProvider.notifier).refresh(),
-                icon: async.isLoading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Icon(Icons.refresh_rounded,
-                        size: 20, color: colors.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
-        if (current?.fetchError != null)
-          _FetchErrorHint(
-            onRetry: () =>
-                ref.read(availableModelsProvider.notifier).refresh(),
-          ),
-        if (current == null)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          )
-        else if (current.models.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Text(
-              l10n.aiModelsEmpty,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-            ),
-          )
-        else
-          Column(
-            children: <Widget>[
-              for (int i = 0; i < current.models.length; i++) ...<Widget>[
-                if (i > 0) const _SectionDivider(indent: 52),
-                _ModelTile(
-                  model: current.models[i],
-                  active: current.models[i].id == selectedModelId,
-                  isCustom: current.isCustom(current.models[i].id),
-                  onSelect: () => onSelected(current.models[i].id),
-                  onRemove: () => ref
-                      .read(customModelsProvider.notifier)
-                      .removeCustomModel(provider.id, current.models[i].id),
-                ),
-              ],
-            ],
-          ),
-      ],
-    );
-  }
-
-  Future<void> _openAddCustomDialog(BuildContext context, WidgetRef ref) async {
-    final Set<String> existing = <String>{
-      for (final AiModel m
-          in ref.read(availableModelsProvider).valueOrNull?.models ??
-              const <AiModel>[])
-        m.id,
-    };
-    final String? result = await showDialog<String>(
-      context: context,
-      builder: (BuildContext ctx) => _CustomModelDialog(existingIds: existing),
-    );
-    if (result != null && result.trim().isNotEmpty) {
-      await ref
-          .read(customModelsProvider.notifier)
-          .addCustomModel(provider.id, result);
-    }
-  }
-}
-
-/// A single selectable model row, with an optional custom badge + remove action.
-class _ModelTile extends StatelessWidget {
-  const _ModelTile({
-    required this.model,
-    required this.active,
-    required this.isCustom,
-    required this.onSelect,
-    required this.onRemove,
-  });
-
-  final AiModel model;
-  final bool active;
-  final bool isCustom;
-  final VoidCallback onSelect;
-  final VoidCallback onRemove;
+  final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
     final AppLocalizations l10n = AppLocalizations.of(context);
-    return InkWell(
-      onTap: onSelect,
+    // Built-in matches keep their friendly display name; custom/fetched ids
+    // fall back to the raw id itself.
+    final AiModel builtin = provider.modelById(selectedModelId);
+    final String modelName =
+        builtin.id == selectedModelId ? builtin.name : selectedModelId;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onOpen,
       child: Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: isCustom ? 6 : 16,
-          top: 12,
-          bottom: 12,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: <Widget>[
-            Icon(
-              active
-                  ? Icons.radio_button_checked_rounded
-                  : Icons.radio_button_unchecked_rounded,
-              size: 18,
-              color: active ? colors.primary : colors.onSurfaceVariant,
-            ),
+            Icon(Icons.memory_rounded,
+                size: 20, color: colors.onSurfaceVariant),
             const SizedBox(width: 16),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Flexible(
-                        child: Text(
-                          model.name,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color:
-                                        active ? colors.primary : colors.onSurface,
-                                    fontWeight:
-                                        active ? FontWeight.w600 : FontWeight.w500,
-                                  ),
-                        ),
-                      ),
-                      if (isCustom) ...<Widget>[
-                        const SizedBox(width: 8),
-                        _CustomBadge(label: l10n.aiModelsCustomBadge),
-                      ],
-                    ],
-                  ),
-                  if (model.description != null) ...<Widget>[
-                    const SizedBox(height: 2),
-                    Text(
-                      _localizedModelDesc(l10n, model.description!),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: colors.onSurfaceVariant,
-                            fontSize: 11,
-                          ),
+              child: Text(
+                l10n.aiModelsTitle,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colors.onSurface,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
-                ],
               ),
             ),
-            if (isCustom)
-              IconButton(
-                tooltip: l10n.aiModelsRemoveCustom,
-                visualDensity: VisualDensity.compact,
-                onPressed: onRemove,
-                icon: Icon(Icons.close_rounded, size: 16, color: colors.error),
+            Flexible(
+              child: Text(
+                modelName.isEmpty ? l10n.aiModelsEmpty : modelName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontFamily: AppTheme.monoFont,
+                  fontFamilyFallback: AppTheme.monoFallback,
+                  fontSize: 12,
+                  color: colors.onSurfaceVariant,
+                ),
               ),
+            ),
+            const SizedBox(width: 6),
+            Icon(Icons.chevron_right_rounded,
+                size: 16, color: colors.onSurfaceVariant),
           ],
         ),
       ),
-    );
-  }
-}
-
-/// Small pill labelling a user-added model.
-class _CustomBadge extends StatelessWidget {
-  const _CustomBadge({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme colors = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: colors.tertiaryContainer,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: colors.onTertiaryContainer,
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-            ),
-      ),
-    );
-  }
-}
-
-/// One-line warning shown when the live model fetch failed, offering a retry.
-class _FetchErrorHint extends StatelessWidget {
-  const _FetchErrorHint({required this.onRetry});
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme colors = Theme.of(context).colorScheme;
-    final AppLocalizations l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
-      child: Row(
-        children: <Widget>[
-          Icon(Icons.error_outline_rounded, size: 16, color: colors.error),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              l10n.aiModelsFetchFailed,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colors.error,
-                    fontSize: 11,
-                  ),
-            ),
-          ),
-          TextButton(
-            onPressed: onRetry,
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-            ),
-            child: Text(l10n.commonRetry),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Dialog for adding a custom model id, with non-empty + duplicate validation.
-class _CustomModelDialog extends StatefulWidget {
-  const _CustomModelDialog({required this.existingIds});
-  final Set<String> existingIds;
-
-  @override
-  State<_CustomModelDialog> createState() => _CustomModelDialogState();
-}
-
-class _CustomModelDialogState extends State<_CustomModelDialog> {
-  final TextEditingController _controller = TextEditingController();
-  String? _error;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _submit(AppLocalizations l10n) {
-    final String id = _controller.text.trim();
-    if (id.isEmpty) {
-      setState(() => _error = l10n.aiModelsInvalidId);
-      return;
-    }
-    if (widget.existingIds.contains(id)) {
-      setState(() => _error = l10n.aiModelsDuplicate);
-      return;
-    }
-    Navigator.of(context).pop(id);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme colors = Theme.of(context).colorScheme;
-    final AppLocalizations l10n = AppLocalizations.of(context);
-    return AlertDialog(
-      title: Row(
-        children: <Widget>[
-          Icon(Icons.add_rounded, size: 20, color: colors.primary),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(l10n.aiModelsAddCustom,
-                style: Theme.of(context).textTheme.titleLarge),
-          ),
-        ],
-      ),
-      content: TextField(
-        controller: _controller,
-        autofocus: true,
-        autocorrect: false,
-        enableSuggestions: false,
-        inputFormatters: <TextInputFormatter>[
-          FilteringTextInputFormatter.singleLineFormatter,
-        ],
-        style: TextStyle(
-          fontFamily: AppTheme.monoFont,
-          fontFamilyFallback: AppTheme.monoFallback,
-          fontSize: 13,
-          color: colors.onSurface,
-        ),
-        decoration: InputDecoration(
-          hintText: l10n.aiModelsAddCustomHint,
-          errorText: _error,
-        ),
-        onChanged: (_) {
-          if (_error != null) setState(() => _error = null);
-        },
-        onSubmitted: (_) => _submit(l10n),
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.commonCancel),
-        ),
-        FilledButton(
-          onPressed: () => _submit(l10n),
-          child: Text(l10n.aiModelsAdd),
-        ),
-      ],
     );
   }
 }
@@ -1147,23 +726,6 @@ class _ProviderField extends StatelessWidget {
 }
 
 // ─── API key dialog ─────────────────────────────────────────────────────
-
-/// Maps a model's raw (English) description to its localized string.
-String _localizedModelDesc(AppLocalizations l10n, String raw) => switch (raw) {
-      'Fast & affordable' => l10n.modelDescFastAffordable,
-      'Most capable' => l10n.modelDescMostCapable,
-      'Legacy fast' => l10n.modelDescLegacyFast,
-      'General conversation' => l10n.modelDescGeneralConversation,
-      'Advanced reasoning' => l10n.modelDescAdvancedReasoning,
-      'Fast response' => l10n.modelDescFastResponse,
-      'Balanced' => l10n.modelDescBalanced,
-      'Free & fast' => l10n.modelDescFreeFast,
-      'Enhanced' => l10n.modelDescEnhanced,
-      'Standard' => l10n.modelDescStandard,
-      'Lightweight' => l10n.modelDescLightweight,
-      'RL enhanced' => l10n.modelDescRlEnhanced,
-      _ => raw,
-    };
 
 class _ApiKeyDialog extends StatefulWidget {
   const _ApiKeyDialog({required this.providerName, required this.existing});

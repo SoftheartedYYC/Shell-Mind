@@ -9,6 +9,7 @@ import '../../../../core/services/storage_inspector.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../providers/ai_settings_provider.dart';
 import '../providers/hide_ip_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
@@ -33,21 +34,40 @@ class SettingsPage extends ConsumerWidget {
             const _SettingsHeader(),
             const _IdentityCard(),
             const SizedBox(height: 8),
-            const _AiProviderSection(),
-            const _ThemeSection(),
-            const _LanguageSection(),
-            const _AboutSection(),
+            const _AppearanceSection(),
+            _Section(
+              label: l10n.settingsSectionAiProvider,
+              children: <Widget>[
+                const AiSettingsSection(),
+              ],
+            ),
+            _Section(
+              label: l10n.settingsSectionAiAgent,
+              children: <Widget>[
+                const _AiAgentSection(),
+              ],
+            ),
+            _Section(
+              label: l10n.settingsSectionSsh,
+              children: <Widget>[
+                const SshReconnectSection(),
+              ],
+            ),
+            _Section(
+              label: l10n.settingsSectionServers,
+              children: <Widget>[
+                _HideIpTile(),
+              ],
+            ),
             _Section(
               label: l10n.settingsSectionStoragePrivacy,
               children: <Widget>[
-                _HideIpTile(),
                 _SettingsTile(
                   icon: Icons.receipt_long_outlined,
                   title: l10n.auditTitle,
                   value: l10n.auditTileDesc,
                   onTap: () => context.pushNamed(RouteNames.auditLog),
                 ),
-                const SshReconnectSection(),
                 _SettingsTile(
                   icon: Icons.shield_outlined,
                   title: l10n.settingsTileSecrets,
@@ -65,8 +85,9 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
             _Section(
-              label: l10n.settingsSectionResources,
+              label: l10n.settingsSectionAboutUpdate,
               children: <Widget>[
+                const UpdateSection(),
                 _SettingsTile(
                   icon: Icons.code_rounded,
                   title: l10n.settingsTileLicenses,
@@ -194,16 +215,23 @@ class _IdentityCard extends StatelessWidget {
   }
 }
 
-// ─── Theme section ────────────────────────────────────────────────────────
+// ─── Appearance & language section ────────────────────────────────────────
 
-class _ThemeSection extends ConsumerWidget {
-  const _ThemeSection();
+/// Appearance (theme mode) and language pickers merged into one visual
+/// group so both "how the app looks" controls live side by side.
+class _AppearanceSection extends ConsumerWidget {
+  const _AppearanceSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    final notifier = ref.read(themeModeProvider.notifier);
+    final ThemeModeNotifier themeNotifier =
+        ref.read(themeModeProvider.notifier);
+    final locale = ref.watch(localeProvider);
+    final LocaleNotifier localeNotifier = ref.read(localeProvider.notifier);
     final l10n = AppLocalizations.of(context);
+
+    final String currentLanguage = locale?.languageCode ?? 'system';
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -233,36 +261,12 @@ class _ThemeSection extends ConsumerWidget {
               ],
               selected: <ThemeMode>{themeMode},
               onSelectionChanged: (Set<ThemeMode> selection) {
-                notifier.setThemeMode(selection.first);
+                themeNotifier.setThemeMode(selection.first);
               },
               showSelectedIcon: false,
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Language section ──────────────────────────────────────────────────────
-
-class _LanguageSection extends ConsumerWidget {
-  const _LanguageSection();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final locale = ref.watch(localeProvider);
-    final notifier = ref.read(localeProvider.notifier);
-    final l10n = AppLocalizations.of(context);
-
-    final String currentValue = locale?.languageCode ?? 'system';
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          SectionHeader(label: l10n.settingsSectionLanguage),
+          const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SegmentedButton<String>(
@@ -281,10 +285,10 @@ class _LanguageSection extends ConsumerWidget {
                   label: Text(l10n.settingsLanguageEn),
                 ),
               ],
-              selected: <String>{currentValue},
+              selected: <String>{currentLanguage},
               onSelectionChanged: (Set<String> selection) {
                 final String code = selection.first;
-                notifier.setLocale(code == 'system' ? null : Locale(code));
+                localeNotifier.setLocale(code == 'system' ? null : Locale(code));
               },
               showSelectedIcon: false,
             ),
@@ -295,43 +299,184 @@ class _LanguageSection extends ConsumerWidget {
   }
 }
 
-// ─── AI provider section ──────────────────────────────────────────────────
+// ─── AI Agent section ─────────────────────────────────────────────────────
 
-class _AiProviderSection extends StatelessWidget {
-  const _AiProviderSection();
+/// Agent autonomy controls: the auto-execute toggle plus the cap on
+/// automatic command loops. Lives outside [AiSettingsSection] so the
+/// "AI provider" and "AI agent" concerns get their own labelled groups.
+class _AiAgentSection extends ConsumerWidget {
+  const _AiAgentSection();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AiSettingsState s = ref.watch(aiSettingsProvider);
+    final AiSettingsController controller =
+        ref.read(aiSettingsProvider.notifier);
     final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          SectionHeader(label: l10n.settingsSectionAiProvider),
-          const AiSettingsSection(),
-        ],
-      ),
+    final colors = Theme.of(context).colorScheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.smart_toy_rounded,
+                  size: 20, color: colors.onSurfaceVariant),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      l10n.settingsAiAutoExecuteTitle,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: colors.onSurface,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                    Text(
+                      l10n.settingsAiAutoExecuteSubtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Switch(
+                value: s.aiAutoExecute,
+                onChanged: controller.setAiAutoExecute,
+              ),
+            ],
+          ),
+        ),
+        InkWell(
+          onTap: () => _showMaxLoopsSheet(context, ref, s.aiMaxAutoLoops),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.repeat_rounded,
+                    size: 20, color: colors.onSurfaceVariant),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        l10n.settingsAiMaxAutoLoopsTitle,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: colors.onSurface,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                      Text(
+                        l10n.settingsAiMaxAutoLoopsTileDesc,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${s.aiMaxAutoLoops}',
+                  style: TextStyle(
+                    fontFamily: AppTheme.monoFont,
+                    fontFamilyFallback: AppTheme.monoFallback,
+                    fontSize: 12,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(Icons.chevron_right_rounded,
+                    size: 16, color: colors.onSurfaceVariant),
+              ],
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              l10n.settingsAiMaxAutoLoopsHint,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+            ),
+          ),
+        ),
+      ],
     );
   }
-}
 
-// ─── About & update section ───────────────────────────────────────────────
-
-class _AboutSection extends StatelessWidget {
-  const _AboutSection();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          SectionHeader(label: l10n.settingsSectionAboutUpdate),
-          const UpdateSection(),
-        ],
+  /// Stepper dialog for the max automatic loop count per AI task
+  /// ([AppConstants.kMinMaxAutoLoops]–[AppConstants.kMaxMaxAutoLoops]).
+  void _showMaxLoopsSheet(
+    BuildContext context,
+    WidgetRef ref,
+    int current,
+  ) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    int selected = current;
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext ctx) => StatefulBuilder(
+        builder: (BuildContext ctx, StateSetter setState) => AlertDialog(
+          title: Text(l10n.settingsAiMaxAutoLoopsTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(l10n.settingsAiMaxAutoLoopsSub),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  IconButton.filledTonal(
+                    onPressed: selected > AppConstants.kMinMaxAutoLoops
+                        ? () => setState(() => selected--)
+                        : null,
+                    icon: const Icon(Icons.remove_rounded),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      '$selected',
+                      style: Theme.of(ctx).textTheme.headlineSmall?.copyWith(
+                            fontFamily: AppTheme.monoFont,
+                          ),
+                    ),
+                  ),
+                  IconButton.filledTonal(
+                    onPressed: selected < AppConstants.kMaxMaxAutoLoops
+                        ? () => setState(() => selected++)
+                        : null,
+                    icon: const Icon(Icons.add_rounded),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.commonCancel),
+            ),
+            TextButton(
+              onPressed: () {
+                ref.read(aiSettingsProvider.notifier).setMaxAutoLoops(selected);
+                Navigator.of(ctx).pop();
+              },
+              child: Text(l10n.commonOk),
+            ),
+          ],
+        ),
       ),
     );
   }
