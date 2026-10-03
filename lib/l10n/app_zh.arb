@@ -1,7 +1,7 @@
 {
   "@@locale": "zh",
 
-  "appTitle": "Shell-Mind",
+  "appTitle": "ShellMind",
 
   "navServers": "服务器",
   "navAiChat": "AI 助手",
@@ -129,7 +129,7 @@
   "aiChatSuggestion4": "写一个 awk 单行命令求和 CSV 列",
   "aiChatTryAsking": "试试问我",
   "aiChatIntroTitle": "你的终端伴侣",
-  "aiChatIntroBody": "粘贴一个命令、一段报错或一块日志输出。Shell-Mind 会解释发生了什么、建议下一步操作，并帮你编写命令。",
+  "aiChatIntroBody": "粘贴一个命令、一段报错或一块日志输出。ShellMind 会解释发生了什么、建议下一步操作，并帮你编写命令。",
   "aiChatNoKeyTitle": "未配置 API 密钥",
   "aiChatNoKeyMessage": "添加你的 {provider} API 密钥以启用助手。密钥加密存储在本设备上，除调用模型外不会离开设备。",
   "aiChatOpenSettings": "打开 AI 设置",
@@ -137,7 +137,7 @@
   "aiChatInputHint": "输入任何问题…",
   "aiChatInputDisabled": "请先设置 API 密钥",
   "aiChatError": "错误",
-  "aiChatAssistantName": "Shell-Mind",
+  "aiChatAssistantName": "ShellMind",
   "aiChatCopied": "已复制",
   "aiChatCopy": "复制",
   "aiChatThinking": "思考中…",
@@ -182,6 +182,11 @@
   "settingsDataCleared": "已清除所有数据",
   "settingsClearDataFailed": "无法清除数据：{message}",
   "settingsIssueLinkCopied": "问题反馈链接已复制到剪贴板。",
+  "settingsAboutGithub": "GitHub 仓库",
+
+  "settingsHideIp": "隐藏 IP 地址",
+  "settingsHideIpDesc": "在服务器列表与 AI 页面中以打码形式显示 IP 地址",
+  "serverMaskedAddress": "地址已隐藏",
 
   "aiSettingsApiKeyTitle": "{provider} API 密钥",
   "aiSettingsKeySet": "已设置",
@@ -231,6 +236,30 @@
   "aiModelsInvalidId": "请输入模型 ID",
   "aiModelsDuplicate": "该模型已存在",
 
+  "aiProvidersAddTile": "添加自定义服务商",
+  "aiProvidersAddTitle": "添加自定义服务商",
+  "aiProvidersFieldName": "名称",
+  "aiProvidersFieldNameHint": "例如：硅基流动",
+  "aiProvidersFieldBaseUrl": "Base URL",
+  "aiProvidersFieldBaseUrlHint": "https://api.example.com/v1",
+  "aiProvidersFieldModel": "默认模型（可选）",
+  "aiProvidersFieldModelHint": "输入模型 ID，如 deepseek-chat",
+  "aiProvidersAddConfirm": "添加",
+  "aiProvidersInvalidInput": "请输入名称和 Base URL",
+  "aiProvidersInvalidUrl": "Base URL 必须以 http:// 或 https:// 开头",
+  "aiProvidersDuplicateName": "已存在同名服务商",
+  "aiProvidersAdded": "自定义服务商已添加。",
+  "aiProvidersAddFailed": "添加失败，请检查输入。",
+  "aiProvidersDeleteTile": "移除自定义服务商",
+  "aiProvidersDeleteTitle": "移除 {provider}？",
+  "@aiProvidersDeleteTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiProvidersDeleteMessage": "其存储的 API 密钥、记忆的模型与自定义模型也将一并删除。内置服务商不可删除。",
+  "aiProvidersDeleteConfirm": "移除",
+
   "updateVersion": "版本",
   "updateSoftwareUpdate": "软件更新",
   "updateChecking": "检查中",
@@ -257,18 +286,18 @@
   "updateCancel": "取消",
   "updateKeepForeground": "请保持应用在前台",
   "updateDownloadComplete": "下载完成",
-  "updateInstallHint": "Android 会要求你确认。安装期间 Shell-Mind 会关闭；你的服务器和历史记录将被保留。",
+  "updateInstallHint": "Android 会要求你确认。安装期间 ShellMind 会关闭；你的服务器和历史记录将被保留。",
   "updateLaunching": "启动中...",
   "updateInstallNow": "立即安装",
   "updateDelete": "删除",
   "updateInstallTitle": "安装 {tag}？",
-  "updateInstallMessage": "系统安装程序将会打开。安装期间 Shell-Mind 会关闭，完成后自动以新版本重新打开。",
+  "updateInstallMessage": "系统安装程序将会打开。安装期间 ShellMind 会关闭，完成后自动以新版本重新打开。",
   "updateNotNow": "暂不安装",
   "updateInstall": "安装",
   "updateCheckFailed": "更新检查失败。",
   "updateErrorTitleNoReleases": "暂无发布版本",
   "updateErrorTitleGeneric": "更新检查失败",
-  "updateErrNoReleases": "Shell-Mind 目前还没有发布任何版本。",
+  "updateErrNoReleases": "ShellMind 目前还没有发布任何版本。",
   "updateErrRateLimit": "已达到 GitHub API 访问频率限制，请稍后重试。",
   "updateErrTimeout": "请求 GitHub 超时，请检查网络后重试。",
   "updateErrNetwork": "无法连接 GitHub，请检查网络连接。",
@@ -286,7 +315,7 @@
   "updateInstallLaterFromSettings": "稍后在设置中安装",
   "updateCouldNotComplete": "更新无法完成。",
   "updateClose": "关闭",
-  "updatePromptInstallHint": "安装期间 Android 会关闭 Shell-Mind。服务器、密钥和聊天历史将被保留。",
+  "updatePromptInstallHint": "安装期间 Android 会关闭 ShellMind。服务器、密钥和聊天历史将被保留。",
 
   "commonCancel": "取消",
   "commonDelete": "删除",
@@ -359,5 +388,225 @@
   "aiAgentAutoModeOff": "自动模式：关",
   "aiAgentStop": "停止自动模式",
   "aiAgentExecuting": "执行中…",
-  "aiAgentDefaultServer": "服务器"
+  "aiAgentDefaultServer": "服务器",
+
+  "aiTimelineTitle": "执行时间线",
+  "aiTimelineOpen": "执行时间线",
+  "aiTimelineEmpty": "还没有执行过命令",
+  "aiTimelineEmptyHint": "通过对话或自动模式执行命令后，完整链路将在此展示。",
+  "aiTimelineStatRounds": "{count, plural, =1{1 轮} other{{count} 轮}}",
+  "@aiTimelineStatRounds": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatCommands": "{count, plural, =1{1 条命令} other{{count} 条命令}}",
+  "@aiTimelineStatCommands": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatSuccess": "{count, plural, =1{1 条成功} other{{count} 条成功}}",
+  "@aiTimelineStatSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatFailed": "{count, plural, =1{1 条失败} other{{count} 条失败}}",
+  "@aiTimelineStatFailed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStarted": "开始于 {time}",
+  "@aiTimelineStarted": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineEnded": "结束于 {time}",
+  "@aiTimelineEnded": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineExitCode": "退出码：{code}",
+  "@aiTimelineExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "aiTimelineNoExitCode": "无退出码",
+  "aiTimelineOutput": "输出",
+  "aiTimelineOutputEmpty": "无输出",
+  "aiTimelineErrorOutput": "错误输出",
+  "aiTimelineRunning": "执行中…",
+  "aiTimelineClose": "关闭",
+
+  "sshReconnectToggle": "SSH 断线自动重连",
+  "sshReconnectToggleDesc": "连接意外断开时按指数退避自动重试",
+  "sshReconnectMaxAttempts": "最大重试次数",
+  "sshReconnectMaxAttemptsDesc": "0 表示一直重试直到成功",
+  "sshReconnectMaxAttemptsValue": "{count}",
+  "@sshReconnectMaxAttemptsValue": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sshReconnectMaxAttemptsUnlimited": "不限",
+  "sshReconnectStatusReconnecting": "重连中（第 {attempt} 次）",
+  "@sshReconnectStatusReconnecting": {
+    "placeholders": {
+      "attempt": { "type": "int" }
+    }
+  },
+  "sshReconnectStatusReconnectingOf": "重连中（第 {attempt}/{max} 次）",
+  "@sshReconnectStatusReconnectingOf": {
+    "placeholders": {
+      "attempt": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUp": "自动重连已放弃",
+  "sshReconnectGaveUpMessage": "重试 {max} 次后仍无法连接 {name}。",
+  "@sshReconnectGaveUpMessage": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUpMessageUnlimited": "无法连接 {name}。",
+  "@sshReconnectGaveUpMessageUnlimited": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sshReconnectRetryNow": "立即重试",
+  "sshReconnectStopAuto": "停止",
+  "sshReconnectReconnectedSnack": "已重新连接到 {name}",
+  "@sshReconnectReconnectedSnack": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "snippetsTitle": "命令快捷片段",
+  "snippetsSubtitle": "保存常用命令，随时快速复用",
+  "snippetsAddTooltip": "添加片段",
+  "snippetsAddTitle": "新建片段",
+  "snippetsSave": "保存",
+  "snippetsCommandLabel": "命令",
+  "snippetsCommandHint": "例如 docker ps -a",
+  "snippetsNameLabel": "名称（可选）",
+  "snippetsNameHint": "例如 列出所有容器",
+  "snippetsCommandRequired": "命令内容不能为空",
+  "snippetsDeleteTooltip": "删除片段",
+  "snippetsEmptyTitle": "还没有快捷片段",
+  "snippetsEmptyMessage": "保存常用命令后，即可一键插入或直接执行。",
+  "snippetsLoadFailed": "片段加载失败",
+  
+    "healthTitle": "集群健康",
+    "healthOnlineRatio": "{online}/{total} 在线",
+    "@healthOnlineRatio": {
+      "placeholders": {
+        "online": { "type": "int" },
+        "total": { "type": "int" }
+      }
+    },
+    "healthProbing": "探测中…",
+    "healthProbeTooltip": "运行健康检查",
+    "healthProbedAt": "检查于 {time}",
+    "@healthProbedAt": {
+      "placeholders": {
+        "time": { "type": "String" }
+      }
+    },
+    "healthMoodAllOnline": "所有服务器运行正常",
+    "healthMoodDegraded": "部分服务器不可达",
+    "healthMoodAllOffline": "所有服务器不可达",
+    "healthOfflineServers": "离线：{names}",
+    "@healthOfflineServers": {
+      "placeholders": {
+        "names": { "type": "String" }
+      }
+    },
+    "healthNoData": "点击刷新检查全部服务器",
+    "healthUptime": "已运行 {brief}",
+    "@healthUptime": {
+      "placeholders": {
+        "brief": { "type": "String" }
+      }
+    },
+    "healthLoad": "负载 {value}",
+    "@healthLoad": {
+      "placeholders": {
+        "value": { "type": "String" }
+      }
+    },
+    "healthDiagIntro": "这是我的服务器集群健康报告：",
+    "healthDiagStats": "{total} 台服务器中 {online} 台在线。",
+    "@healthDiagStats": {
+      "placeholders": {
+        "online": { "type": "int" },
+        "total": { "type": "int" }
+      }
+    },
+    "healthDiagOfflineItem": "- {name}：离线",
+    "@healthDiagOfflineItem": {
+      "placeholders": {
+        "name": { "type": "String" }
+      }
+    },
+    "healthDiagOnlineItem": "- {name}：在线（{details}）",
+    "@healthDiagOnlineItem": {
+      "placeholders": {
+        "name": { "type": "String" },
+        "details": { "type": "String" }
+      }
+    },
+    "healthDiagOutro": "请分析这份健康数据，指出异常之处（高负载、近期重启等），并给出下一步排查建议。",
+    "healthDiagnose": "AI 诊断",
+    "healthStaleNote": "部分服务器在最近一次检查后已离线。",
+    
+    "auditTitle": "命令审计日志",
+  "auditTileDesc": "AI 执行过的命令记录",
+  "auditEmptyTitle": "暂无审计记录",
+  "auditEmptyMessage": "AI Agent 执行的命令会记录在这里。",
+  "auditFilteredEmpty": "没有符合当前筛选条件的记录",
+  "auditFilterAllServers": "全部服务器",
+  "auditFilterAllModes": "全部模式",
+  "auditFilterAllResults": "全部结果",
+  "auditFilterConfirmed": "确认执行",
+  "auditFilterAuto": "自动执行",
+  "auditFilterSuccess": "成功",
+  "auditFilterFailed": "失败",
+  "auditModeConfirmed": "确认",
+  "auditModeAuto": "自动",
+  "auditStatusSuccess": "成功",
+  "auditStatusFailed": "失败",
+  "auditDangerousBadge": "危险",
+  "auditExitCode": "退出码 {code}",
+  "@auditExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "auditOutputSummary": "输出摘要",
+  "auditNoOutput": "无输出",
+  "auditClearTooltip": "清空审计日志",
+  "auditClearConfirmTitle": "清空审计日志",
+  "auditClearConfirmMessage": "全部 {count} 条审计记录将被永久删除。",
+  "@auditClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "auditClearAction": "清空",
+  "auditCleared": "审计日志已清空",
+  "auditEntriesCount": "{count} 条记录",
+  "@auditEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

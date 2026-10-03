@@ -75,3 +75,21 @@ String formatTimeAgo(DateTime time, {DateTime? now}) {
   final int y = diff.inDays ~/ 365;
   return '$y ${y == 1 ? 'year' : 'years'} ago';
 }
+
+/// Masks a host/IP [address] for privacy display: `43.***.***.50`.
+///
+/// IPv4 keeps the first and last octet; anything else (IPv6, hostnames,
+/// already-short strings) collapses to `***` after a trimmed 1-char head.
+/// Returns the input unchanged when it is empty or [enabled] is false.
+String maskHostAddress(String address, {bool enabled = true}) {
+  if (!enabled || address.trim().isEmpty) return address;
+  final String host = address.trim();
+  // IPv4: keep first + last octet.
+  final List<String> octets = host.split('.');
+  if (octets.length == 4 && octets.every((String o) => o.isNotEmpty)) {
+    return '${octets.first}.***.***.${octets.last}';
+  }
+  // Fallback: show a trimmed head, mask the rest.
+  if (host.length <= 2) return '***';
+  return '${host.substring(0, 1)}***';
+}

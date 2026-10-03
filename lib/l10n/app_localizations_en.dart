@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Shell-Mind';
+  String get appTitle => 'ShellMind';
 
   @override
   String get navServers => 'Servers';
@@ -428,7 +428,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiChatIntroBody =>
-      'Paste a command, an error, or a chunk of log output. Shell-Mind explains what happened, suggests the next move, and writes the commands so you don\'t have to.';
+      'Paste a command, an error, or a chunk of log output. ShellMind explains what happened, suggests the next move, and writes the commands so you don\'t have to.';
 
   @override
   String get aiChatNoKeyTitle => 'No API key configured';
@@ -454,7 +454,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiChatError => 'Error';
 
   @override
-  String get aiChatAssistantName => 'Shell-Mind';
+  String get aiChatAssistantName => 'ShellMind';
 
   @override
   String get aiChatCopied => 'Copied';
@@ -588,6 +588,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsIssueLinkCopied => 'Issue link copied to clipboard.';
+
+  @override
+  String get settingsAboutGithub => 'GitHub repository';
+
+  @override
+  String get settingsHideIp => 'Hide IP addresses';
+
+  @override
+  String get settingsHideIpDesc =>
+      'Mask IP addresses in the server list and AI pages';
+
+  @override
+  String get serverMaskedAddress => 'Address hidden';
 
   @override
   String aiSettingsApiKeyTitle(String provider) {
@@ -741,6 +754,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiModelsDuplicate => 'This model is already in the list.';
 
   @override
+  String get aiProvidersAddTile => 'Add custom provider';
+
+  @override
+  String get aiProvidersAddTitle => 'Add custom provider';
+
+  @override
+  String get aiProvidersFieldName => 'Name';
+
+  @override
+  String get aiProvidersFieldNameHint => 'e.g. SiliconFlow';
+
+  @override
+  String get aiProvidersFieldBaseUrl => 'Base URL';
+
+  @override
+  String get aiProvidersFieldBaseUrlHint => 'https://api.example.com/v1';
+
+  @override
+  String get aiProvidersFieldModel => 'Default model (optional)';
+
+  @override
+  String get aiProvidersFieldModelHint => 'Model ID, e.g. deepseek-chat';
+
+  @override
+  String get aiProvidersAddConfirm => 'Add';
+
+  @override
+  String get aiProvidersInvalidInput => 'Enter a name and a base URL.';
+
+  @override
+  String get aiProvidersInvalidUrl =>
+      'Base URL must start with http:// or https://';
+
+  @override
+  String get aiProvidersDuplicateName =>
+      'A provider with this name already exists.';
+
+  @override
+  String get aiProvidersAdded => 'Custom provider added.';
+
+  @override
+  String get aiProvidersAddFailed =>
+      'Couldn\'t add the provider — check the inputs.';
+
+  @override
+  String get aiProvidersDeleteTile => 'Remove custom provider';
+
+  @override
+  String aiProvidersDeleteTitle(String provider) {
+    return 'Remove $provider?';
+  }
+
+  @override
+  String get aiProvidersDeleteMessage =>
+      'Its stored API key, remembered model and custom models will be removed too. Built-in providers can\'t be deleted.';
+
+  @override
+  String get aiProvidersDeleteConfirm => 'Remove';
+
+  @override
   String get updateVersion => 'Version';
 
   @override
@@ -829,7 +902,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateInstallHint =>
-      'Android will ask you to confirm. Shell-Mind closes while the installer runs; your servers and history are preserved.';
+      'Android will ask you to confirm. ShellMind closes while the installer runs; your servers and history are preserved.';
 
   @override
   String get updateLaunching => 'Launching...';
@@ -847,7 +920,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateInstallMessage =>
-      'The system package installer will open. Shell-Mind closes during installation and reopens on the new version.';
+      'The system package installer will open. ShellMind closes during installation and reopens on the new version.';
 
   @override
   String get updateNotNow => 'Not now';
@@ -866,7 +939,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateErrNoReleases =>
-      'No releases have been published for Shell-Mind yet.';
+      'No releases have been published for ShellMind yet.';
 
   @override
   String get updateErrRateLimit =>
@@ -929,7 +1002,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updatePromptInstallHint =>
-      'Android closes Shell-Mind while the installer runs. Servers, keys and chat history are preserved.';
+      'Android closes ShellMind while the installer runs. Servers, keys and chat history are preserved.';
 
   @override
   String get commonCancel => 'Cancel';
@@ -1127,4 +1200,352 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiAgentDefaultServer => 'server';
+
+  @override
+  String get aiTimelineTitle => 'Execution timeline';
+
+  @override
+  String get aiTimelineOpen => 'Execution timeline';
+
+  @override
+  String get aiTimelineEmpty => 'No commands executed yet';
+
+  @override
+  String get aiTimelineEmptyHint =>
+      'Run commands via chat or auto mode and the full chain will appear here.';
+
+  @override
+  String aiTimelineStatRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rounds',
+      one: '1 round',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiTimelineStatCommands(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count commands',
+      one: '1 command',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiTimelineStatSuccess(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count succeeded',
+      one: '1 succeeded',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiTimelineStatFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count failed',
+      one: '1 failed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiTimelineStarted(String time) {
+    return 'Started $time';
+  }
+
+  @override
+  String aiTimelineEnded(String time) {
+    return 'Ended $time';
+  }
+
+  @override
+  String aiTimelineExitCode(int code) {
+    return 'Exit code: $code';
+  }
+
+  @override
+  String get aiTimelineNoExitCode => 'No exit code';
+
+  @override
+  String get aiTimelineOutput => 'Output';
+
+  @override
+  String get aiTimelineOutputEmpty => 'No output';
+
+  @override
+  String get aiTimelineErrorOutput => 'Error output';
+
+  @override
+  String get aiTimelineRunning => 'Running…';
+
+  @override
+  String get aiTimelineClose => 'Close';
+
+  @override
+  String get sshReconnectToggle => 'Auto-reconnect on disconnect';
+
+  @override
+  String get sshReconnectToggleDesc =>
+      'Retry dropped SSH sessions with exponential backoff';
+
+  @override
+  String get sshReconnectMaxAttempts => 'Max reconnect attempts';
+
+  @override
+  String get sshReconnectMaxAttemptsDesc => '0 means retry until it succeeds';
+
+  @override
+  String sshReconnectMaxAttemptsValue(int count) {
+    return '$count';
+  }
+
+  @override
+  String get sshReconnectMaxAttemptsUnlimited => 'Unlimited';
+
+  @override
+  String sshReconnectStatusReconnecting(int attempt) {
+    return 'Reconnecting (attempt $attempt)';
+  }
+
+  @override
+  String sshReconnectStatusReconnectingOf(int attempt, int max) {
+    return 'Reconnecting (attempt $attempt of $max)';
+  }
+
+  @override
+  String get sshReconnectGaveUp => 'Auto-reconnect gave up';
+
+  @override
+  String sshReconnectGaveUpMessage(String name, int max) {
+    return 'Could not reach $name after $max attempts.';
+  }
+
+  @override
+  String sshReconnectGaveUpMessageUnlimited(String name) {
+    return 'Could not reach $name.';
+  }
+
+  @override
+  String get sshReconnectRetryNow => 'Retry now';
+
+  @override
+  String get sshReconnectStopAuto => 'Stop';
+
+  @override
+  String sshReconnectReconnectedSnack(String name) {
+    return 'Reconnected to $name';
+  }
+
+  @override
+  String get snippetsTitle => 'Command snippets';
+
+  @override
+  String get snippetsSubtitle => 'Save commands for quick re-use';
+
+  @override
+  String get snippetsAddTooltip => 'Add snippet';
+
+  @override
+  String get snippetsAddTitle => 'New snippet';
+
+  @override
+  String get snippetsSave => 'Save';
+
+  @override
+  String get snippetsCommandLabel => 'Command';
+
+  @override
+  String get snippetsCommandHint => 'e.g. docker ps -a';
+
+  @override
+  String get snippetsNameLabel => 'Name (optional)';
+
+  @override
+  String get snippetsNameHint => 'e.g. List all containers';
+
+  @override
+  String get snippetsCommandRequired => 'Command text is required';
+
+  @override
+  String get snippetsDeleteTooltip => 'Delete snippet';
+
+  @override
+  String get snippetsEmptyTitle => 'No snippets yet';
+
+  @override
+  String get snippetsEmptyMessage =>
+      'Save frequently used commands and insert or run them with one tap.';
+
+  @override
+  String get snippetsLoadFailed => 'Could not load snippets';
+
+  @override
+  String get healthTitle => 'Fleet health';
+
+  @override
+  String healthOnlineRatio(int online, int total) {
+    return '$online/$total online';
+  }
+
+  @override
+  String get healthProbing => 'Probing…';
+
+  @override
+  String get healthProbeTooltip => 'Run health check';
+
+  @override
+  String healthProbedAt(String time) {
+    return 'Checked at $time';
+  }
+
+  @override
+  String get healthMoodAllOnline => 'All systems nominal';
+
+  @override
+  String get healthMoodDegraded => 'Some servers are unreachable';
+
+  @override
+  String get healthMoodAllOffline => 'All servers unreachable';
+
+  @override
+  String healthOfflineServers(String names) {
+    return 'Offline: $names';
+  }
+
+  @override
+  String get healthNoData => 'Tap refresh to check every server';
+
+  @override
+  String healthUptime(String brief) {
+    return 'up $brief';
+  }
+
+  @override
+  String healthLoad(String value) {
+    return 'load $value';
+  }
+
+  @override
+  String get healthDiagIntro => 'Here is my fleet\'s health report:';
+
+  @override
+  String healthDiagStats(int online, int total) {
+    return '$online of $total servers online.';
+  }
+
+  @override
+  String healthDiagOfflineItem(String name) {
+    return '- $name: offline';
+  }
+
+  @override
+  String healthDiagOnlineItem(String name, String details) {
+    return '- $name: online ($details)';
+  }
+
+  @override
+  String get healthDiagOutro =>
+      'Please analyze the health data, flag anything abnormal (high load, recent reboots) and suggest what to check next.';
+
+  @override
+  String get healthDiagnose => 'AI diagnostics';
+
+  @override
+  String get healthStaleNote =>
+      'Some servers went offline since the last check.';
+
+  @override
+  String get auditTitle => 'Command audit log';
+
+  @override
+  String get auditTileDesc => 'Commands run by the AI agent';
+
+  @override
+  String get auditEmptyTitle => 'No audit entries yet';
+
+  @override
+  String get auditEmptyMessage =>
+      'Commands executed by the AI agent will be recorded here.';
+
+  @override
+  String get auditFilteredEmpty => 'No entries match the current filter';
+
+  @override
+  String get auditFilterAllServers => 'All servers';
+
+  @override
+  String get auditFilterAllModes => 'All modes';
+
+  @override
+  String get auditFilterAllResults => 'All results';
+
+  @override
+  String get auditFilterConfirmed => 'Confirmed';
+
+  @override
+  String get auditFilterAuto => 'Auto';
+
+  @override
+  String get auditFilterSuccess => 'Success';
+
+  @override
+  String get auditFilterFailed => 'Failed';
+
+  @override
+  String get auditModeConfirmed => 'Confirmed';
+
+  @override
+  String get auditModeAuto => 'Auto';
+
+  @override
+  String get auditStatusSuccess => 'Success';
+
+  @override
+  String get auditStatusFailed => 'Failed';
+
+  @override
+  String get auditDangerousBadge => 'Dangerous';
+
+  @override
+  String auditExitCode(int code) {
+    return 'Exit code $code';
+  }
+
+  @override
+  String get auditOutputSummary => 'Output summary';
+
+  @override
+  String get auditNoOutput => 'No output';
+
+  @override
+  String get auditClearTooltip => 'Clear audit log';
+
+  @override
+  String get auditClearConfirmTitle => 'Clear audit log';
+
+  @override
+  String auditClearConfirmMessage(int count) {
+    return 'All $count audit entries will be permanently removed.';
+  }
+
+  @override
+  String get auditClearAction => 'Clear';
+
+  @override
+  String get auditCleared => 'Audit log cleared';
+
+  @override
+  String auditEntriesCount(int count) {
+    return '$count entries';
+  }
 }

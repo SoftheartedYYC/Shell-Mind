@@ -10,7 +10,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appTitle => 'Shell-Mind';
+  String get appTitle => 'ShellMind';
 
   @override
   String get navServers => '服务器';
@@ -421,7 +421,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiChatIntroBody =>
-      '粘贴一个命令、一段报错或一块日志输出。Shell-Mind 会解释发生了什么、建议下一步操作，并帮你编写命令。';
+      '粘贴一个命令、一段报错或一块日志输出。ShellMind 会解释发生了什么、建议下一步操作，并帮你编写命令。';
 
   @override
   String get aiChatNoKeyTitle => '未配置 API 密钥';
@@ -447,7 +447,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiChatError => '错误';
 
   @override
-  String get aiChatAssistantName => 'Shell-Mind';
+  String get aiChatAssistantName => 'ShellMind';
 
   @override
   String get aiChatCopied => '已复制';
@@ -581,6 +581,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsIssueLinkCopied => '问题反馈链接已复制到剪贴板。';
+
+  @override
+  String get settingsAboutGithub => 'GitHub 仓库';
+
+  @override
+  String get settingsHideIp => '隐藏 IP 地址';
+
+  @override
+  String get settingsHideIpDesc => '在服务器列表与 AI 页面中以打码形式显示 IP 地址';
+
+  @override
+  String get serverMaskedAddress => '地址已隐藏';
 
   @override
   String aiSettingsApiKeyTitle(String provider) {
@@ -730,6 +742,63 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiModelsDuplicate => '该模型已存在';
 
   @override
+  String get aiProvidersAddTile => '添加自定义服务商';
+
+  @override
+  String get aiProvidersAddTitle => '添加自定义服务商';
+
+  @override
+  String get aiProvidersFieldName => '名称';
+
+  @override
+  String get aiProvidersFieldNameHint => '例如：硅基流动';
+
+  @override
+  String get aiProvidersFieldBaseUrl => 'Base URL';
+
+  @override
+  String get aiProvidersFieldBaseUrlHint => 'https://api.example.com/v1';
+
+  @override
+  String get aiProvidersFieldModel => '默认模型（可选）';
+
+  @override
+  String get aiProvidersFieldModelHint => '输入模型 ID，如 deepseek-chat';
+
+  @override
+  String get aiProvidersAddConfirm => '添加';
+
+  @override
+  String get aiProvidersInvalidInput => '请输入名称和 Base URL';
+
+  @override
+  String get aiProvidersInvalidUrl => 'Base URL 必须以 http:// 或 https:// 开头';
+
+  @override
+  String get aiProvidersDuplicateName => '已存在同名服务商';
+
+  @override
+  String get aiProvidersAdded => '自定义服务商已添加。';
+
+  @override
+  String get aiProvidersAddFailed => '添加失败，请检查输入。';
+
+  @override
+  String get aiProvidersDeleteTile => '移除自定义服务商';
+
+  @override
+  String aiProvidersDeleteTitle(String provider) {
+    return '移除 $provider？';
+  }
+
+  @override
+  String get aiProvidersDeleteMessage =>
+      '其存储的 API 密钥、记忆的模型与自定义模型也将一并删除。内置服务商不可删除。';
+
+  @override
+  String get aiProvidersDeleteConfirm => '移除';
+
+  @override
   String get updateVersion => '版本';
 
   @override
@@ -817,7 +886,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get updateInstallHint =>
-      'Android 会要求你确认。安装期间 Shell-Mind 会关闭；你的服务器和历史记录将被保留。';
+      'Android 会要求你确认。安装期间 ShellMind 会关闭；你的服务器和历史记录将被保留。';
 
   @override
   String get updateLaunching => '启动中...';
@@ -835,7 +904,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get updateInstallMessage =>
-      '系统安装程序将会打开。安装期间 Shell-Mind 会关闭，完成后自动以新版本重新打开。';
+      '系统安装程序将会打开。安装期间 ShellMind 会关闭，完成后自动以新版本重新打开。';
 
   @override
   String get updateNotNow => '暂不安装';
@@ -853,7 +922,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateErrorTitleGeneric => '更新检查失败';
 
   @override
-  String get updateErrNoReleases => 'Shell-Mind 目前还没有发布任何版本。';
+  String get updateErrNoReleases => 'ShellMind 目前还没有发布任何版本。';
 
   @override
   String get updateErrRateLimit => '已达到 GitHub API 访问频率限制，请稍后重试。';
@@ -912,7 +981,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get updatePromptInstallHint =>
-      '安装期间 Android 会关闭 Shell-Mind。服务器、密钥和聊天历史将被保留。';
+      '安装期间 Android 会关闭 ShellMind。服务器、密钥和聊天历史将被保留。';
 
   @override
   String get commonCancel => '取消';
@@ -1102,4 +1171,346 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiAgentDefaultServer => '服务器';
+
+  @override
+  String get aiTimelineTitle => '执行时间线';
+
+  @override
+  String get aiTimelineOpen => '执行时间线';
+
+  @override
+  String get aiTimelineEmpty => '还没有执行过命令';
+
+  @override
+  String get aiTimelineEmptyHint => '通过对话或自动模式执行命令后，完整链路将在此展示。';
+
+  @override
+  String aiTimelineStatRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 轮',
+      one: '1 轮',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiTimelineStatCommands(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 条命令',
+      one: '1 条命令',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiTimelineStatSuccess(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 条成功',
+      one: '1 条成功',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiTimelineStatFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 条失败',
+      one: '1 条失败',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aiTimelineStarted(String time) {
+    return '开始于 $time';
+  }
+
+  @override
+  String aiTimelineEnded(String time) {
+    return '结束于 $time';
+  }
+
+  @override
+  String aiTimelineExitCode(int code) {
+    return '退出码：$code';
+  }
+
+  @override
+  String get aiTimelineNoExitCode => '无退出码';
+
+  @override
+  String get aiTimelineOutput => '输出';
+
+  @override
+  String get aiTimelineOutputEmpty => '无输出';
+
+  @override
+  String get aiTimelineErrorOutput => '错误输出';
+
+  @override
+  String get aiTimelineRunning => '执行中…';
+
+  @override
+  String get aiTimelineClose => '关闭';
+
+  @override
+  String get sshReconnectToggle => 'SSH 断线自动重连';
+
+  @override
+  String get sshReconnectToggleDesc => '连接意外断开时按指数退避自动重试';
+
+  @override
+  String get sshReconnectMaxAttempts => '最大重试次数';
+
+  @override
+  String get sshReconnectMaxAttemptsDesc => '0 表示一直重试直到成功';
+
+  @override
+  String sshReconnectMaxAttemptsValue(int count) {
+    return '$count';
+  }
+
+  @override
+  String get sshReconnectMaxAttemptsUnlimited => '不限';
+
+  @override
+  String sshReconnectStatusReconnecting(int attempt) {
+    return '重连中（第 $attempt 次）';
+  }
+
+  @override
+  String sshReconnectStatusReconnectingOf(int attempt, int max) {
+    return '重连中（第 $attempt/$max 次）';
+  }
+
+  @override
+  String get sshReconnectGaveUp => '自动重连已放弃';
+
+  @override
+  String sshReconnectGaveUpMessage(String name, int max) {
+    return '重试 $max 次后仍无法连接 $name。';
+  }
+
+  @override
+  String sshReconnectGaveUpMessageUnlimited(String name) {
+    return '无法连接 $name。';
+  }
+
+  @override
+  String get sshReconnectRetryNow => '立即重试';
+
+  @override
+  String get sshReconnectStopAuto => '停止';
+
+  @override
+  String sshReconnectReconnectedSnack(String name) {
+    return '已重新连接到 $name';
+  }
+
+  @override
+  String get snippetsTitle => '命令快捷片段';
+
+  @override
+  String get snippetsSubtitle => '保存常用命令，随时快速复用';
+
+  @override
+  String get snippetsAddTooltip => '添加片段';
+
+  @override
+  String get snippetsAddTitle => '新建片段';
+
+  @override
+  String get snippetsSave => '保存';
+
+  @override
+  String get snippetsCommandLabel => '命令';
+
+  @override
+  String get snippetsCommandHint => '例如 docker ps -a';
+
+  @override
+  String get snippetsNameLabel => '名称（可选）';
+
+  @override
+  String get snippetsNameHint => '例如 列出所有容器';
+
+  @override
+  String get snippetsCommandRequired => '命令内容不能为空';
+
+  @override
+  String get snippetsDeleteTooltip => '删除片段';
+
+  @override
+  String get snippetsEmptyTitle => '还没有快捷片段';
+
+  @override
+  String get snippetsEmptyMessage => '保存常用命令后，即可一键插入或直接执行。';
+
+  @override
+  String get snippetsLoadFailed => '片段加载失败';
+
+  @override
+  String get healthTitle => '集群健康';
+
+  @override
+  String healthOnlineRatio(int online, int total) {
+    return '$online/$total 在线';
+  }
+
+  @override
+  String get healthProbing => '探测中…';
+
+  @override
+  String get healthProbeTooltip => '运行健康检查';
+
+  @override
+  String healthProbedAt(String time) {
+    return '检查于 $time';
+  }
+
+  @override
+  String get healthMoodAllOnline => '所有服务器运行正常';
+
+  @override
+  String get healthMoodDegraded => '部分服务器不可达';
+
+  @override
+  String get healthMoodAllOffline => '所有服务器不可达';
+
+  @override
+  String healthOfflineServers(String names) {
+    return '离线：$names';
+  }
+
+  @override
+  String get healthNoData => '点击刷新检查全部服务器';
+
+  @override
+  String healthUptime(String brief) {
+    return '已运行 $brief';
+  }
+
+  @override
+  String healthLoad(String value) {
+    return '负载 $value';
+  }
+
+  @override
+  String get healthDiagIntro => '这是我的服务器集群健康报告：';
+
+  @override
+  String healthDiagStats(int online, int total) {
+    return '$total 台服务器中 $online 台在线。';
+  }
+
+  @override
+  String healthDiagOfflineItem(String name) {
+    return '- $name：离线';
+  }
+
+  @override
+  String healthDiagOnlineItem(String name, String details) {
+    return '- $name：在线（$details）';
+  }
+
+  @override
+  String get healthDiagOutro => '请分析这份健康数据，指出异常之处（高负载、近期重启等），并给出下一步排查建议。';
+
+  @override
+  String get healthDiagnose => 'AI 诊断';
+
+  @override
+  String get healthStaleNote => '部分服务器在最近一次检查后已离线。';
+
+  @override
+  String get auditTitle => '命令审计日志';
+
+  @override
+  String get auditTileDesc => 'AI 执行过的命令记录';
+
+  @override
+  String get auditEmptyTitle => '暂无审计记录';
+
+  @override
+  String get auditEmptyMessage => 'AI Agent 执行的命令会记录在这里。';
+
+  @override
+  String get auditFilteredEmpty => '没有符合当前筛选条件的记录';
+
+  @override
+  String get auditFilterAllServers => '全部服务器';
+
+  @override
+  String get auditFilterAllModes => '全部模式';
+
+  @override
+  String get auditFilterAllResults => '全部结果';
+
+  @override
+  String get auditFilterConfirmed => '确认执行';
+
+  @override
+  String get auditFilterAuto => '自动执行';
+
+  @override
+  String get auditFilterSuccess => '成功';
+
+  @override
+  String get auditFilterFailed => '失败';
+
+  @override
+  String get auditModeConfirmed => '确认';
+
+  @override
+  String get auditModeAuto => '自动';
+
+  @override
+  String get auditStatusSuccess => '成功';
+
+  @override
+  String get auditStatusFailed => '失败';
+
+  @override
+  String get auditDangerousBadge => '危险';
+
+  @override
+  String auditExitCode(int code) {
+    return '退出码 $code';
+  }
+
+  @override
+  String get auditOutputSummary => '输出摘要';
+
+  @override
+  String get auditNoOutput => '无输出';
+
+  @override
+  String get auditClearTooltip => '清空审计日志';
+
+  @override
+  String get auditClearConfirmTitle => '清空审计日志';
+
+  @override
+  String auditClearConfirmMessage(int count) {
+    return '全部 $count 条审计记录将被永久删除。';
+  }
+
+  @override
+  String get auditClearAction => '清空';
+
+  @override
+  String get auditCleared => '审计日志已清空';
+
+  @override
+  String auditEntriesCount(int count) {
+    return '$count 条记录';
+  }
 }

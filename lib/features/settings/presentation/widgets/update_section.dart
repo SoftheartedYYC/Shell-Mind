@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/theme.dart';
 import '../../../../core/services/update_service.dart';
@@ -87,9 +88,32 @@ class UpdateSection extends ConsumerWidget {
                 ),
               ),
             ),
+          _SectionDivider(),
+          _Row(
+            icon: Icons.code_rounded,
+            title: l10n.settingsAboutGithub,
+            trailing: Icon(Icons.open_in_new_rounded,
+                size: 14, color: colors.onSurfaceVariant),
+            onTap: _openGitHub,
+          ),
         ],
       ),
     );
+  }
+
+  /// Opens the GitHub repository in an external browser; silently ignored
+  /// when no handler is available.
+  static Future<void> _openGitHub() async {
+    final Uri uri = Uri.parse(
+      'https://github.com/${UpdateService.repoOwner}/${UpdateService.repoName}',
+    );
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      // No browser/handler available — nothing sensible to fall back to.
+    }
   }
 
   static bool _needsAttention(UpdateState s) =>
@@ -755,19 +779,21 @@ class _Row extends StatelessWidget {
     required this.title,
     this.trailing,
     this.accent,
+    this.onTap,
   });
 
   final IconData icon;
   final String title;
   final Widget? trailing;
   final Color? accent;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
     final Color tint = accent ?? colors.onSurfaceVariant;
 
-    return Padding(
+    final Widget row = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: <Widget>[
@@ -786,6 +812,9 @@ class _Row extends StatelessWidget {
         ],
       ),
     );
+
+    if (onTap == null) return row;
+    return InkWell(onTap: onTap, child: row);
   }
 }
 

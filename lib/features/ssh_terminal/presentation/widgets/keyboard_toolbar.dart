@@ -54,6 +54,7 @@ class KeyboardToolbar extends ConsumerStatefulWidget {
     required this.onSend,
     this.enabled = true,
     this.onAskAi,
+    this.onSnippets,
   });
 
   /// Emits a raw sequence (character or escape code) to the remote shell.
@@ -65,6 +66,10 @@ class KeyboardToolbar extends ConsumerStatefulWidget {
   /// When non-null, an "Ask AI" chip is pinned to the trailing edge; tapping it
   /// hands the current terminal context off to the AI assistant.
   final VoidCallback? onAskAi;
+
+  /// When non-null, a snippets chip is pinned to the trailing edge; tapping it
+  /// opens the saved-command sheet (each tap executes the chosen command).
+  final VoidCallback? onSnippets;
 
   @override
   ConsumerState<KeyboardToolbar> createState() => _KeyboardToolbarState();
@@ -224,6 +229,33 @@ class _KeyboardToolbarState extends ConsumerState<KeyboardToolbar> {
                 ),
               ),
             ),
+            // Snippets chip: opens the saved-command sheet; picking one runs
+            // it immediately. Pinned before the "Ask AI" chip.
+            if (widget.onSnippets != null) ...<Widget>[
+              Container(
+                width: 1,
+                height: 24,
+                color: colors.outlineVariant,
+              ),
+              const SizedBox(width: 6),
+              Tooltip(
+                message: AppLocalizations.of(context).snippetsTitle,
+                child: _KeyChip(
+                  enabled: widget.enabled,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    widget.onSnippets!();
+                  },
+                  child: Icon(
+                    Icons.bookmark_border_rounded,
+                    size: 18,
+                    color: widget.enabled
+                        ? colors.onSurfaceVariant
+                        : colors.onSurface.withValues(alpha: 0.3),
+                  ),
+                ),
+              ),
+            ],
             // "Ask AI" chip, pinned to the trailing edge so it never scrolls away.
             if (widget.onAskAi != null) ...<Widget>[
               Container(

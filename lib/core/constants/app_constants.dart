@@ -4,10 +4,10 @@
 /// endpoints) can be swapped centrally without touching feature code.
 abstract final class AppConstants {
   // ─── Identity ───────────────────────────────────────────────────────────
-  static const String appName = 'Shell-Mind';
+  static const String appName = 'ShellMind';
   static const String appTagline = 'SSH · AI · Command';
-  static const String appVersion = '1.3.0';
-  static const int appBuildNumber = 6;
+  static const String appVersion = '1.4.0';
+  static const int appBuildNumber = 7;
 
   /// Emitted at the top of exported terminal transcripts.
   static const String userAgent = '$appName/$appVersion';
@@ -51,6 +51,10 @@ abstract final class AppConstants {
 
   static const Duration chatRequestTimeout = Duration(seconds: 60);
   static const Duration sseIdleTimeout = Duration(seconds: 120);
+
+  /// Hard cap on persisted chat-history turns. Older messages are dropped
+  /// when the transcript exceeds this bound.
+  static const int kMaxChatHistoryMessages = 200;
 
   /// SSE stream termination marker emitted by OpenAI-compatible servers.
   static const String sseDoneMarker = '[DONE]';
@@ -123,9 +127,35 @@ abstract final class AppConstants {
   /// Per-provider user-added custom model ids: `ai_custom_models_<providerId>`.
   static String aiCustomModelsKey(String providerId) =>
       'ai_custom_models_$providerId';
+
+  /// Hive key inside [hiveBoxMeta] holding the JSON list of user-defined AI
+  /// providers (name + base URL + optional default model id).
+  static const String hiveKeyAiCustomProviders = 'ai_custom_providers';
+
+  /// Hive key inside [hiveBoxMeta] holding the JSON array of AI command
+  /// audit entries (most recent last). See [CommandAuditLog].
+  static const String hiveKeyCommandAuditLog = 'command_audit_log';
+
+  /// Maximum number of audit entries retained; older entries are evicted
+  /// first-in-first-out when the list exceeds this bound.
+  static const int kMaxCommandAuditEntries = 500;
+
+  /// Prefix for the stable ids generated for user-defined AI providers:
+  /// `custom_<uuid>`.
+  static const String customAiProviderIdPrefix = 'custom_';
   static const String prefKeyLastOpenedServerId = 'pref.last_server_id';
   static const String prefKeyOnboardingComplete = 'pref.onboarding_complete';
   static const String prefKeyLocale = 'pref.locale';
+
+  /// When true, user-facing surfaces display masked host/IP addresses.
+  static const String prefKeyHideIpAddresses = 'pref.hide_ip_addresses';
+
+  /// When true, dropped SSH sessions auto-reconnect with exponential backoff.
+  static const String prefKeySshAutoReconnect = 'pref.ssh_auto_reconnect';
+
+  /// Maximum reconnect attempts per dropped session before giving up.
+  /// `0` means retry forever (until the user disconnects manually).
+  static const String prefKeySshReconnectMaxAttempts = 'pref.ssh_reconnect_max_attempts';
 
   // ─── Defaults (used as fallbacks when prefs are absent) ─────────────────
   static const double defaultTerminalFontSize = 13.5;
@@ -144,6 +174,25 @@ abstract final class AppConstants {
 
   /// Default per-command execution timeout.
   static const int kDefaultCommandTimeoutSeconds = 30;
+
+  // ─── SSH auto-reconnect defaults ────────────────────────────────────────
+  /// Auto-reconnect defaults to on: a dropped session transparently retries.
+  static const bool defaultSshAutoReconnect = true;
+
+  /// Default cap on reconnect attempts per dropped session (`0` = unlimited).
+  static const int kDefaultSshReconnectMaxAttempts = 5;
+
+  /// Lower bound for the configurable max-attempts setting.
+  static const int kMinSshReconnectMaxAttempts = 1;
+
+  /// Upper bound for the configurable max-attempts setting.
+  static const int kMaxSshReconnectMaxAttempts = 10;
+
+  /// Base delay of the exponential backoff schedule: 2s, 4s, 8s, 16s, 30s…
+  static const Duration sshReconnectBaseDelay = Duration(seconds: 2);
+
+  /// Ceiling of the exponential backoff schedule.
+  static const Duration sshReconnectMaxDelay = Duration(seconds: 30);
 
   // ─── Layout ─────────────────────────────────────────────────────────────
   static const double gutterSm = 12;

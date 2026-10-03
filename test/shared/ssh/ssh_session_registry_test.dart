@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shell_mind/core/storage/preferences_service.dart';
 import 'package:shell_mind/features/server_config/domain/entities/server_config.dart';
 import 'package:shell_mind/features/ssh_terminal/data/ssh_client_manager.dart';
 import 'package:shell_mind/features/ssh_terminal/domain/entities/connection_state.dart';
 import 'package:shell_mind/shared/ssh/ssh_session_registry.dart';
 
 class MockSshClientManager extends Mock implements SshClientManager {}
+
+class MockPreferencesService extends Mock implements PreferencesService {}
 
 void main() {
   const String serverId1 = 'server-1';
@@ -58,7 +61,15 @@ void main() {
   });
 
   ProviderContainer createContainer() {
-    final ProviderContainer container = ProviderContainer();
+    // The drop handler consults the auto-reconnect preference; a bare
+    // container would hit the uninitialised PreferencesService singleton.
+    // Stub it with auto-reconnect OFF so the drop exercises the legacy
+    // auto-unregister path these tests assert.
+    final MockPreferencesService prefs = MockPreferencesService();
+    when(() => prefs.sshAutoReconnect).thenReturn(false);
+    final ProviderContainer container = ProviderContainer(overrides: [
+      preferencesServiceProvider.overrideWithValue(prefs),
+    ]);
     addTearDown(container.dispose);
     return container;
   }

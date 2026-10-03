@@ -18,6 +18,9 @@ import '../providers/chat_providers.dart';
 import '../widgets/command_confirm_dialog.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/server_selector_sheet.dart';
+import '../../../command_snippets/domain/entities/command_snippet.dart';
+import '../../../command_snippets/presentation/widgets/snippet_picker_sheet.dart';
+import '../widgets/agent_timeline_sheet.dart';
 
 /// The AI assistant chat surface.
 ///
@@ -47,6 +50,14 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     super.initState();
     _input.addListener(_onInputChanged);
     _applyExtra(widget.extra);
+    // Restore the persisted transcript on first entry (idempotent — the
+    // notifier guards against duplicate restores and skips while streaming).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref
+          .read(chatMessagesProvider.notifier)
+          .restoreFromHistory(ref.read(chatHistoryStoreProvider));
+    });
   }
 
   /// Consumes an inbound [AiChatExtra]: pre-fills the composer with a terminal
@@ -136,11 +147,34 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     _submit();
   }
 
+  /// Opens the snippet picker; the chosen command is inserted into the
+  /// composer (appended on a new line when the input already holds text).
+  Future<void> _openSnippetPicker() async {
+    _focus.unfocus();
+    final CommandSnippet? snippet = await SnippetPickerSheet.show(context);
+    if (!mounted || snippet == null) return;
+    final String current = _input.text;
+    _input.text = current.isEmpty
+        ? snippet.command
+        : '$current\n${snippet.command}';
+    _input.selection = TextSelection.collapsed(
+      offset: _input.text.length,
+    );
+    _onInputChanged();
+    _focus.requestFocus();
+  }
+
   /// Opens the in-chat connection manager so the user can bring servers
   /// online (or drop them) without leaving the assistant.
   Future<void> _openServerManager() async {
     _focus.unfocus();
     await ServerSelectorSheet.show(context, manage: true);
+  }
+
+  /// Opens the agent execution timeline sheet (live-updating).
+  Future<void> _openTimeline() async {
+    _focus.unfocus();
+    await AgentTimelineSheet.show(context);
   }
 
   /// Handles the "run on server" action for an executable code block.
@@ -286,7 +320,11 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                 onDismiss: () =>
                     ref.read(chatMessagesProvider.notifier).dismissError(),
               ),
-            _AgentBar(state: agent, onToggleAutoMode: _toggleAutoMode),
+            _AgentBar(
+              state: agent,
+              onToggleAutoMode: _toggleAutoMode,
+              onOpenTimeline: _openTimeline,
+            ),
             _Composer(
               controller: _input,
               focusNode: _focus,
@@ -295,6 +333,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
               canSend: _canSend && hasKey,
               onSend: _submit,
               onStop: _stop,
+              onPickSnippet: _openSnippetPicker,
             ),
           ],
         ),
@@ -690,10 +729,15 @@ class _ErrorStrip extends StatelessWidget {
 /// Slim bar above the composer surfacing the [AgentController] state: an
 /// auto-mode toggle, a live execution indicator, and loop progress.
 class _AgentBar extends StatelessWidget {
-  const _AgentBar({required this.state, required this.onToggleAutoMode});
+  const _AgentBar({
+    required this.state,
+    required this.onToggleAutoMode,
+    required this.onOpenTimeline,
+  });
 
   final AgentState state;
   final VoidCallback onToggleAutoMode;
+  final VoidCallback onOpenTimeline;
 
   @override
   Widget build(BuildContext context) {
@@ -791,6 +835,20 @@ class _AgentBar extends StatelessWidget {
                       : const SizedBox.shrink(key: ValueKey<String>('idle'))),
             ),
           ),
+          // Timeline entry — appears once at least one command has run.
+          if (state.results.isNotEmpty) ...<Widget>[
+            const SizedBox(width: 4),
+            IconButton(
+              onPressed: onOpenTimeline,
+              tooltip: l10n.aiTimelineOpen,
+              visualDensity: VisualDensity.compact,
+              icon: Icon(
+                Icons.timeline_rounded,
+                size: 20,
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+          ],
           // Loop progress + stop button while auto mode is on.
           if (state.isAutoMode) ...<Widget>[
             const SizedBox(width: 8),
@@ -827,6 +885,7 @@ class _Composer extends ConsumerWidget {
     required this.canSend,
     required this.onSend,
     required this.onStop,
+    this.onPickSnippet,
   });
 
   final TextEditingController controller;
@@ -837,12 +896,14 @@ class _Composer extends ConsumerWidget {
   final VoidCallback onSend;
   final VoidCallback onStop;
 
+  /// When non-null, a snippet-picker chip is shown to the left of the input;
+  /// tapping it opens the saved-command sheet.
+  final VoidCallback? onPickSnippet;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ColorScheme colors = Theme.of(context).colorScheme;
     final TerminalContextState ctxState = ref.watch(terminalContextProvider);
-    final Map<String, RegisteredSession> sessions =
-        ref.watch(sshSessionRegistryProvider);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
@@ -854,39 +915,6 @@ class _Composer extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          // Server chips when context is enabled and sessions exist.
-          if (ctxState.isEnabled && sessions.isNotEmpty) ...<Widget>[
-            SizedBox(
-              height: 30,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: <Widget>[
-                  for (final RegisteredSession s in sessions.values)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: ChoiceChip(
-                        label: Text(
-                          s.config.name,
-                          style: const TextStyle(fontSize: 11),
-                        ),
-                        selected: ctxState.serverId == s.serverId ||
-                            (ctxState.serverId == null &&
-                                s.serverId == sessions.values.last.serverId),
-                        visualDensity: VisualDensity.compact,
-                        materialTapTargetSize:
-                            MaterialTapTargetSize.shrinkWrap,
-                        onSelected: (_) {
-                          ref
-                              .read(terminalContextProvider.notifier)
-                              .setServer(s.serverId);
-                        },
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 6),
-          ],
           // Input row.
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -913,6 +941,21 @@ class _Composer extends ConsumerWidget {
                   ),
                 ),
               ),
+              // Saved command snippets (chat composer entry).
+              if (onPickSnippet != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4, right: 4),
+                  child: IconButton(
+                    onPressed: enabled ? onPickSnippet : null,
+                    tooltip: AppLocalizations.of(context).snippetsTitle,
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(
+                      Icons.bookmark_border_rounded,
+                      size: 20,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
               Expanded(
                 child: Container(
                   constraints:

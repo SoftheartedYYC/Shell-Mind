@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
 
-  "appTitle": "Shell-Mind",
+  "appTitle": "ShellMind",
 
   "navServers": "Servers",
   "navAiChat": "AI Chat",
@@ -245,7 +245,7 @@
   "aiChatSuggestion4": "Write an awk one-liner to sum a CSV column",
   "aiChatTryAsking": "Try asking",
   "aiChatIntroTitle": "Your terminal companion",
-  "aiChatIntroBody": "Paste a command, an error, or a chunk of log output. Shell-Mind explains what happened, suggests the next move, and writes the commands so you don't have to.",
+  "aiChatIntroBody": "Paste a command, an error, or a chunk of log output. ShellMind explains what happened, suggests the next move, and writes the commands so you don't have to.",
   "aiChatNoKeyTitle": "No API key configured",
   "aiChatNoKeyMessage": "Add your {provider} API key to wake the assistant. It's stored encrypted on this device and never leaves it except to call the model.",
   "@aiChatNoKeyMessage": {
@@ -258,7 +258,7 @@
   "aiChatInputHint": "Ask anything…",
   "aiChatInputDisabled": "Set an API key to begin",
   "aiChatError": "Error",
-  "aiChatAssistantName": "Shell-Mind",
+  "aiChatAssistantName": "ShellMind",
   "aiChatCopied": "Copied",
   "aiChatCopy": "Copy",
   "aiChatThinking": "Thinking…",
@@ -313,6 +313,11 @@
     }
   },
   "settingsIssueLinkCopied": "Issue link copied to clipboard.",
+  "settingsAboutGithub": "GitHub repository",
+
+  "settingsHideIp": "Hide IP addresses",
+  "settingsHideIpDesc": "Mask IP addresses in the server list and AI pages",
+  "serverMaskedAddress": "Address hidden",
 
   "aiSettingsApiKeyTitle": "{provider} API key",
   "@aiSettingsApiKeyTitle": {
@@ -392,6 +397,30 @@
    "aiModelsInvalidId": "Enter a model ID.",
    "aiModelsDuplicate": "This model is already in the list.",
 
+  "aiProvidersAddTile": "Add custom provider",
+  "aiProvidersAddTitle": "Add custom provider",
+  "aiProvidersFieldName": "Name",
+  "aiProvidersFieldNameHint": "e.g. SiliconFlow",
+  "aiProvidersFieldBaseUrl": "Base URL",
+  "aiProvidersFieldBaseUrlHint": "https://api.example.com/v1",
+  "aiProvidersFieldModel": "Default model (optional)",
+  "aiProvidersFieldModelHint": "Model ID, e.g. deepseek-chat",
+  "aiProvidersAddConfirm": "Add",
+  "aiProvidersInvalidInput": "Enter a name and a base URL.",
+  "aiProvidersInvalidUrl": "Base URL must start with http:// or https://",
+  "aiProvidersDuplicateName": "A provider with this name already exists.",
+  "aiProvidersAdded": "Custom provider added.",
+  "aiProvidersAddFailed": "Couldn't add the provider — check the inputs.",
+  "aiProvidersDeleteTile": "Remove custom provider",
+  "aiProvidersDeleteTitle": "Remove {provider}?",
+  "@aiProvidersDeleteTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiProvidersDeleteMessage": "Its stored API key, remembered model and custom models will be removed too. Built-in providers can't be deleted.",
+  "aiProvidersDeleteConfirm": "Remove",
+
   "updateVersion": "Version",
   "updateSoftwareUpdate": "Software update",
   "updateChecking": "CHECKING",
@@ -439,7 +468,7 @@
   "updateCancel": "Cancel",
   "updateKeepForeground": "Keep the app in the foreground",
   "updateDownloadComplete": "Download complete",
-  "updateInstallHint": "Android will ask you to confirm. Shell-Mind closes while the installer runs; your servers and history are preserved.",
+  "updateInstallHint": "Android will ask you to confirm. ShellMind closes while the installer runs; your servers and history are preserved.",
   "updateLaunching": "Launching...",
   "updateInstallNow": "Install Now",
   "updateDelete": "Delete",
@@ -449,13 +478,13 @@
       "tag": { "type": "String" }
     }
   },
-  "updateInstallMessage": "The system package installer will open. Shell-Mind closes during installation and reopens on the new version.",
+  "updateInstallMessage": "The system package installer will open. ShellMind closes during installation and reopens on the new version.",
   "updateNotNow": "Not now",
   "updateInstall": "Install",
   "updateCheckFailed": "The update check failed.",
   "updateErrorTitleNoReleases": "No releases",
   "updateErrorTitleGeneric": "Update check failed",
-  "updateErrNoReleases": "No releases have been published for Shell-Mind yet.",
+  "updateErrNoReleases": "No releases have been published for ShellMind yet.",
   "updateErrRateLimit": "GitHub's API rate limit was reached. Please try again later.",
   "updateErrTimeout": "The request to GitHub timed out. Check your connection and retry.",
   "updateErrNetwork": "Couldn't reach GitHub. Check your network connection.",
@@ -483,7 +512,7 @@
   "updateInstallLaterFromSettings": "Install later from settings",
   "updateCouldNotComplete": "The update could not be completed.",
   "updateClose": "Close",
-  "updatePromptInstallHint": "Android closes Shell-Mind while the installer runs. Servers, keys and chat history are preserved.",
+  "updatePromptInstallHint": "Android closes ShellMind while the installer runs. Servers, keys and chat history are preserved.",
 
   "commonCancel": "Cancel",
   "commonDelete": "Delete",
@@ -582,5 +611,225 @@
   "aiAgentAutoModeOff": "Auto mode: off",
   "aiAgentStop": "Stop auto mode",
   "aiAgentExecuting": "Executing…",
-  "aiAgentDefaultServer": "server"
+  "aiAgentDefaultServer": "server",
+
+  "aiTimelineTitle": "Execution timeline",
+  "aiTimelineOpen": "Execution timeline",
+  "aiTimelineEmpty": "No commands executed yet",
+  "aiTimelineEmptyHint": "Run commands via chat or auto mode and the full chain will appear here.",
+  "aiTimelineStatRounds": "{count, plural, =1{1 round} other{{count} rounds}}",
+  "@aiTimelineStatRounds": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatCommands": "{count, plural, =1{1 command} other{{count} commands}}",
+  "@aiTimelineStatCommands": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatSuccess": "{count, plural, =1{1 succeeded} other{{count} succeeded}}",
+  "@aiTimelineStatSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatFailed": "{count, plural, =1{1 failed} other{{count} failed}}",
+  "@aiTimelineStatFailed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStarted": "Started {time}",
+  "@aiTimelineStarted": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineEnded": "Ended {time}",
+  "@aiTimelineEnded": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineExitCode": "Exit code: {code}",
+  "@aiTimelineExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "aiTimelineNoExitCode": "No exit code",
+  "aiTimelineOutput": "Output",
+  "aiTimelineOutputEmpty": "No output",
+  "aiTimelineErrorOutput": "Error output",
+  "aiTimelineRunning": "Running…",
+  "aiTimelineClose": "Close",
+
+  "sshReconnectToggle": "Auto-reconnect on disconnect",
+  "sshReconnectToggleDesc": "Retry dropped SSH sessions with exponential backoff",
+  "sshReconnectMaxAttempts": "Max reconnect attempts",
+  "sshReconnectMaxAttemptsDesc": "0 means retry until it succeeds",
+  "sshReconnectMaxAttemptsValue": "{count}",
+  "@sshReconnectMaxAttemptsValue": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sshReconnectMaxAttemptsUnlimited": "Unlimited",
+  "sshReconnectStatusReconnecting": "Reconnecting (attempt {attempt})",
+  "@sshReconnectStatusReconnecting": {
+    "placeholders": {
+      "attempt": { "type": "int" }
+    }
+  },
+  "sshReconnectStatusReconnectingOf": "Reconnecting (attempt {attempt} of {max})",
+  "@sshReconnectStatusReconnectingOf": {
+    "placeholders": {
+      "attempt": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUp": "Auto-reconnect gave up",
+  "sshReconnectGaveUpMessage": "Could not reach {name} after {max} attempts.",
+  "@sshReconnectGaveUpMessage": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUpMessageUnlimited": "Could not reach {name}.",
+  "@sshReconnectGaveUpMessageUnlimited": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sshReconnectRetryNow": "Retry now",
+  "sshReconnectStopAuto": "Stop",
+  "sshReconnectReconnectedSnack": "Reconnected to {name}",
+  "@sshReconnectReconnectedSnack": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "snippetsTitle": "Command snippets",
+  "snippetsSubtitle": "Save commands for quick re-use",
+  "snippetsAddTooltip": "Add snippet",
+  "snippetsAddTitle": "New snippet",
+  "snippetsSave": "Save",
+  "snippetsCommandLabel": "Command",
+  "snippetsCommandHint": "e.g. docker ps -a",
+  "snippetsNameLabel": "Name (optional)",
+  "snippetsNameHint": "e.g. List all containers",
+  "snippetsCommandRequired": "Command text is required",
+  "snippetsDeleteTooltip": "Delete snippet",
+  "snippetsEmptyTitle": "No snippets yet",
+  "snippetsEmptyMessage": "Save frequently used commands and insert or run them with one tap.",
+  "snippetsLoadFailed": "Could not load snippets",
+
+  "healthTitle": "Fleet health",
+  "healthOnlineRatio": "{online}/{total} online",
+  "@healthOnlineRatio": {
+    "placeholders": {
+      "online": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "healthProbing": "Probing…",
+  "healthProbeTooltip": "Run health check",
+  "healthProbedAt": "Checked at {time}",
+  "@healthProbedAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "healthMoodAllOnline": "All systems nominal",
+  "healthMoodDegraded": "Some servers are unreachable",
+  "healthMoodAllOffline": "All servers unreachable",
+  "healthOfflineServers": "Offline: {names}",
+  "@healthOfflineServers": {
+    "placeholders": {
+      "names": { "type": "String" }
+    }
+  },
+  "healthNoData": "Tap refresh to check every server",
+  "healthUptime": "up {brief}",
+  "@healthUptime": {
+    "placeholders": {
+      "brief": { "type": "String" }
+    }
+  },
+  "healthLoad": "load {value}",
+  "@healthLoad": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "healthDiagIntro": "Here is my fleet's health report:",
+  "healthDiagStats": "{online} of {total} servers online.",
+  "@healthDiagStats": {
+    "placeholders": {
+      "online": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "healthDiagOfflineItem": "- {name}: offline",
+  "@healthDiagOfflineItem": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "healthDiagOnlineItem": "- {name}: online ({details})",
+  "@healthDiagOnlineItem": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "details": { "type": "String" }
+    }
+  },
+  "healthDiagOutro": "Please analyze the health data, flag anything abnormal (high load, recent reboots) and suggest what to check next.",
+  "healthDiagnose": "AI diagnostics",
+  "healthStaleNote": "Some servers went offline since the last check.",
+
+  "auditTitle": "Command audit log",
+  "auditTileDesc": "Commands run by the AI agent",
+  "auditEmptyTitle": "No audit entries yet",
+  "auditEmptyMessage": "Commands executed by the AI agent will be recorded here.",
+  "auditFilteredEmpty": "No entries match the current filter",
+  "auditFilterAllServers": "All servers",
+  "auditFilterAllModes": "All modes",
+  "auditFilterAllResults": "All results",
+  "auditFilterConfirmed": "Confirmed",
+  "auditFilterAuto": "Auto",
+  "auditFilterSuccess": "Success",
+  "auditFilterFailed": "Failed",
+  "auditModeConfirmed": "Confirmed",
+  "auditModeAuto": "Auto",
+  "auditStatusSuccess": "Success",
+  "auditStatusFailed": "Failed",
+  "auditDangerousBadge": "Dangerous",
+  "auditExitCode": "Exit code {code}",
+  "@auditExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "auditOutputSummary": "Output summary",
+  "auditNoOutput": "No output",
+  "auditClearTooltip": "Clear audit log",
+  "auditClearConfirmTitle": "Clear audit log",
+  "auditClearConfirmMessage": "All {count} audit entries will be permanently removed.",
+  "@auditClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "auditClearAction": "Clear",
+  "auditCleared": "Audit log cleared",
+  "auditEntriesCount": "{count} entries",
+  "@auditEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

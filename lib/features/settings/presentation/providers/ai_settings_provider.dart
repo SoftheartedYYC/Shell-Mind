@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/storage/preferences_service.dart';
 import '../../../../core/storage/secure_storage_service.dart';
+import '../../../ai_chat/data/custom_ai_provider_store.dart';
 import '../../../ai_chat/domain/entities/ai_provider.dart';
 import '../../../ai_chat/presentation/providers/chat_providers.dart';
 import '../../../ai_chat/presentation/providers/models_provider.dart';
@@ -83,8 +84,18 @@ class AiSettingsController extends Notifier<AiSettingsState> {
     return const AiSettingsState();
   }
 
+  /// All selectable providers: built-ins first, then user-defined customs.
+  List<AiProvider> get _allProviders => <AiProvider>[
+        ...AiProviders.all,
+        ...ref.read(customAiProvidersProvider),
+      ];
+
+  /// Resolves a provider id the same way [selectedProviderProvider] does.
+  AiProvider _resolveProvider(String id) =>
+      providerFromId(id, ref.read(customAiProvidersProvider));
+
   Future<void> _load() async {
-    final AiProvider provider = AiProviders.getById(_prefs.selectedProviderId);
+    final AiProvider provider = _resolveProvider(_prefs.selectedProviderId);
     final String? storedModel = _prefs.getSelectedModel(provider.id);
     // Resolve against the built-in catalogue but keep custom/fetched model ids.
     final AiModel model = resolveStoredModel(provider, storedModel);
@@ -107,7 +118,7 @@ class AiSettingsController extends Notifier<AiSettingsState> {
   /// Probes every provider's stored key so the list can show configured state.
   Future<Set<String>> _configuredProviderIds() async {
     final Set<String> ids = <String>{};
-    for (final AiProvider p in AiProviders.all) {
+    for (final AiProvider p in _allProviders) {
       final String? k = await _secure.getProviderApiKey(p.id);
       if (k != null && k.trim().isNotEmpty) ids.add(p.id);
     }
@@ -118,7 +129,7 @@ class AiSettingsController extends Notifier<AiSettingsState> {
   Future<void> selectProvider(String providerId) async {
     if (state.provider?.id == providerId) return;
     await _prefs.setSelectedProviderId(providerId);
-    final AiProvider provider = AiProviders.getById(providerId);
+    final AiProvider provider = _resolveProvider(providerId);
     final String? storedModel = _prefs.getSelectedModel(provider.id);
     final AiModel model = resolveStoredModel(provider, storedModel);
     final String? key = await _secure.getProviderApiKey(provider.id);
@@ -160,6 +171,91 @@ class AiSettingsController extends Notifier<AiSettingsState> {
       clearKey: true,
       configuredProviderIds: configured,
     );
+    _invalidateDependents();
+  }
+
+  /// Adds a user-defined provider (name + base URL + optional default model)
+  /// and selects it. Duplicate names (case-insensitive) are rejected so the
+  /// list stays unambiguous. Returns the new provider's id, or `null` when
+  /// validation failed.
+  Future<String?> addCustomProvider({
+    required String name,
+    required String baseUrl,
+    String? defaultModelId,
+  }) async {
+    final String trimmedName = name.trim();
+    final String trimmedUrl = baseUrl.trim();
+    final String? trimmedModel = defaultModelId?.trim().isEmpty == true
+        ? null
+        : defaultModelId?.trim();
+    if (trimmedName.isEmpty || trimmedUrl.isEmpty) return null;
+    final Uri? uri = Uri.tryParse(trimmedUrl);
+    if (uri == null || !uri.hasScheme || !(uri.isScheme('HTTP') || uri.isScheme('HTTPS'))) {
+      return null;
+    }
+
+    final CustomAiProviderStore store = ref.read(customAiProviderStoreProvider);
+    for (final CustomAiProvider existing in store.all) {
+      if (existing.name.toLowerCase() == trimmedName.toLowerCase()) return null;
+    }
+
+    final CustomAiProvider provider = CustomAiProvider(
+      id: store.newProviderId(),
+      name: trimmedName,
+      baseUrl: trimmedUrl,
+      defaultModelId: trimmedModel,
+    );
+    await store.add(provider);
+    ref.invalidate(customAiProvidersProvider);
+    await selectProvider(provider.id);
+    return provider.id;
+  }
+
+  /// Deletes a user-defined provider and cleans up its secure-storage key,
+  /// remembered model and custom-model list. Built-ins are never deletable.
+  /// When the deleted provider was selected, falls back to the default.
+  Future<void> deleteCustomProvider(String providerId) async {
+    if (!CustomAiProviderStore.isCustomId(providerId)) return;
+
+    final CustomAiProviderStore store = ref.read(customAiProviderStoreProvider);
+    if (store.getById(providerId) == null) return;
+
+    final bool wasSelected = state.effectiveProvider.id == providerId;
+    await store.remove(providerId);
+    ref.invalidate(customAiProvidersProvider);
+
+    // Best-effort cleanup of per-provider state; none of these must block
+    // the metadata deletion.
+    try {
+      await _secure.deleteProviderApiKey(providerId);
+    } catch (_) {}
+    try {
+      await _prefs.setSelectedModel(providerId, '');
+    } catch (_) {}
+    try {
+      await _prefs.setCustomModels(providerId, const <String>[]);
+    } catch (_) {}
+
+    if (wasSelected) {
+      await _prefs.setSelectedProviderId(AppConstants.defaultAiProviderId);
+    }
+
+    // Reload so provider/model/key/configured ticks all reflect the removal.
+    final Set<String> configured = {...state.configuredProviderIds}
+      ..remove(providerId);
+    if (wasSelected) {
+      state = state.copyWith(
+        provider: null,
+        model: null,
+        hasKey: false,
+        clearKey: true,
+        configuredProviderIds: configured,
+        isLoading: true,
+      );
+      await _load();
+    } else {
+      state = state.copyWith(configuredProviderIds: configured);
+    }
     _invalidateDependents();
   }
 

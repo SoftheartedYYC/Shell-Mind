@@ -7,6 +7,7 @@ import '../features/ai_chat/presentation/pages/ai_chat_page.dart';
 import '../features/ai_chat/domain/entities/ai_chat_extra.dart';
 import '../features/server_config/presentation/pages/server_edit_page.dart';
 import '../features/server_config/presentation/pages/servers_page.dart';
+import '../features/settings/presentation/pages/audit_log_page.dart';
 import '../features/settings/presentation/pages/settings_page.dart';
 import '../features/settings/presentation/widgets/update_prompt_dialog.dart';
 import '../features/ssh_terminal/presentation/pages/terminal_page.dart';
@@ -18,6 +19,7 @@ abstract final class RouteNames {
   static const String serverEdit = 'serverEdit';
   static const String aiChat = 'aiChat';
   static const String settings = 'settings';
+  static const String auditLog = 'auditLog';
   static const String terminal = 'terminal';
 }
 
@@ -27,6 +29,7 @@ abstract final class RoutePaths {
   static const String serverEdit = '/servers/edit';
   static const String aiChat = '/ai';
   static const String settings = '/settings';
+  static const String auditLog = '/settings/audit';
   static const String terminal = '/terminal';
 
   static String terminalFor(String serverId) => '$terminal/$serverId';
@@ -100,6 +103,15 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
           final String? serverId = state.uri.queryParameters['id'];
           return _fadeThrough(ServerEditPage(serverId: serverId), state);
         },
+      ),
+
+      // ─── AI command audit log ───
+      GoRoute(
+        path: RoutePaths.auditLog,
+        name: RouteNames.auditLog,
+        parentNavigatorKey: rootKey,
+        pageBuilder: (context, state) =>
+            _fadeThrough(const AuditLogPage(), state),
       ),
 
       // ─── Full-screen terminal ───

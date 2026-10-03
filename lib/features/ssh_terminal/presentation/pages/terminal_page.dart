@@ -12,9 +12,12 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/ssh/ssh_reconnect_coordinator.dart';
 import '../../../../shared/ssh/ssh_session_registry.dart';
 import '../../../../shared/ssh/terminal_context_provider.dart';
 import '../../../ai_chat/domain/entities/ai_chat_extra.dart';
+import '../../../command_snippets/domain/entities/command_snippet.dart';
+import '../../../command_snippets/presentation/widgets/snippet_picker_sheet.dart';
 import '../../../server_config/domain/entities/server_config.dart';
 import '../../../server_config/presentation/providers/server_config_providers.dart';
 import '../../domain/entities/connection_state.dart';
@@ -197,6 +200,17 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     );
   }
 
+  // ─── Command snippets ────────────────────────────────────────────────────
+
+  /// Opens the snippet picker; the chosen command is piped into the live
+  /// shell immediately, terminated by a newline so it executes.
+  Future<void> _openSnippets() async {
+    HapticFeedback.selectionClick();
+    final CommandSnippet? snippet = await SnippetPickerSheet.show(context);
+    if (!mounted || snippet == null) return;
+    _sendInput('${snippet.command}\n');
+  }
+
   void _showAskAiSheet(String selected) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final ColorScheme colors = Theme.of(context).colorScheme;
@@ -250,7 +264,38 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       }
     });
 
+    // Auto-reconnect feedback: re-attach to the resumed session on success
+    // (the registry replaced the manager) and toast the recovery.
+    ref.listen<Map<String, SshReconnectState>>(
+        sshReconnectStateProvider, (prev, next) {
+      final SshReconnectState? before = prev?[widget.serverId];
+      final SshReconnectState? after = next[widget.serverId];
+
+      // A live entry vanishing means the loop published idle → reconnected.
+      if (before != null && after == null) {
+        if (!_hasConnectedOnce) {
+          setState(() => _hasConnectedOnce = true);
+        }
+        // Re-attach the mirrored state to the fresh manager.
+        ref.read(sshConnectionStateProvider.notifier).attach(widget.serverId);
+        final String? name = _config?.name;
+        if (name != null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context).sshReconnectReconnectedSnack(name),
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    });
+
     final SshConnectionState conn = ref.watch(sshConnectionStateProvider);
+    final SshReconnectState reconnect =
+        ref.watch(sshReconnectStateProvider)[widget.serverId] ??
+            const SshReconnectState.idle();
     final Terminal terminal = ref.watch(terminalForServerProvider(widget.serverId));
     final TerminalController controller = ref.watch(terminalControllerProvider);
 
@@ -274,7 +319,11 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
               onFontSmaller: () => _bumpFontSize(-1),
               onFontLarger: () => _bumpFontSize(1),
             ),
-            _StatusStrip(state: conn, connectedAt: conn.connectedAt),
+            _StatusStrip(
+              state: conn,
+              connectedAt: conn.connectedAt,
+              reconnect: reconnect,
+            ),
             Expanded(
               child: ColoredBox(
                 color: _kTerminalBg,
@@ -293,7 +342,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                     ),
                     if (!conn.isConnected)
                       Positioned.fill(
-                        child: _buildIdleSurface(conn),
+                        child: _buildIdleSurface(conn, reconnect),
                       ),
                   ],
                 ),
@@ -303,6 +352,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
               onSend: _sendInput,
               enabled: conn.isConnected,
               onAskAi: _openAiAssistant,
+              onSnippets: _openSnippets,
             ),
           ],
         ),
@@ -311,8 +361,8 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   }
 
   /// Chooses the overlay shown while the shell is not live: loading, error,
-  /// "session closed", or "host not found".
-  Widget _buildIdleSurface(SshConnectionState conn) {
+  /// reconnecting, gave-up, "session closed", or "host not found".
+  Widget _buildIdleSurface(SshConnectionState conn, SshReconnectState reconnect) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     if (_notFound) {
       return _OverlayShell(
@@ -330,6 +380,14 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     }
 
     if (conn.isError) {
+      // While an auto-reconnect loop is driving the recovery, show its
+      // progress instead of the plain error surface.
+      if (reconnect.isReconnecting) {
+        return _buildReconnectingOverlay(l10n, reconnect);
+      }
+      if (reconnect.hasGivenUp) {
+        return _buildGaveUpOverlay(l10n, reconnect);
+      }
       final AppFailure failure = AppFailure(
         kind: _kindFromName(conn.failureKind),
         message: conn.errorMessage ?? l10n.terminalConnectionFailed,
@@ -426,6 +484,111 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       ),
     );
   }
+
+  /// Overlay while the auto-reconnect loop is actively retrying: spinner,
+  /// "重连第 N 次" (with the cap when one is set), and a stop button that
+  /// cancels the loop (acting as a manual disconnect).
+  Widget _buildReconnectingOverlay(
+    AppLocalizations l10n,
+    SshReconnectState reconnect,
+  ) {
+    final String label = reconnect.maxAttempts != null
+        ? l10n.sshReconnectStatusReconnectingOf(
+            reconnect.attempt, reconnect.maxAttempts!)
+        : l10n.sshReconnectStatusReconnecting(reconnect.attempt);
+    return _OverlayShell(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          const AppSpinner(size: 28),
+          const SizedBox(height: 18),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.white70,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (reconnect.lastError != null) ...<Widget>[
+            const SizedBox(height: 6),
+            Text(
+              reconnect.lastError!,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 11, color: Colors.white38),
+            ),
+          ],
+          const SizedBox(height: 20),
+          OutlinedButton.icon(
+            onPressed: () => unawaited(
+              ref
+                  .read(sshConnectionStateProvider.notifier)
+                  .disconnectServer(widget.serverId),
+            ),
+            icon: const Icon(Icons.stop_rounded, size: 16),
+            label: Text(l10n.sshReconnectStopAuto),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Sticky overlay once the loop gave up: message, "retry now" (restarts the
+  /// backoff loop) and the plain manual reconnect (fresh full connect).
+  Widget _buildGaveUpOverlay(
+    AppLocalizations l10n,
+    SshReconnectState reconnect,
+  ) {
+    final String name = _config?.name ?? _reconnectServerNameFallback(reconnect);
+    final String message = reconnect.maxAttempts != null
+        ? l10n.sshReconnectGaveUpMessage(name, reconnect.maxAttempts!)
+        : l10n.sshReconnectGaveUpMessageUnlimited(name);
+    return _OverlayShell(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          const Icon(Icons.cloud_off_rounded, size: 40, color: Colors.white54),
+          const SizedBox(height: 14),
+          Text(
+            l10n.sshReconnectGaveUp,
+            style: const TextStyle(fontSize: 14, color: Colors.white70),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, color: Colors.white38),
+          ),
+          const SizedBox(height: 20),
+          FilledButton.icon(
+            onPressed: _retryReconnectNow,
+            icon: const Icon(Icons.refresh_rounded, size: 16),
+            label: Text(l10n.sshReconnectRetryNow),
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: _disconnectAndPop,
+            icon: const Icon(Icons.arrow_back_rounded, size: 16),
+            label: Text(l10n.terminalBackToServers),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Restarts the gave-up auto-reconnect loop through the registry, or falls
+  /// back to a fresh manual connection when no loop is left to retry.
+  void _retryReconnectNow() {
+    final bool started = ref
+        .read(sshSessionRegistryProvider.notifier)
+        .retryReconnect(widget.serverId);
+    if (!started) unawaited(_startConnection());
+  }
+
+  static String _reconnectServerNameFallback(SshReconnectState reconnect) =>
+      reconnect.lastError ?? '';
 
   static FailureKind _kindFromName(String? name) => FailureKind.values.firstWhere(
         (FailureKind k) => k.name == name,
@@ -566,10 +729,18 @@ class _BarButton extends StatelessWidget {
 // ─── Status strip ─────────────────────────────────────────────────────────
 
 class _StatusStrip extends StatelessWidget {
-  const _StatusStrip({required this.state, required this.connectedAt});
+  const _StatusStrip({
+    required this.state,
+    required this.connectedAt,
+    this.reconnect,
+  });
 
   final SshConnectionState state;
   final DateTime? connectedAt;
+
+  /// Live auto-reconnect progress, when a recovery loop is running for this
+  /// session; `null` (or idle) means nothing to surface beyond the status.
+  final SshReconnectState? reconnect;
 
   static Color _colorFor(BuildContext context, SshConnectionStatus status) {
     final ShellMindSemanticColors sem = context.sem;
@@ -623,12 +794,25 @@ class _StatusStrip extends StatelessWidget {
               label: l10n.terminalRetryAvailable,
             ),
           const Spacer(),
-          const _MetaChip(
-            icon: Icons.shield_outlined,
-            label: AppConstants.defaultTermType,
-          ),
+          _trailingChip(context, l10n),
         ],
       ),
+    );
+  }
+
+  /// Trailing meta chip: live reconnect progress while a recovery loop is
+  /// running, otherwise the static TERM-type badge.
+  Widget _trailingChip(BuildContext context, AppLocalizations l10n) {
+    final SshReconnectState? live = reconnect;
+    if (live != null && live.isReconnecting) {
+      return _MetaChip(
+        icon: Icons.autorenew_rounded,
+        label: l10n.sshReconnectStatusReconnecting(live.attempt),
+      );
+    }
+    return const _MetaChip(
+      icon: Icons.shield_outlined,
+      label: AppConstants.defaultTermType,
     );
   }
 

@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Shell-Mind'**
+  /// **'ShellMind'**
   String get appTitle;
 
   /// No description provided for @navServers.
@@ -827,7 +827,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiChatIntroBody.
   ///
   /// In en, this message translates to:
-  /// **'Paste a command, an error, or a chunk of log output. Shell-Mind explains what happened, suggests the next move, and writes the commands so you don\'t have to.'**
+  /// **'Paste a command, an error, or a chunk of log output. ShellMind explains what happened, suggests the next move, and writes the commands so you don\'t have to.'**
   String get aiChatIntroBody;
 
   /// No description provided for @aiChatNoKeyTitle.
@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiChatAssistantName.
   ///
   /// In en, this message translates to:
-  /// **'Shell-Mind'**
+  /// **'ShellMind'**
   String get aiChatAssistantName;
 
   /// No description provided for @aiChatCopied.
@@ -1129,6 +1129,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Issue link copied to clipboard.'**
   String get settingsIssueLinkCopied;
+
+  /// No description provided for @settingsAboutGithub.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub repository'**
+  String get settingsAboutGithub;
+
+  /// No description provided for @settingsHideIp.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide IP addresses'**
+  String get settingsHideIp;
+
+  /// No description provided for @settingsHideIpDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Mask IP addresses in the server list and AI pages'**
+  String get settingsHideIpDesc;
+
+  /// No description provided for @serverMaskedAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address hidden'**
+  String get serverMaskedAddress;
 
   /// No description provided for @aiSettingsApiKeyTitle.
   ///
@@ -1400,6 +1424,114 @@ abstract class AppLocalizations {
   /// **'This model is already in the list.'**
   String get aiModelsDuplicate;
 
+  /// No description provided for @aiProvidersAddTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom provider'**
+  String get aiProvidersAddTile;
+
+  /// No description provided for @aiProvidersAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom provider'**
+  String get aiProvidersAddTitle;
+
+  /// No description provided for @aiProvidersFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get aiProvidersFieldName;
+
+  /// No description provided for @aiProvidersFieldNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. SiliconFlow'**
+  String get aiProvidersFieldNameHint;
+
+  /// No description provided for @aiProvidersFieldBaseUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Base URL'**
+  String get aiProvidersFieldBaseUrl;
+
+  /// No description provided for @aiProvidersFieldBaseUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://api.example.com/v1'**
+  String get aiProvidersFieldBaseUrlHint;
+
+  /// No description provided for @aiProvidersFieldModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Default model (optional)'**
+  String get aiProvidersFieldModel;
+
+  /// No description provided for @aiProvidersFieldModelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Model ID, e.g. deepseek-chat'**
+  String get aiProvidersFieldModelHint;
+
+  /// No description provided for @aiProvidersAddConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get aiProvidersAddConfirm;
+
+  /// No description provided for @aiProvidersInvalidInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name and a base URL.'**
+  String get aiProvidersInvalidInput;
+
+  /// No description provided for @aiProvidersInvalidUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Base URL must start with http:// or https://'**
+  String get aiProvidersInvalidUrl;
+
+  /// No description provided for @aiProvidersDuplicateName.
+  ///
+  /// In en, this message translates to:
+  /// **'A provider with this name already exists.'**
+  String get aiProvidersDuplicateName;
+
+  /// No description provided for @aiProvidersAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom provider added.'**
+  String get aiProvidersAdded;
+
+  /// No description provided for @aiProvidersAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t add the provider — check the inputs.'**
+  String get aiProvidersAddFailed;
+
+  /// No description provided for @aiProvidersDeleteTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove custom provider'**
+  String get aiProvidersDeleteTile;
+
+  /// No description provided for @aiProvidersDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {provider}?'**
+  String aiProvidersDeleteTitle(String provider);
+
+  /// No description provided for @aiProvidersDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Its stored API key, remembered model and custom models will be removed too. Built-in providers can\'t be deleted.'**
+  String get aiProvidersDeleteMessage;
+
+  /// No description provided for @aiProvidersDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get aiProvidersDeleteConfirm;
+
   /// No description provided for @updateVersion.
   ///
   /// In en, this message translates to:
@@ -1559,7 +1691,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateInstallHint.
   ///
   /// In en, this message translates to:
-  /// **'Android will ask you to confirm. Shell-Mind closes while the installer runs; your servers and history are preserved.'**
+  /// **'Android will ask you to confirm. ShellMind closes while the installer runs; your servers and history are preserved.'**
   String get updateInstallHint;
 
   /// No description provided for @updateLaunching.
@@ -1589,7 +1721,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateInstallMessage.
   ///
   /// In en, this message translates to:
-  /// **'The system package installer will open. Shell-Mind closes during installation and reopens on the new version.'**
+  /// **'The system package installer will open. ShellMind closes during installation and reopens on the new version.'**
   String get updateInstallMessage;
 
   /// No description provided for @updateNotNow.
@@ -1625,7 +1757,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateErrNoReleases.
   ///
   /// In en, this message translates to:
-  /// **'No releases have been published for Shell-Mind yet.'**
+  /// **'No releases have been published for ShellMind yet.'**
   String get updateErrNoReleases;
 
   /// No description provided for @updateErrRateLimit.
@@ -1733,7 +1865,7 @@ abstract class AppLocalizations {
   /// No description provided for @updatePromptInstallHint.
   ///
   /// In en, this message translates to:
-  /// **'Android closes Shell-Mind while the installer runs. Servers, keys and chat history are preserved.'**
+  /// **'Android closes ShellMind while the installer runs. Servers, keys and chat history are preserved.'**
   String get updatePromptInstallHint;
 
   /// No description provided for @commonCancel.
@@ -2089,6 +2221,546 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'server'**
   String get aiAgentDefaultServer;
+
+  /// No description provided for @aiTimelineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution timeline'**
+  String get aiTimelineTitle;
+
+  /// No description provided for @aiTimelineOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution timeline'**
+  String get aiTimelineOpen;
+
+  /// No description provided for @aiTimelineEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No commands executed yet'**
+  String get aiTimelineEmpty;
+
+  /// No description provided for @aiTimelineEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Run commands via chat or auto mode and the full chain will appear here.'**
+  String get aiTimelineEmptyHint;
+
+  /// No description provided for @aiTimelineStatRounds.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 round} other{{count} rounds}}'**
+  String aiTimelineStatRounds(int count);
+
+  /// No description provided for @aiTimelineStatCommands.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 command} other{{count} commands}}'**
+  String aiTimelineStatCommands(int count);
+
+  /// No description provided for @aiTimelineStatSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 succeeded} other{{count} succeeded}}'**
+  String aiTimelineStatSuccess(int count);
+
+  /// No description provided for @aiTimelineStatFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 failed} other{{count} failed}}'**
+  String aiTimelineStatFailed(int count);
+
+  /// No description provided for @aiTimelineStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Started {time}'**
+  String aiTimelineStarted(String time);
+
+  /// No description provided for @aiTimelineEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended {time}'**
+  String aiTimelineEnded(String time);
+
+  /// No description provided for @aiTimelineExitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit code: {code}'**
+  String aiTimelineExitCode(int code);
+
+  /// No description provided for @aiTimelineNoExitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'No exit code'**
+  String get aiTimelineNoExitCode;
+
+  /// No description provided for @aiTimelineOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'Output'**
+  String get aiTimelineOutput;
+
+  /// No description provided for @aiTimelineOutputEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No output'**
+  String get aiTimelineOutputEmpty;
+
+  /// No description provided for @aiTimelineErrorOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'Error output'**
+  String get aiTimelineErrorOutput;
+
+  /// No description provided for @aiTimelineRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Running…'**
+  String get aiTimelineRunning;
+
+  /// No description provided for @aiTimelineClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get aiTimelineClose;
+
+  /// No description provided for @sshReconnectToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-reconnect on disconnect'**
+  String get sshReconnectToggle;
+
+  /// No description provided for @sshReconnectToggleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry dropped SSH sessions with exponential backoff'**
+  String get sshReconnectToggleDesc;
+
+  /// No description provided for @sshReconnectMaxAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Max reconnect attempts'**
+  String get sshReconnectMaxAttempts;
+
+  /// No description provided for @sshReconnectMaxAttemptsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'0 means retry until it succeeds'**
+  String get sshReconnectMaxAttemptsDesc;
+
+  /// No description provided for @sshReconnectMaxAttemptsValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}'**
+  String sshReconnectMaxAttemptsValue(int count);
+
+  /// No description provided for @sshReconnectMaxAttemptsUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited'**
+  String get sshReconnectMaxAttemptsUnlimited;
+
+  /// No description provided for @sshReconnectStatusReconnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnecting (attempt {attempt})'**
+  String sshReconnectStatusReconnecting(int attempt);
+
+  /// No description provided for @sshReconnectStatusReconnectingOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnecting (attempt {attempt} of {max})'**
+  String sshReconnectStatusReconnectingOf(int attempt, int max);
+
+  /// No description provided for @sshReconnectGaveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-reconnect gave up'**
+  String get sshReconnectGaveUp;
+
+  /// No description provided for @sshReconnectGaveUpMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach {name} after {max} attempts.'**
+  String sshReconnectGaveUpMessage(String name, int max);
+
+  /// No description provided for @sshReconnectGaveUpMessageUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach {name}.'**
+  String sshReconnectGaveUpMessageUnlimited(String name);
+
+  /// No description provided for @sshReconnectRetryNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry now'**
+  String get sshReconnectRetryNow;
+
+  /// No description provided for @sshReconnectStopAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get sshReconnectStopAuto;
+
+  /// No description provided for @sshReconnectReconnectedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnected to {name}'**
+  String sshReconnectReconnectedSnack(String name);
+
+  /// No description provided for @snippetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Command snippets'**
+  String get snippetsTitle;
+
+  /// No description provided for @snippetsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save commands for quick re-use'**
+  String get snippetsSubtitle;
+
+  /// No description provided for @snippetsAddTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add snippet'**
+  String get snippetsAddTooltip;
+
+  /// No description provided for @snippetsAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New snippet'**
+  String get snippetsAddTitle;
+
+  /// No description provided for @snippetsSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get snippetsSave;
+
+  /// No description provided for @snippetsCommandLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Command'**
+  String get snippetsCommandLabel;
+
+  /// No description provided for @snippetsCommandHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. docker ps -a'**
+  String get snippetsCommandHint;
+
+  /// No description provided for @snippetsNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (optional)'**
+  String get snippetsNameLabel;
+
+  /// No description provided for @snippetsNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. List all containers'**
+  String get snippetsNameHint;
+
+  /// No description provided for @snippetsCommandRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Command text is required'**
+  String get snippetsCommandRequired;
+
+  /// No description provided for @snippetsDeleteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete snippet'**
+  String get snippetsDeleteTooltip;
+
+  /// No description provided for @snippetsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No snippets yet'**
+  String get snippetsEmptyTitle;
+
+  /// No description provided for @snippetsEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Save frequently used commands and insert or run them with one tap.'**
+  String get snippetsEmptyMessage;
+
+  /// No description provided for @snippetsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load snippets'**
+  String get snippetsLoadFailed;
+
+  /// No description provided for @healthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fleet health'**
+  String get healthTitle;
+
+  /// No description provided for @healthOnlineRatio.
+  ///
+  /// In en, this message translates to:
+  /// **'{online}/{total} online'**
+  String healthOnlineRatio(int online, int total);
+
+  /// No description provided for @healthProbing.
+  ///
+  /// In en, this message translates to:
+  /// **'Probing…'**
+  String get healthProbing;
+
+  /// No description provided for @healthProbeTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Run health check'**
+  String get healthProbeTooltip;
+
+  /// No description provided for @healthProbedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked at {time}'**
+  String healthProbedAt(String time);
+
+  /// No description provided for @healthMoodAllOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'All systems nominal'**
+  String get healthMoodAllOnline;
+
+  /// No description provided for @healthMoodDegraded.
+  ///
+  /// In en, this message translates to:
+  /// **'Some servers are unreachable'**
+  String get healthMoodDegraded;
+
+  /// No description provided for @healthMoodAllOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'All servers unreachable'**
+  String get healthMoodAllOffline;
+
+  /// No description provided for @healthOfflineServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline: {names}'**
+  String healthOfflineServers(String names);
+
+  /// No description provided for @healthNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap refresh to check every server'**
+  String get healthNoData;
+
+  /// No description provided for @healthUptime.
+  ///
+  /// In en, this message translates to:
+  /// **'up {brief}'**
+  String healthUptime(String brief);
+
+  /// No description provided for @healthLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'load {value}'**
+  String healthLoad(String value);
+
+  /// No description provided for @healthDiagIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Here is my fleet\'s health report:'**
+  String get healthDiagIntro;
+
+  /// No description provided for @healthDiagStats.
+  ///
+  /// In en, this message translates to:
+  /// **'{online} of {total} servers online.'**
+  String healthDiagStats(int online, int total);
+
+  /// No description provided for @healthDiagOfflineItem.
+  ///
+  /// In en, this message translates to:
+  /// **'- {name}: offline'**
+  String healthDiagOfflineItem(String name);
+
+  /// No description provided for @healthDiagOnlineItem.
+  ///
+  /// In en, this message translates to:
+  /// **'- {name}: online ({details})'**
+  String healthDiagOnlineItem(String name, String details);
+
+  /// No description provided for @healthDiagOutro.
+  ///
+  /// In en, this message translates to:
+  /// **'Please analyze the health data, flag anything abnormal (high load, recent reboots) and suggest what to check next.'**
+  String get healthDiagOutro;
+
+  /// No description provided for @healthDiagnose.
+  ///
+  /// In en, this message translates to:
+  /// **'AI diagnostics'**
+  String get healthDiagnose;
+
+  /// No description provided for @healthStaleNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Some servers went offline since the last check.'**
+  String get healthStaleNote;
+
+  /// No description provided for @auditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Command audit log'**
+  String get auditTitle;
+
+  /// No description provided for @auditTileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Commands run by the AI agent'**
+  String get auditTileDesc;
+
+  /// No description provided for @auditEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No audit entries yet'**
+  String get auditEmptyTitle;
+
+  /// No description provided for @auditEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Commands executed by the AI agent will be recorded here.'**
+  String get auditEmptyMessage;
+
+  /// No description provided for @auditFilteredEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries match the current filter'**
+  String get auditFilteredEmpty;
+
+  /// No description provided for @auditFilterAllServers.
+  ///
+  /// In en, this message translates to:
+  /// **'All servers'**
+  String get auditFilterAllServers;
+
+  /// No description provided for @auditFilterAllModes.
+  ///
+  /// In en, this message translates to:
+  /// **'All modes'**
+  String get auditFilterAllModes;
+
+  /// No description provided for @auditFilterAllResults.
+  ///
+  /// In en, this message translates to:
+  /// **'All results'**
+  String get auditFilterAllResults;
+
+  /// No description provided for @auditFilterConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get auditFilterConfirmed;
+
+  /// No description provided for @auditFilterAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get auditFilterAuto;
+
+  /// No description provided for @auditFilterSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Success'**
+  String get auditFilterSuccess;
+
+  /// No description provided for @auditFilterFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get auditFilterFailed;
+
+  /// No description provided for @auditModeConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get auditModeConfirmed;
+
+  /// No description provided for @auditModeAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get auditModeAuto;
+
+  /// No description provided for @auditStatusSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Success'**
+  String get auditStatusSuccess;
+
+  /// No description provided for @auditStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get auditStatusFailed;
+
+  /// No description provided for @auditDangerousBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Dangerous'**
+  String get auditDangerousBadge;
+
+  /// No description provided for @auditExitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit code {code}'**
+  String auditExitCode(int code);
+
+  /// No description provided for @auditOutputSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Output summary'**
+  String get auditOutputSummary;
+
+  /// No description provided for @auditNoOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'No output'**
+  String get auditNoOutput;
+
+  /// No description provided for @auditClearTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear audit log'**
+  String get auditClearTooltip;
+
+  /// No description provided for @auditClearConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear audit log'**
+  String get auditClearConfirmTitle;
+
+  /// No description provided for @auditClearConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All {count} audit entries will be permanently removed.'**
+  String auditClearConfirmMessage(int count);
+
+  /// No description provided for @auditClearAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get auditClearAction;
+
+  /// No description provided for @auditCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Audit log cleared'**
+  String get auditCleared;
+
+  /// No description provided for @auditEntriesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} entries'**
+  String auditEntriesCount(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router.dart';
 import '../../../../app/theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/storage_inspector.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../providers/hide_ip_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/ai_settings_section.dart';
+import '../widgets/ssh_reconnect_section.dart';
 import '../widgets/storage_dialogs.dart';
 import '../widgets/update_section.dart';
 
@@ -29,13 +33,21 @@ class SettingsPage extends ConsumerWidget {
             const _SettingsHeader(),
             const _IdentityCard(),
             const SizedBox(height: 8),
+            const _AiProviderSection(),
             const _ThemeSection(),
             const _LanguageSection(),
-            const _AiProviderSection(),
             const _AboutSection(),
             _Section(
               label: l10n.settingsSectionStoragePrivacy,
               children: <Widget>[
+                _HideIpTile(),
+                _SettingsTile(
+                  icon: Icons.receipt_long_outlined,
+                  title: l10n.auditTitle,
+                  value: l10n.auditTileDesc,
+                  onTap: () => context.pushNamed(RouteNames.auditLog),
+                ),
+                const SshReconnectSection(),
                 _SettingsTile(
                   icon: Icons.shield_outlined,
                   title: l10n.settingsTileSecrets,
@@ -420,6 +432,60 @@ class _LocalCacheTileState extends ConsumerState<_LocalCacheTile> {
         await showStorageCacheDialog(context);
         await _measure();
       },
+    );
+  }
+}
+
+// ─── Hide-IP privacy tile ─────────────────────────────────────────────────
+
+/// Switch tile for the "hide IP addresses" privacy toggle.
+class _HideIpTile extends ConsumerWidget {
+  const _HideIpTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final bool hideIp = ref.watch(hideIpAddressesProvider);
+    final l10n = AppLocalizations.of(context);
+
+    return Material(
+      color: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.visibility_off_outlined,
+                size: 20, color: colors.onSurfaceVariant),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    l10n.settingsHideIp,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colors.onSurface,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  Text(
+                    l10n.settingsHideIpDesc,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: hideIp,
+              onChanged: (bool value) => ref
+                  .read(hideIpAddressesProvider.notifier)
+                  .setHideIpAddresses(value),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

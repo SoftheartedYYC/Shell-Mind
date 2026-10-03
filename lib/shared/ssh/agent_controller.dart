@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/services/command_audit_log.dart';
 import '../../core/utils/result.dart';
+import '../../core/storage/preferences_service.dart';
 import '../../features/ai_chat/presentation/providers/chat_providers.dart';
 import './command_block_parser.dart';
 import 'ssh_command_executor.dart';
@@ -39,6 +41,9 @@ class AgentState {
     this.autoLoopCount = 0,
     this.maxAutoLoops = 5,
     this.errorMessage,
+    this.results = const <CommandResult>[],
+    this.taskRounds = 0,
+    this.taskStartedAt,
   });
 
   final AgentStatus status;
@@ -49,6 +54,18 @@ class AgentState {
   final int autoLoopCount;
   final int maxAutoLoops;
   final String? errorMessage;
+
+  /// Display-only chain of command results for the current task / session,
+  /// in execution order (newest last). Rendered by the agent timeline sheet.
+  final List<CommandResult> results;
+
+  /// Display-only count of completed execution rounds (confirmed batches and
+  /// auto loops) belonging to the current task / session.
+  final int taskRounds;
+
+  /// Display-only moment the current task / session chain started, used by
+  /// the timeline header to show a start–end time range.
+  final DateTime? taskStartedAt;
 
   @override
   bool operator ==(Object other) =>
@@ -62,7 +79,10 @@ class AgentState {
           executingCommand == other.executingCommand &&
           autoLoopCount == other.autoLoopCount &&
           maxAutoLoops == other.maxAutoLoops &&
-          errorMessage == other.errorMessage;
+          errorMessage == other.errorMessage &&
+          taskRounds == other.taskRounds &&
+          taskStartedAt == other.taskStartedAt &&
+          _listEquals(results, other.results);
 
   @override
   int get hashCode => Object.hash(
@@ -74,6 +94,9 @@ class AgentState {
         autoLoopCount,
         maxAutoLoops,
         errorMessage,
+        taskRounds,
+        taskStartedAt,
+        Object.hashAll(results),
       );
 
   AgentState copyWith({
@@ -85,8 +108,12 @@ class AgentState {
     int? autoLoopCount,
     int? maxAutoLoops,
     String? errorMessage,
+    List<CommandResult>? results,
+    int? taskRounds,
+    DateTime? taskStartedAt,
     bool clearExecuting = false,
     bool clearError = false,
+    bool clearTask = false,
   }) {
     return AgentState(
       status: status ?? this.status,
@@ -100,13 +127,28 @@ class AgentState {
       autoLoopCount: autoLoopCount ?? this.autoLoopCount,
       maxAutoLoops: maxAutoLoops ?? this.maxAutoLoops,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      results: clearTask ? const <CommandResult>[] : (results ?? this.results),
+      taskRounds: clearTask ? 0 : (taskRounds ?? this.taskRounds),
+      taskStartedAt: clearTask ? null : (taskStartedAt ?? this.taskStartedAt),
     );
   }
 
   @override
   String toString() =>
       'AgentState(status: $status, autoMode: $isAutoMode, '
-      'loops: $autoLoopCount/$maxAutoLoops)';
+      'loops: $autoLoopCount/$maxAutoLoops, results: ${results.length})';
+}
+
+/// Structural comparison for [AgentState.results]. Element-wise `==` is
+/// sufficient: results are immutable snapshots appended once and never
+/// mutated, so identity-level comparison is stable across state copies.
+bool _listEquals<T>(List<T> a, List<T> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  for (int i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }
 
 /// AI Agent controller managing both confirmed execution and auto-loop modes.
@@ -144,6 +186,8 @@ class AgentController extends Notifier<AgentState> {
       executingCommand: _truncate(command),
       isAutoMode: false,
       clearError: true,
+      // Display-only: anchor the timeline header on the first command.
+      taskStartedAt: state.taskStartedAt ?? DateTime.now(),
     );
 
     try {
@@ -165,6 +209,13 @@ class AgentController extends Notifier<AgentState> {
         }
       }
 
+      // Display-only: publish the batch to the timeline (real-time refresh).
+      if (results.isNotEmpty) {
+        state = state.copyWith(
+          results: <CommandResult>[...state.results, ...results],
+        );
+      }
+
       if (results.isEmpty) {
         state = state.copyWith(
           status: AgentStatus.error,
@@ -176,6 +227,12 @@ class AgentController extends Notifier<AgentState> {
         );
       }
 
+      for (final CommandResult r in results) {
+        unawaited(ref.read(commandAuditNotifierProvider.notifier).record(
+              _auditEntryFrom(r, CommandAuditMode.confirmed),
+            ));
+      }
+
       // Feed results back into the chat (triggers a single AI follow-up).
       await ref.read(chatMessagesProvider.notifier).sendToolResults(results);
 
@@ -183,6 +240,7 @@ class AgentController extends Notifier<AgentState> {
         status: AgentStatus.idle,
         clearExecuting: true,
         errorMessage: lastError,
+        taskRounds: state.taskRounds + 1,
       );
       return Result<CommandResult>.success(results.first);
     } catch (e) {
@@ -198,12 +256,18 @@ class AgentController extends Notifier<AgentState> {
   /// Starts auto-execution mode. Subsequent AI replies will be scanned for
   /// command blocks and executed automatically until [stopAutoMode] or the
   /// loop limit is reached.
-  void startAutoMode({String? defaultServerId, int maxLoops = 5}) {
+  ///
+  /// The loop cap comes from [maxLoops] when given (tests / callers with an
+  /// explicit budget); otherwise it is read live from the user's
+  /// [PreferencesService] so a settings change applies without an app restart.
+  void startAutoMode({String? defaultServerId, int? maxLoops}) {
+    final int effectiveMax =
+        maxLoops ?? ref.read(preferencesServiceProvider).aiMaxAutoLoops;
     state = state.copyWith(
       status: AgentStatus.idle,
       isAutoMode: true,
       autoLoopCount: 0,
-      maxAutoLoops: maxLoops,
+      maxAutoLoops: effectiveMax,
       clearError: true,
     );
   }
@@ -255,7 +319,12 @@ class AgentController extends Notifier<AgentState> {
     List<CommandBlock> blocks,
     String? fallbackServerId,
   ) async {
-    state = state.copyWith(status: AgentStatus.executing, clearError: true);
+    state = state.copyWith(
+      status: AgentStatus.executing,
+      clearError: true,
+      // Display-only: anchor the timeline header on the first auto command.
+      taskStartedAt: state.taskStartedAt ?? DateTime.now(),
+    );
 
     final SshSessionRegistry registry =
         ref.read(sshSessionRegistryProvider.notifier);
@@ -301,6 +370,14 @@ class AgentController extends Notifier<AgentState> {
         );
         if (result.isSuccess) {
           results.add(result.valueOrNull!);
+          unawaited(ref.read(commandAuditNotifierProvider.notifier).record(
+                _auditEntryFrom(result.valueOrNull!, CommandAuditMode.auto),
+              ));
+          // Display-only: publish each result to the timeline as it lands so
+          // the sheet refreshes in real time while a round is still running.
+          state = state.copyWith(
+            results: <CommandResult>[...state.results, result.valueOrNull!],
+          );
         } else {
           state = state.copyWith(
             errorMessage: result.failureOrNull!.failure.message,
@@ -311,6 +388,7 @@ class AgentController extends Notifier<AgentState> {
       state = state.copyWith(
         status: AgentStatus.idle,
         autoLoopCount: state.autoLoopCount + 1,
+        taskRounds: state.taskRounds + 1,
         clearExecuting: true,
       );
 
@@ -348,6 +426,27 @@ class AgentController extends Notifier<AgentState> {
 
   String _truncate(String command) =>
       command.length > 40 ? '${command.substring(0, 40)}…' : command;
+
+  /// Builds a privacy-safe audit entry from an execution result. The full
+  /// output is never stored — only a boolean flag and a 200-char summary.
+  CommandAuditEntry _auditEntryFrom(CommandResult r, CommandAuditMode mode) {
+    final String summary =
+        CommandAuditEntry.summarizeOutput(r.stdout, r.stderr);
+    return CommandAuditEntry(
+      id: CommandAuditLog.instance.newEntryId(),
+      command: r.command,
+      serverId: r.serverId,
+      serverName: r.serverName,
+      exitCode: r.exitCode,
+      success: r.success,
+      mode: mode,
+      executedAt: r.executedAt,
+      elapsed: r.elapsed,
+      hasDangerous: SshCommandExecutor.isDangerous(r.command),
+      hasOutput: summary.isNotEmpty,
+      outputSummary: summary,
+    );
+  }
 }
 
 /// Provider for the [AgentController].

@@ -205,6 +205,40 @@ class PreferencesService {
 
   Future<void> setOnboardingComplete(bool value) =>
       setBool(AppConstants.prefKeyOnboardingComplete, value);
+
+  // ─── Privacy ────────────────────────────────────────────────────────────
+
+  /// When true, user-facing surfaces display masked host/IP addresses.
+  bool get hideIpAddresses =>
+      getBoolOr(AppConstants.prefKeyHideIpAddresses, false);
+
+  Future<void> setHideIpAddresses(bool value) =>
+      setBool(AppConstants.prefKeyHideIpAddresses, value);
+
+  // ─── SSH reconnect ─────────────────────────────────────────────────────
+
+  /// When true, dropped SSH sessions auto-reconnect with exponential backoff.
+  bool get sshAutoReconnect => getBoolOr(
+        AppConstants.prefKeySshAutoReconnect,
+        AppConstants.defaultSshAutoReconnect,
+      );
+
+  Future<void> setSshAutoReconnect(bool value) =>
+      setBool(AppConstants.prefKeySshAutoReconnect, value);
+
+  /// Maximum reconnect attempts per dropped session; `0` means unlimited.
+  int get sshReconnectMaxAttempts => getIntOr(
+        AppConstants.prefKeySshReconnectMaxAttempts,
+        AppConstants.kDefaultSshReconnectMaxAttempts,
+      );
+
+  Future<void> setSshReconnectMaxAttempts(int value) {
+    final int clamped = value.clamp(
+      0,
+      AppConstants.kMaxSshReconnectMaxAttempts,
+    );
+    return setInt(AppConstants.prefKeySshReconnectMaxAttempts, clamped);
+  }
 }
 
 /// Riverpod provider for the singleton.

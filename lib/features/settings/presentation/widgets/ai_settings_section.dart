@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../ai_chat/data/custom_ai_provider_store.dart';
 import '../../../ai_chat/domain/entities/ai_provider.dart';
+import '../../../ai_chat/presentation/providers/chat_providers.dart';
 import '../../../ai_chat/presentation/providers/models_provider.dart';
 import '../providers/ai_settings_provider.dart';
 
@@ -20,6 +22,12 @@ class AiSettingsSection extends ConsumerWidget {
     final AiSettingsController controller = ref.read(aiSettingsProvider.notifier);
     final AiProvider provider = s.effectiveProvider;
     final AppLocalizations l10n = AppLocalizations.of(context);
+    // Built-ins first, then user-defined custom providers, in one list so
+    // every tile behaves identically (select / configure / delete-if-custom).
+    final List<AiProvider> providers = <AiProvider>[
+      ...AiProviders.all,
+      ...ref.watch(customAiProvidersProvider),
+    ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -29,15 +37,23 @@ class AiSettingsSection extends ConsumerWidget {
           _Card(
             child: Column(
               children: <Widget>[
-                for (int i = 0; i < AiProviders.all.length; i++) ...<Widget>[
+                for (int i = 0; i < providers.length; i++) ...<Widget>[
                   if (i > 0) const _SectionDivider(indent: 0),
                   _ProviderTile(
-                    provider: AiProviders.all[i],
-                    selected: AiProviders.all[i].id == provider.id,
-                    configured: s.configuredProviderIds.contains(AiProviders.all[i].id),
-                    onTap: () => controller.selectProvider(AiProviders.all[i].id),
+                    provider: providers[i],
+                    selected: providers[i].id == provider.id,
+                    configured: s.configuredProviderIds.contains(providers[i].id),
+                    onTap: () => controller.selectProvider(providers[i].id),
+                    onDelete: providers[i].isCustom
+                        ? () => _confirmDeleteProvider(
+                            context, controller, providers[i])
+                        : null,
                   ),
                 ],
+                const _SectionDivider(indent: 0),
+                _AddProviderTile(
+                  onTap: () => _openAddProviderDialog(context, controller),
+                ),
               ],
             ),
           ),
@@ -204,6 +220,65 @@ class AiSettingsSection extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  /// Opens the add-custom-provider dialog and persists the result.
+  Future<void> _openAddProviderDialog(
+    BuildContext context,
+    AiSettingsController controller,
+  ) async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final (String, String, String)? result =
+        await showDialog<(String, String, String)>(
+      context: context,
+      builder: (BuildContext ctx) => const _CustomProviderDialog(),
+    );
+    if (result == null || !context.mounted) return;
+
+    final (String name, String baseUrl, String model) = result;
+    final String? id = await controller.addCustomProvider(
+      name: name,
+      baseUrl: baseUrl,
+      defaultModelId: model.isEmpty ? null : model,
+    );
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            id == null ? l10n.aiProvidersAddFailed : l10n.aiProvidersAdded),
+      ),
+    );
+  }
+
+  /// Confirmation flow for deleting a user-defined provider.
+  Future<void> _confirmDeleteProvider(
+    BuildContext context,
+    AiSettingsController controller,
+    AiProvider provider,
+  ) async {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final bool? ok = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: Text(l10n.aiProvidersDeleteTitle(provider.name)),
+        content: Text(l10n.aiProvidersDeleteMessage),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: colors.error),
+            child: Text(l10n.aiProvidersDeleteConfirm),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await controller.deleteCustomProvider(provider.id);
+    }
   }
 
   void _openMaxLoopsDialog(BuildContext context, WidgetRef ref, int current) {
@@ -383,12 +458,16 @@ class _ProviderTile extends StatelessWidget {
     required this.selected,
     required this.configured,
     required this.onTap,
+    this.onDelete,
   });
 
   final AiProvider provider;
   final bool selected;
   final bool configured;
   final VoidCallback onTap;
+
+  /// Non-null only for user-defined providers — shows the remove affordance.
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -464,7 +543,14 @@ class _ProviderTile extends StatelessWidget {
               ),
             ),
             if (selected)
-              Icon(Icons.check_circle_rounded, size: 20, color: colors.primary),
+              Icon(Icons.check_circle_rounded, size: 20, color: colors.primary)
+            else if (onDelete != null)
+              IconButton(
+                tooltip: AppLocalizations.of(context).aiProvidersDeleteTile,
+                visualDensity: VisualDensity.compact,
+                onPressed: onDelete,
+                icon: Icon(Icons.close_rounded, size: 16, color: colors.error),
+              ),
           ],
         ),
       ),
@@ -838,6 +924,222 @@ class _CustomModelDialogState extends State<_CustomModelDialog> {
         FilledButton(
           onPressed: () => _submit(l10n),
           child: Text(l10n.aiModelsAdd),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Custom provider entry + dialog ─────────────────────────────────────
+
+/// The "+ Add provider" row at the bottom of the provider list.
+class _AddProviderTile extends StatelessWidget {
+  const _AddProviderTile({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: <Widget>[
+            Container(
+              width: 38,
+              height: 38,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: colors.outlineVariant),
+              ),
+              child: Icon(Icons.add_rounded, size: 20, color: colors.primary),
+            ),
+            const SizedBox(width: 14),
+            Text(
+              l10n.aiProvidersAddTile,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: colors.primary,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Dialog collecting name + base URL + optional default model id for a new
+/// user-defined provider. Validates non-blank fields, a http(s) URL, and
+/// duplicate names; pops with a `(name, baseUrl, model)` record.
+class _CustomProviderDialog extends StatefulWidget {
+  const _CustomProviderDialog();
+
+  @override
+  State<_CustomProviderDialog> createState() => _CustomProviderDialogState();
+}
+
+class _CustomProviderDialogState extends State<_CustomProviderDialog> {
+  final TextEditingController _name = TextEditingController();
+  final TextEditingController _url = TextEditingController();
+  final TextEditingController _model = TextEditingController();
+  String? _error;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _url.dispose();
+    _model.dispose();
+    super.dispose();
+  }
+
+  void _submit(AppLocalizations l10n, Set<String> takenNames) {
+    final String name = _name.text.trim();
+    final String url = _url.text.trim();
+    if (name.isEmpty || url.isEmpty) {
+      setState(() => _error = l10n.aiProvidersInvalidInput);
+      return;
+    }
+    final Uri? uri = Uri.tryParse(url);
+    if (uri == null ||
+        !uri.hasScheme ||
+        !(uri.isScheme('HTTP') || uri.isScheme('HTTPS'))) {
+      setState(() => _error = l10n.aiProvidersInvalidUrl);
+      return;
+    }
+    for (final String existing in takenNames) {
+      if (existing.toLowerCase() == name.toLowerCase()) {
+        setState(() => _error = l10n.aiProvidersDuplicateName);
+        return;
+      }
+    }
+    Navigator.of(context).pop((name, url, _model.text.trim()));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Row(
+        children: <Widget>[
+          Icon(Icons.add_rounded, size: 20, color: colors.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(l10n.aiProvidersAddTitle,
+                style: Theme.of(context).textTheme.titleLarge),
+          ),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _ProviderField(
+              controller: _name,
+              label: l10n.aiProvidersFieldName,
+              hint: l10n.aiProvidersFieldNameHint,
+            ),
+            const SizedBox(height: 12),
+            _ProviderField(
+              controller: _url,
+              label: l10n.aiProvidersFieldBaseUrl,
+              hint: l10n.aiProvidersFieldBaseUrlHint,
+              keyboardType: TextInputType.url,
+            ),
+            const SizedBox(height: 12),
+            _ProviderField(
+              controller: _model,
+              label: l10n.aiProvidersFieldModel,
+              hint: l10n.aiProvidersFieldModelHint,
+            ),
+            if (_error != null) ...<Widget>[
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colors.error,
+                    ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          onPressed: () => _submit(
+            l10n,
+            <String>{
+              for (final CustomAiProvider p
+                  in CustomAiProviderStore.instance.all)
+                p.name,
+            },
+          ),
+          child: Text(l10n.aiProvidersAddConfirm),
+        ),
+      ],
+    );
+  }
+}
+
+/// A single labelled text field inside [_CustomProviderDialog].
+class _ProviderField extends StatelessWidget {
+  const _ProviderField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    this.keyboardType,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final TextInputType? keyboardType;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+        ),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          autofocus: label == AppLocalizations.of(context).aiProvidersFieldName,
+          keyboardType: keyboardType,
+          autocorrect: false,
+          enableSuggestions: false,
+          inputFormatters: <TextInputFormatter>[
+            FilteringTextInputFormatter.singleLineFormatter,
+          ],
+          style: TextStyle(
+            fontFamily: AppTheme.monoFont,
+            fontFamilyFallback: AppTheme.monoFallback,
+            fontSize: 13,
+            color: colors.onSurface,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            isDense: true,
+            border: const OutlineInputBorder(),
+          ),
         ),
       ],
     );

@@ -50,6 +50,7 @@ class AiProvider {
     required this.models,
     this.websiteUrl,
     this.shortLabel,
+    this.isCustom = false,
   });
 
   /// Stable unique key — also used to namespace the stored API key
@@ -71,8 +72,18 @@ class AiProvider {
   /// Compact badge text (defaults to the first two letters of [name]).
   final String? shortLabel;
 
+  /// True for user-defined providers persisted in Hive (see
+  /// `CustomAiProviderStore`); only those may be deleted in Settings.
+  final bool isCustom;
+
   /// The model used when the user hasn't picked one yet.
-  AiModel get defaultModel => models.first;
+  ///
+  /// Safe against an empty catalogue (freshly created custom providers may
+  /// have none until models are fetched or added): returns a blank
+  /// placeholder instead of throwing — such a chat request fails at the API
+  /// level until the user picks a model.
+  AiModel get defaultModel =>
+      models.isNotEmpty ? models.first : AiModel(id: '', name: name);
 
   /// Two-letter badge label for list avatars.
   String get initials =>

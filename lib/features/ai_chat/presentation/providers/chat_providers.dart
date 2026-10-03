@@ -7,7 +7,9 @@ import '../../../../core/storage/preferences_service.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/utils/result.dart';
 import '../../data/ai_service.dart';
+import '../../data/chat_history_store.dart';
 import '../../data/chat_repository_impl.dart';
+import '../../data/custom_ai_provider_store.dart';
 import '../../domain/entities/ai_provider.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/repositories/chat_repository.dart';
@@ -19,10 +21,58 @@ import '../../../../shared/ssh/ssh_session_registry.dart';
 /// The provider the user picked in Settings. Non-autoDispose: [PreferencesService]
 /// is a silent singleton, so this is recomputed only when a settings change
 /// explicitly invalidates it (see `ai_settings_provider.dart`).
+///
+/// Resolves against built-ins first, then user-defined custom providers. When
+/// the stored id names a custom provider that was deleted, it falls back to
+/// the default built-in so a stale preference never breaks the request.
 final Provider<AiProvider> selectedProviderProvider = Provider<AiProvider>((Ref ref) {
   final PreferencesService prefs = ref.watch(preferencesServiceProvider);
-  return AiProviders.getById(prefs.selectedProviderId);
+  return providerFromId(
+    prefs.selectedProviderId,
+    ref.watch(customAiProvidersProvider),
+  );
 });
+
+/// Mirrors [CustomAiProviderStore] so Riverpod consumers rebuild when a
+/// custom provider is added/updated/deleted. Re-derives from the store's
+/// snapshot on every read; mutations notify dependents by invalidating
+/// [customAiProvidersProvider] (see `AiSettingsController`).
+final Provider<List<AiProvider>> customAiProvidersProvider =
+    Provider<List<AiProvider>>((Ref ref) {
+  final CustomAiProviderStore store = ref.watch(customAiProviderStoreProvider);
+  return store.all
+      .map((CustomAiProvider c) => AiProvider(
+            id: c.id,
+            name: c.name,
+            baseUrl: c.baseUrl,
+            models: c.defaultModelId == null
+                ? const <AiModel>[]
+                : <AiModel>[
+                    AiModel(id: c.defaultModelId!, name: c.defaultModelId!),
+                  ],
+            isCustom: true,
+          ))
+      .toList(growable: false);
+});
+
+/// Injected dependency for [customAiProvidersProvider] — overridable in tests.
+final Provider<CustomAiProviderStore> customAiProviderStoreProvider =
+    Provider<CustomAiProviderStore>((Ref ref) => CustomAiProviderStore.instance);
+
+/// Resolves a provider id against built-ins and then [customProviders]
+/// (user-defined, in display order). Falls back to the default built-in when
+/// neither list matches — e.g. a stale preference pointing at a deleted
+/// custom provider. Exposed as a pure function so settings controllers can
+/// resolve ids outside a provider build (they pass in the mirrored list).
+AiProvider providerFromId(String id, List<AiProvider> customProviders) {
+  for (final AiProvider p in AiProviders.all) {
+    if (p.id == id) return p;
+  }
+  for (final AiProvider p in customProviders) {
+    if (p.id == id) return p;
+  }
+  return AiProviders.openai;
+}
 
 /// The model chosen for the current provider.
 ///
@@ -173,6 +223,14 @@ class ChatNotifier extends Notifier<ChatState> {
   StreamSubscription<String>? _subscription;
   int _idCounter = 0;
 
+  /// Set once the persisted transcript has been merged into state, so a
+  /// later re-entry never duplicates history.
+  bool _historyRestored = false;
+
+  /// Marks a persistence snapshot as scheduled-but-not-yet-flushed so the
+  /// notifier can distinguish "writing" from "cleared" state transitions.
+  bool _restoreInFlight = false;
+
   @override
   ChatState build() {
     ref.onDispose(() => _subscription?.cancel());
@@ -181,6 +239,39 @@ class ChatNotifier extends Notifier<ChatState> {
 
   String _nextId(String prefix) =>
       '$prefix-${DateTime.now().microsecondsSinceEpoch}-${_idCounter++}';
+
+  // ─── History persistence ────────────────────────────────────────────────
+
+  /// Restores the persisted transcript from [store] into state. No-op when
+  /// already restored, while streaming, or when the box holds nothing.
+  ///
+  /// Streaming placeholders that never completed are restored as finished
+  /// turns by the store itself.
+  Future<void> restoreFromHistory(ChatHistoryStore store) async {
+    if (_historyRestored || state.isStreaming || _restoreInFlight) return;
+    _restoreInFlight = true;
+    try {
+      final List<ChatMessage> messages = await store.load();
+      if (messages.isEmpty) return;
+      _historyRestored = true;
+      state = ChatState(messages: List<ChatMessage>.unmodifiable(messages));
+    } finally {
+      _restoreInFlight = false;
+    }
+  }
+
+  /// Schedules a debounced persistence write of the current transcript.
+  /// Called after every message-list mutation; the store coalesces bursts
+  /// (a streaming reply) into a single disk write.
+  void _persistMessages() {
+    ref.read(chatHistoryStoreProvider).saveMessages(state.messages);
+  }
+
+  /// Persists the transcript immediately (flushing any pending debounced
+  /// write). Used at stream completion where the transcript is final.
+  Future<void> _flushMessages() {
+    return ref.read(chatHistoryStoreProvider).flush(state.messages);
+  }
 
   /// Sends [text] as a user turn and begins streaming the assistant reply.
   Future<void> sendMessage(String text) async {
@@ -202,6 +293,9 @@ class ChatNotifier extends Notifier<ChatState> {
       isConnecting: true,
       clearFailure: true,
     );
+    // Persist the user turn right away (debounced); the assistant
+    // placeholder is stored as a finished turn if the app dies mid-stream.
+    _persistMessages();
 
     final StringBuffer buffer = StringBuffer();
 
@@ -237,7 +331,7 @@ class ChatNotifier extends Notifier<ChatState> {
     }
   }
 
-  void _onStreamDone(String assistantId, String content) {
+  Future<void> _onStreamDone(String assistantId, String content) async {
     _subscription = null;
     if (content.trim().isEmpty) {
       // No tokens arrived — drop the empty placeholder rather than show a
@@ -249,18 +343,22 @@ class ChatNotifier extends Notifier<ChatState> {
         isStreaming: false,
         isConnecting: false,
       );
+      // Still persist: the user turn must survive an app restart.
+      await _flushMessages();
       return;
     }
     _patchMessage(assistantId, (ChatMessage m) => m.finish());
     state = state.copyWith(isStreaming: false, isConnecting: false);
+    // Stream settled — write the final transcript immediately.
+    await _flushMessages();
   }
 
-  void _onStreamError(
+  Future<void> _onStreamError(
     String assistantId,
     String partial,
     Object error,
     StackTrace stack,
-  ) {
+  ) async {
     _subscription = null;
     final AppFailure failure = _toFailure(error, stack);
 
@@ -268,6 +366,7 @@ class ChatNotifier extends Notifier<ChatState> {
     if (failure.kind == FailureKind.cancelled) {
       _patchMessage(assistantId, (ChatMessage m) => m.finish());
       state = state.copyWith(isStreaming: false, isConnecting: false);
+      await _flushMessages();
       return;
     }
 
@@ -293,6 +392,8 @@ class ChatNotifier extends Notifier<ChatState> {
         failure: failure,
       );
     }
+    // Persist either way so the surviving transcript is stable on restart.
+    await _flushMessages();
   }
 
   /// Aborts an in-flight stream, keeping whatever text arrived so far.
@@ -312,6 +413,9 @@ class ChatNotifier extends Notifier<ChatState> {
       _patchMessage(streaming.id, (ChatMessage m) => m.finish());
     }
     state = state.copyWith(isStreaming: false, isConnecting: false);
+    // The stopped partial reply is a final transcript — flush immediately so
+    // an app kill right after "stop" never loses the surviving turn.
+    _flushMessages();
   }
 
   /// Sends a tool execution result to the conversation and triggers AI follow-up.
@@ -340,6 +444,9 @@ class ChatNotifier extends Notifier<ChatState> {
       isConnecting: true,
       clearFailure: true,
     );
+    // Schedule the debounced write so the tool turn survives an app kill
+    // before the follow-up stream settles.
+    _persistMessages();
 
     // Trigger AI response
     await _continueAfterToolResult(updatedMessages);
@@ -376,6 +483,9 @@ class ChatNotifier extends Notifier<ChatState> {
       isConnecting: true,
       clearFailure: true,
     );
+    // Schedule the debounced write so the tool turns survive an app kill
+    // before the follow-up stream settles.
+    _persistMessages();
 
     // Trigger AI response once
     await _continueAfterToolResult(updatedMessages);
@@ -429,11 +539,14 @@ class ChatNotifier extends Notifier<ChatState> {
     }
   }
 
-  /// Wipes the conversation and any error state.
+  /// Wipes the conversation and any error state, and removes the persisted
+  /// transcript so a restart cannot resurrect the cleared history.
   void clearChat() {
     _subscription?.cancel();
     _subscription = null;
     state = const ChatState();
+    _historyRestored = false;
+    unawaited(ref.read(chatHistoryStoreProvider).clear());
   }
 
   void dismissError() {
@@ -461,3 +574,20 @@ class ChatNotifier extends Notifier<ChatState> {
 /// The conversation notifier — the single source of truth for the chat UI.
 final NotifierProvider<ChatNotifier, ChatState> chatMessagesProvider =
     NotifierProvider<ChatNotifier, ChatState>(ChatNotifier.new);
+
+// ─── Chat history persistence ────────────────────────────────────────────
+
+/// Hive-backed transcript store, overridable in tests.
+final Provider<ChatHistoryStore> chatHistoryStoreProvider =
+    Provider<ChatHistoryStore>((Ref ref) => ChatHistoryStore.instance);
+
+/// Loads the persisted transcript into [chatMessagesProvider], restoring the
+/// conversation after an app restart. Streaming placeholders that never
+/// finished are restored as completed turns (handled by the store).
+///
+/// Safe to call more than once; subsequent calls are no-ops so navigating
+/// back to the chat page never duplicates history.
+Future<void> restoreChatHistory(Ref ref) async {
+  final ChatNotifier notifier = ref.read(chatMessagesProvider.notifier);
+  await notifier.restoreFromHistory(ref.read(chatHistoryStoreProvider));
+}

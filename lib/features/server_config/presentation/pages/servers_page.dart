@@ -6,8 +6,12 @@ import '../../../../app/theme.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/ssh/ssh_server_connect_controller.dart';
+import '../../../../shared/ssh/ssh_session_registry.dart';
+import '../../../settings/presentation/providers/hide_ip_provider.dart';
 import '../../domain/entities/server_config.dart';
 import '../providers/server_config_providers.dart';
+import '../widgets/health_summary_card.dart';
 import '../widgets/server_card.dart';
 
 /// How the fleet list orders items inside each group.
@@ -225,6 +229,12 @@ class _ServersPageState extends ConsumerState<ServersPage> {
     final AsyncValue<List<ServerConfig>> async =
         ref.watch(serverConfigListProvider);
     final List<ServerConfig> all = async.valueOrNull ?? const <ServerConfig>[];
+    // Live status for the per-card connection badges.
+    final Map<String, RegisteredSession> sessions =
+        ref.watch(sshSessionRegistryProvider);
+    final Map<String, SshServerConnectAttempt> attempts =
+        ref.watch(sshServerConnectProvider);
+    final bool hideIp = ref.watch(hideIpAddressesProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -251,7 +261,7 @@ class _ServersPageState extends ConsumerState<ServersPage> {
                   onRetry: () => ref.invalidate(serverConfigListProvider),
                 ),
                 data: (List<ServerConfig> list) =>
-                    _buildData(list),
+                    _buildData(list, sessions, attempts, hideIp),
               ),
             ),
           ],
@@ -266,15 +276,31 @@ class _ServersPageState extends ConsumerState<ServersPage> {
     );
   }
 
-  Widget _buildData(List<ServerConfig> list) {
+  Widget _buildData(
+    List<ServerConfig> list,
+    Map<String, RegisteredSession> sessions,
+    Map<String, SshServerConnectAttempt> attempts,
+    bool maskAddress,
+  ) {
     if (list.isEmpty) return _ServersEmpty(onAdd: _openAdd);
 
     final List<_Group> groups = _groupAndSort(list);
     if (groups.isEmpty) {
       return _NoMatches(query: _query, onClear: _clearSearch);
     }
+    // Per-card status sources: online = live registry session, connecting =
+    // in-flight attempt from the shared connect controller.
+    final Set<String> onlineIds = sessions.keys.toSet();
+    final Set<String> connectingIds = attempts.entries
+        .where((MapEntry<String, SshServerConnectAttempt> e) => e.value.inProgress)
+        .map((MapEntry<String, SshServerConnectAttempt> e) => e.key)
+        .toSet();
     return _FleetList(
       groups: groups,
+      servers: list,
+      onlineIds: onlineIds,
+      connectingIds: connectingIds,
+      maskAddress: maskAddress,
       onRefresh: () =>
           ref.read(serverConfigListProvider.notifier).refresh(),
       onConnect: _connect,
@@ -291,6 +317,10 @@ class _ServersPageState extends ConsumerState<ServersPage> {
 class _FleetList extends StatelessWidget {
   const _FleetList({
     required this.groups,
+    required this.servers,
+    required this.onlineIds,
+    required this.connectingIds,
+    required this.maskAddress,
     required this.onRefresh,
     required this.onConnect,
     required this.onEdit,
@@ -300,6 +330,19 @@ class _FleetList extends StatelessWidget {
   });
 
   final List<_Group> groups;
+
+  /// Full fleet for the health summary card (probe targets + ratio).
+  final List<ServerConfig> servers;
+
+  /// Server ids with a live registry session — drives the green online badge.
+  final Set<String> onlineIds;
+
+  /// Server ids with a dial currently in flight — drives the spinner badge.
+  final Set<String> connectingIds;
+
+  /// When true, hosts/IPs render masked on the card identity line.
+  final bool maskAddress;
+
   final Future<void> Function() onRefresh;
   final void Function(ServerConfig) onConnect;
   final void Function(ServerConfig) onEdit;
@@ -309,7 +352,9 @@ class _FleetList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> children = <Widget>[];
+    final List<Widget> children = <Widget>[
+      HealthSummaryCard(servers: servers),
+    ];
 
     for (final _Group group in groups) {
       children.add(
@@ -336,6 +381,9 @@ class _FleetList extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
               child: ServerCard(
                 config: config,
+                connected: onlineIds.contains(config.id),
+                connecting: connectingIds.contains(config.id),
+                maskAddress: maskAddress,
                 onConnect: () => onConnect(config),
                 onEdit: () => onEdit(config),
                 onDelete: () => onDelete(config),

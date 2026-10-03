@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../app/theme.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/server_config.dart';
 
@@ -19,6 +20,8 @@ class ServerCard extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     this.connected = false,
+    this.connecting = false,
+    this.maskAddress = false,
   });
 
   final ServerConfig config;
@@ -29,6 +32,13 @@ class ServerCard extends StatelessWidget {
   /// Live-session hint. Drives the green accent + status dot. Defaults to
   /// false; the terminal feature flips it while a socket is open.
   final bool connected;
+
+  /// True while a dial is in flight — renders a spinner status instead of
+  /// the online/offline dot.
+  final bool connecting;
+
+  /// When true, host/IP addresses render in a masked (privacy) form.
+  final bool maskAddress;
 
   void _run(BuildContext context, _CardAction action) {
     switch (action) {
@@ -57,6 +67,7 @@ class ServerCard extends StatelessWidget {
       context: context,
       builder: (BuildContext sheetContext) => _ActionSheet(
         config: config,
+        maskAddress: maskAddress,
         onAction: (_CardAction action) {
           Navigator.of(sheetContext).pop();
           _run(context, action);
@@ -79,7 +90,14 @@ class ServerCard extends StatelessWidget {
             children: <Widget>[
               _Avatar(label: _monogram(config), connected: connected),
               const SizedBox(width: 12),
-              Expanded(child: _CardBody(config: config, connected: connected)),
+              Expanded(
+                child: _CardBody(
+                  config: config,
+                  connected: connected,
+                  connecting: connecting,
+                  maskAddress: maskAddress,
+                ),
+              ),
               _OverflowMenu(onSelected: (_CardAction a) => _run(context, a)),
             ],
           ),
@@ -98,10 +116,17 @@ class ServerCard extends StatelessWidget {
 // ─── Card internals ───────────────────────────────────────────────────────
 
 class _CardBody extends StatelessWidget {
-  const _CardBody({required this.config, required this.connected});
+  const _CardBody({
+    required this.config,
+    required this.connected,
+    required this.connecting,
+    required this.maskAddress,
+  });
 
   final ServerConfig config;
   final bool connected;
+  final bool connecting;
+  final bool maskAddress;
 
   @override
   Widget build(BuildContext context) {
@@ -128,9 +153,12 @@ class _CardBody extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        // user@host:port — the identity line.
+        // user@host:port — the identity line. Host part is masked when the
+        // privacy toggle is on.
         Text(
-          '${config.username}@${config.host}:${config.port}',
+          '${config.username}@'
+          '${maskAddress ? maskHostAddress(config.host) : config.host}'
+          ':${config.port}',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -144,12 +172,14 @@ class _CardBody extends StatelessWidget {
         const SizedBox(height: 6),
         Row(
           children: <Widget>[
-            _StatusDot(connected: connected),
+            _StatusDot(connected: connected, connecting: connecting),
             const SizedBox(width: 6),
             Text(
               connected
                   ? l10n.serverOnline
-                  : _relativeTime(l10n, config.lastConnectedAt),
+                  : connecting
+                      ? l10n.aiServerConnecting
+                      : _relativeTime(l10n, config.lastConnectedAt),
               style: TextStyle(
                 fontSize: 11,
                 color: colors.onSurfaceVariant,
@@ -265,24 +295,36 @@ class _GroupTag extends StatelessWidget {
 }
 
 class _StatusDot extends StatelessWidget {
-  const _StatusDot({required this.connected});
+  const _StatusDot({required this.connected, required this.connecting});
 
   final bool connected;
+  final bool connecting;
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
     final Color color = connected
         ? context.sem.success
-        : colors.onSurfaceVariant.withValues(alpha: 0.4);
-    return Container(
-      width: 7,
-      height: 7,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
-    );
+        : connecting
+            ? context.sem.warning
+            : colors.onSurfaceVariant.withValues(alpha: 0.4);
+    return connecting
+        ? SizedBox(
+            width: 7,
+            height: 7,
+            child: CircularProgressIndicator(
+              strokeWidth: 1.4,
+              color: color,
+            ),
+          )
+        : Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
+          );
   }
 }
 
@@ -354,9 +396,14 @@ PopupMenuItem<_CardAction> _menuEntry(
 enum _CardAction { connect, edit, copy, delete }
 
 class _ActionSheet extends StatelessWidget {
-  const _ActionSheet({required this.config, required this.onAction});
+  const _ActionSheet({
+    required this.config,
+    required this.maskAddress,
+    required this.onAction,
+  });
 
   final ServerConfig config;
+  final bool maskAddress;
   final ValueChanged<_CardAction> onAction;
 
   @override
@@ -393,7 +440,8 @@ class _ActionSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '${config.identity}:${config.port}',
+                  '${maskAddress ? maskHostAddress(config.host) : config.host}'
+                  ':${config.port}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

@@ -8,8 +8,8 @@ import '../../domain/entities/chat_message.dart';
 /// Features:
 /// - Left border color based on success (green) or failure (red)
 /// - Header with server name chip, exit code badge, and elapsed time
-/// - Command text (single line, monospace)
-/// - Collapsible stdout area (show first 10 lines by default)
+/// - Collapsible stdout area (show first 10 lines by default); hidden
+///   entirely when both stdout and stderr are blank
 /// - Separate stderr section if present (always expanded)
 /// - "Analyze with AI" button at bottom
 class ToolResultBubble extends StatelessWidget {
@@ -29,10 +29,12 @@ class ToolResultBubble extends StatelessWidget {
     final Color borderColor = isSuccess ? context.sem.success : colors.error;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Split output into lines
-    final List<String> stdoutLines = payload.stdout.isNotEmpty
-        ? payload.stdout.split('\n')
-        : <String>[];
+    // Whitespace-only output (e.g. silent `curl -s -o /dev/null`) is treated
+    // as empty so the whole output section collapses away.
+    final String stdout = payload.stdout.trim();
+    final String stderr = payload.stderr.trim();
+    final List<String> stdoutLines =
+        stdout.isNotEmpty ? stdout.split('\n') : <String>[];
     final int visibleLines = 10;
     final bool hasMoreOutput = stdoutLines.length > visibleLines;
     final List<String> displayedLines =
@@ -141,21 +143,6 @@ class ToolResultBubble extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-
-                      // Command (single line, ellipsis)
-                      Text(
-                        payload.command,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: AppTheme.monoFont,
-                          fontFamilyFallback: AppTheme.monoFallback,
-                          fontSize: 12.5,
-                          color: colors.onSurface,
-                          height: 1.4,
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -163,8 +150,8 @@ class ToolResultBubble extends StatelessWidget {
             ),
           ),
 
-          // Output section
-          if (stdoutLines.isNotEmpty || payload.stderr.isNotEmpty) ...<Widget>[
+          // Output section — collapsed entirely when both streams are blank.
+          if (stdoutLines.isNotEmpty || stderr.isNotEmpty) ...<Widget>[
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 8),
               decoration: BoxDecoration(
@@ -275,7 +262,7 @@ class ToolResultBubble extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           SelectableText(
-                            payload.stderr,
+                            stderr,
                             style: TextStyle(
                               fontFamily: AppTheme.monoFont,
                               fontFamilyFallback: AppTheme.monoFallback,

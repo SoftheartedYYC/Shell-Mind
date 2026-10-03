@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/ssh/ssh_server_connect_controller.dart';
 import '../../../../shared/ssh/ssh_session_registry.dart';
 import '../../../server_config/domain/entities/server_config.dart';
 import '../../../server_config/presentation/providers/server_config_providers.dart';
+import '../../../settings/presentation/providers/hide_ip_provider.dart';
 
 /// Server selection bottom sheet for the AI chat surface.
 ///
@@ -162,6 +164,8 @@ class _ServerSelectorSheetState extends ConsumerState<ServerSelectorSheet> {
                         config: servers[index],
                         session: sessions[servers[index].id],
                         attempt: attempts[servers[index].id],
+                        maskAddress:
+                            ref.watch(hideIpAddressesProvider),
                         onConnect: () => unawaited(_connect(servers[index])),
                         onDisconnect: () =>
                             _disconnect(servers[index].id),
@@ -303,7 +307,7 @@ class _ServerSelectorSheetState extends ConsumerState<ServerSelectorSheet> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${session.config.host}:${session.config.port}',
+                                          '${maskHostAddress(session.config.host, enabled: ref.watch(hideIpAddressesProvider))}:${session.config.port}',
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodySmall
@@ -412,11 +416,15 @@ class _ManageTile extends StatelessWidget {
     required this.config,
     required this.session,
     required this.attempt,
+    required this.maskAddress,
     required this.onConnect,
     required this.onDisconnect,
   });
 
   final ServerConfig config;
+
+  /// When true, the host/IP renders masked (privacy toggle).
+  final bool maskAddress;
 
   /// Non-null when the server currently has a live session.
   final RegisteredSession? session;
@@ -504,7 +512,7 @@ class _ManageTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${config.host}:${config.port}',
+                      '${maskHostAddress(config.host, enabled: maskAddress)}:${config.port}',
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall
