@@ -6,8 +6,8 @@ abstract final class AppConstants {
   // ─── Identity ───────────────────────────────────────────────────────────
   static const String appName = 'ShellMind';
   static const String appTagline = 'SSH · AI · Command';
-  static const String appVersion = '1.5.0';
-  static const int appBuildNumber = 9;
+  static const String appVersion = '1.5.1';
+  static const int appBuildNumber = 10;
 
   /// Emitted at the top of exported terminal transcripts.
   static const String userAgent = '$appName/$appVersion';

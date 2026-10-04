@@ -463,11 +463,8 @@ void main() {
     expect(find.byType(SshReconnectSection), findsOneWidget);
     expect(find.byType(UpdateSection), findsOneWidget);
 
-    // Identity card carries the app name (constant text, locale independent).
-    expect(find.text('ShellMind'), findsOneWidget);
-
     // Update section shows the pubspec-pinned version constants (the stubbed
     // PackageInfo loader makes bootstrap fall back to these exact values).
-    expect(find.textContaining('v1.4.1'), findsWidgets);
+    expect(find.textContaining('v1.5.1'), findsWidgets);
   });
 }

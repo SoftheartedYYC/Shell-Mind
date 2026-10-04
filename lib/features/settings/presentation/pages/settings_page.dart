@@ -14,6 +14,7 @@ import '../providers/ai_settings_provider.dart';
 import '../providers/hide_ip_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/update_provider.dart';
 import '../widgets/ai_settings_section.dart';
 import '../widgets/ssh_reconnect_section.dart';
 import '../widgets/storage_dialogs.dart';
@@ -34,8 +35,6 @@ class SettingsPage extends ConsumerWidget {
           // headers (SafeArea already clears the status bar).
           padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
           children: <Widget>[
-            const _IdentityCard(),
-            const SizedBox(height: 8),
             const _AppearanceSection(),
             _Section(
               label: l10n.settingsSectionAiProvider,
@@ -89,6 +88,7 @@ class SettingsPage extends ConsumerWidget {
             ),
             _Section(
               label: l10n.settingsSectionResources,
+              highlight: UpdateSection.needsAttention(ref.watch(updateProvider)),
               children: <Widget>[
                 const UpdateSection(),
                 _SettingsTile(
@@ -115,78 +115,6 @@ class SettingsPage extends ConsumerWidget {
             const _FooterSignature(),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ─── Identity card ────────────────────────────────────────────────────────
-
-class _IdentityCard extends StatelessWidget {
-  const _IdentityCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme colors = Theme.of(context).colorScheme;
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? colors.surfaceContainerHigh : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.outlineVariant),
-        boxShadow: isDark
-            ? null
-            : <BoxShadow>[
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-      ),
-      child: Row(
-        children: <Widget>[
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: colors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Icon(Icons.terminal_rounded,
-                  size: 22, color: colors.primary),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  AppConstants.appName,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'v${AppConstants.appVersion} · build ${AppConstants.appBuildNumber}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
-          ),
-          StatusPill(
-            label: AppLocalizations.of(context).settingsStable,
-            color: context.sem.success,
-          ),
-        ],
       ),
     );
   }
@@ -462,10 +390,15 @@ class _AiAgentSection extends ConsumerWidget {
 // ─── Section ──────────────────────────────────────────────────────────────
 
 class _Section extends StatelessWidget {
-  const _Section({required this.label, required this.children});
+  const _Section({required this.label, required this.children, this.highlight = false});
 
   final String label;
   final List<Widget> children;
+
+  /// Draws an accent border instead of the default outline. Used by the
+  /// "Resources" section so the update block keeps its attention cue that
+  /// previously lived on the update card's own border.
+  final bool highlight;
 
   @override
   Widget build(BuildContext context) {
@@ -483,7 +416,11 @@ class _Section extends StatelessWidget {
             decoration: BoxDecoration(
               color: isDark ? colors.surfaceContainerHigh : Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.outlineVariant),
+              border: Border.all(
+                color: highlight
+                    ? colors.primary.withValues(alpha: 0.4)
+                    : colors.outlineVariant,
+              ),
               boxShadow: isDark
                   ? null
                   : <BoxShadow>[

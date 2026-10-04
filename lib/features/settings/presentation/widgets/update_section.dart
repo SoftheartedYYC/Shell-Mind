@@ -12,6 +12,9 @@ import '../providers/update_provider.dart';
 import 'update_controls.dart';
 
 /// "About & update" block for the Settings tab.
+///
+/// Renders as a flat group of rows (no card of its own) so it can sit inside
+/// the section card built by [SettingsPage] without a double-border look.
 class UpdateSection extends ConsumerWidget {
   const UpdateSection({super.key});
 
@@ -20,81 +23,58 @@ class UpdateSection extends ConsumerWidget {
     final UpdateState s = ref.watch(updateProvider);
     final UpdateNotifier controller = ref.read(updateProvider.notifier);
     final ColorScheme colors = Theme.of(context).colorScheme;
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final AppLocalizations l10n = AppLocalizations.of(context);
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: isDark ? colors.surfaceContainerHigh : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: _needsAttention(s)
-              ? colors.primary.withValues(alpha: 0.4)
-              : colors.outlineVariant,
+    return Column(
+      children: <Widget>[
+        _Row(
+          icon: Icons.info_outline_rounded,
+          title: l10n.updateVersion,
+          trailing: Text(
+            'v${s.currentVersion} · build ${s.currentBuildNumber}',
+            style: TextStyle(
+              fontFamily: AppTheme.monoFont,
+              fontFamilyFallback: AppTheme.monoFallback,
+              fontSize: 11,
+              color: colors.onSurfaceVariant,
+            ),
+          ),
         ),
-        boxShadow: isDark
-            ? null
-            : <BoxShadow>[
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: <Widget>[
-          _Row(
-            icon: Icons.info_outline_rounded,
-            title: l10n.updateVersion,
-            trailing: Text(
-              'v${s.currentVersion} · build ${s.currentBuildNumber}',
-              style: TextStyle(
-                fontFamily: AppTheme.monoFont,
-                fontFamilyFallback: AppTheme.monoFallback,
-                fontSize: 11,
-                color: colors.onSurfaceVariant,
+        _SectionDivider(),
+        _Row(
+          icon: Icons.system_update_alt_rounded,
+          title: l10n.updateSoftwareUpdate,
+          accent: _accentFor(context, s.status),
+          trailing: _CheckControl(state: s, controller: controller),
+        ),
+        if (_panelVisible(s))
+          AnimatedSize(
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              switchInCurve: Curves.easeOutCubic,
+              transitionBuilder: (Widget child, Animation<double> anim) =>
+                  FadeTransition(
+                opacity: anim,
+                child: SizeTransition(sizeFactor: anim, child: child),
+              ),
+              child: KeyedSubtree(
+                key: ValueKey<String>(_panelKey(s)),
+                child: _StatusPanel(state: s, controller: controller),
               ),
             ),
           ),
-          _SectionDivider(),
-          _Row(
-            icon: Icons.system_update_alt_rounded,
-            title: l10n.updateSoftwareUpdate,
-            accent: _accentFor(context, s.status),
-            trailing: _CheckControl(state: s, controller: controller),
-          ),
-          if (_panelVisible(s))
-            AnimatedSize(
-              duration: const Duration(milliseconds: 240),
-              curve: Curves.easeOutCubic,
-              alignment: Alignment.topCenter,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 220),
-                switchInCurve: Curves.easeOutCubic,
-                transitionBuilder: (Widget child, Animation<double> anim) =>
-                    FadeTransition(
-                  opacity: anim,
-                  child: SizeTransition(sizeFactor: anim, child: child),
-                ),
-                child: KeyedSubtree(
-                  key: ValueKey<String>(_panelKey(s)),
-                  child: _StatusPanel(state: s, controller: controller),
-                ),
-              ),
-            ),
-          _SectionDivider(),
-          _Row(
-            icon: Icons.code_rounded,
-            title: l10n.settingsAboutGithub,
-            trailing: Icon(Icons.open_in_new_rounded,
-                size: 14, color: colors.onSurfaceVariant),
-            onTap: _openGitHub,
-          ),
-        ],
-      ),
+        _SectionDivider(),
+        _Row(
+          icon: Icons.code_rounded,
+          title: l10n.settingsAboutGithub,
+          trailing: Icon(Icons.open_in_new_rounded,
+              size: 14, color: colors.onSurfaceVariant),
+          onTap: _openGitHub,
+        ),
+      ],
     );
   }
 
@@ -113,7 +93,9 @@ class UpdateSection extends ConsumerWidget {
     }
   }
 
-  static bool _needsAttention(UpdateState s) =>
+  /// Whether the update state should draw attention (accent border on the
+  /// enclosing section card). Public so [SettingsPage] can reuse it.
+  static bool needsAttention(UpdateState s) =>
       s.status == UpdateStatus.updateAvailable ||
       s.status == UpdateStatus.downloading ||
       s.status == UpdateStatus.readyToInstall;
