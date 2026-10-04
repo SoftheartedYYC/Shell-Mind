@@ -266,7 +266,7 @@
   "settingsTitle": "Settings",
   "settingsSearchTooltip": "Search settings",
   "settingsStable": "STABLE",
-  "settingsSectionAppearance": "Appearance",
+  "settingsSectionAppearance": "Appearance & Language",
   "settingsThemeSystem": "System",
   "settingsThemeLight": "Light",
   "settingsThemeDark": "Dark",
@@ -426,6 +426,7 @@
   },
   "aiProvidersDeleteMessage": "Its stored API key, remembered model and custom models will be removed too. Built-in providers can't be deleted.",
   "aiProvidersDeleteConfirm": "Remove",
+  "aiProvidersPickerTitle": "Choose provider",
 
   "updateVersion": "Version",
   "updateSoftwareUpdate": "Software update",

@@ -145,7 +145,7 @@
   "settingsTitle": "设置",
   "settingsSearchTooltip": "搜索设置",
   "settingsStable": "稳定版",
-  "settingsSectionAppearance": "外观",
+  "settingsSectionAppearance": "外观与语言",
   "settingsThemeSystem": "跟随系统",
   "settingsThemeLight": "浅色",
   "settingsThemeDark": "深色",
@@ -265,6 +265,7 @@
   },
   "aiProvidersDeleteMessage": "其存储的 API 密钥、记忆的模型与自定义模型也将一并删除。内置服务商不可删除。",
   "aiProvidersDeleteConfirm": "移除",
+  "aiProvidersPickerTitle": "选择服务商",
 
   "updateVersion": "版本",
   "updateSoftwareUpdate": "软件更新",

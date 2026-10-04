@@ -468,7 +468,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsStable => '稳定版';
 
   @override
-  String get settingsSectionAppearance => '外观';
+  String get settingsSectionAppearance => '外观与语言';
 
   @override
   String get settingsThemeSystem => '跟随系统';
@@ -815,6 +815,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiProvidersDeleteConfirm => '移除';
+
+  @override
+  String get aiProvidersPickerTitle => '选择服务商';
 
   @override
   String get updateVersion => '版本';

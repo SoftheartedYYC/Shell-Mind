@@ -917,7 +917,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSectionAppearance.
   ///
   /// In en, this message translates to:
-  /// **'Appearance'**
+  /// **'Appearance & Language'**
   String get settingsSectionAppearance;
 
   /// No description provided for @settingsThemeSystem.
@@ -1567,6 +1567,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove'**
   String get aiProvidersDeleteConfirm;
+
+  /// No description provided for @aiProvidersPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose provider'**
+  String get aiProvidersPickerTitle;
 
   /// No description provided for @updateVersion.
   ///

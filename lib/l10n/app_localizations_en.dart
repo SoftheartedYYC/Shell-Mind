@@ -475,7 +475,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsStable => 'STABLE';
 
   @override
-  String get settingsSectionAppearance => 'Appearance';
+  String get settingsSectionAppearance => 'Appearance & Language';
 
   @override
   String get settingsThemeSystem => 'System';
@@ -830,6 +830,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiProvidersDeleteConfirm => 'Remove';
+
+  @override
+  String get aiProvidersPickerTitle => 'Choose provider';
 
   @override
   String get updateVersion => 'Version';
