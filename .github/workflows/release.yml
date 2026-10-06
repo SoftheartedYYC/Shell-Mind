@@ -116,8 +116,14 @@ jobs:
       - name: Build per-ABI release APKs
         run: flutter build apk --release --split-per-abi
 
-      # Rename every per-ABI artifact to the load-bearing updater scheme and
-      # fail the build if any expected ABI build is missing.
+      # Universal fallback: a fat APK keeps in-app updates working for clients
+      # that predate per-ABI selection (their picker falls back to "largest
+      # *.apk", which would otherwise grab an incompatible ABI build).
+      - name: Build universal release APK
+        run: flutter build apk --release
+
+      # Rename every artifact to the load-bearing updater scheme and fail the
+      # build if any expected build is missing.
       - name: Rename APK assets
         run: |
           cd build/app/outputs/flutter-apk
@@ -126,6 +132,8 @@ jobs:
             test -s "$SRC" || { echo "::error::Expected per-ABI artifact $SRC not found after build"; exit 1; }
             cp "$SRC" "Shell-Mind-v${VERSION}-${ABI}.apk"
           done
+          test -s app-release.apk || { echo "::error::Universal artifact app-release.apk not found after build"; exit 1; }
+          cp app-release.apk "Shell-Mind-v${VERSION}.apk"
           ls -la
 
       # GitHub now exposes a native `digest` (sha256:<hex>) for every uploaded
@@ -135,7 +143,7 @@ jobs:
       - name: Generate SHA256 checksums
         run: |
           cd build/app/outputs/flutter-apk
-          sha256sum Shell-Mind-v${VERSION}-*.apk > SHA256SUMS.txt
+          sha256sum Shell-Mind-v${VERSION}*.apk > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: Upload APKs to GitHub Release
@@ -146,6 +154,7 @@ jobs:
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: |
+            build/app/outputs/flutter-apk/Shell-Mind-v${{ env.VERSION }}.apk
             build/app/outputs/flutter-apk/Shell-Mind-v${{ env.VERSION }}-arm64-v8a.apk
             build/app/outputs/flutter-apk/Shell-Mind-v${{ env.VERSION }}-armeabi-v7a.apk
             build/app/outputs/flutter-apk/Shell-Mind-v${{ env.VERSION }}-x86_64.apk
