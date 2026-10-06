@@ -97,6 +97,16 @@ class PreferencesService {
   Future<void> setTerminalFontFamily(String family) =>
       setString(AppConstants.prefKeyTerminalFontFamily, family);
 
+  /// Id of the selected terminal colour scheme (see `TerminalColorScheme`).
+  /// Empty/unset resolves to the default scheme in the feature layer.
+  String get terminalColorSchemeId => getStringOr(
+        AppConstants.prefKeyTerminalColorScheme,
+        '',
+      );
+
+  Future<void> setTerminalColorSchemeId(String id) =>
+      setString(AppConstants.prefKeyTerminalColorScheme, id);
+
   bool get hapticFeedback =>
       getBoolOr(AppConstants.prefKeyHapticFeedback, true);
 
@@ -210,6 +220,15 @@ class PreferencesService {
   Future<void> setLastOpenedServerId(String id) =>
       setString(AppConstants.prefKeyLastOpenedServerId, id);
 
+  /// Id of the currently open chat session, or `null` for a fresh unsaved one.
+  String? get activeChatSessionId =>
+      _p.getString(AppConstants.prefKeyActiveChatSession);
+
+  Future<void> setActiveChatSessionId(String? id) {
+    if (id == null) return _p.remove(AppConstants.prefKeyActiveChatSession);
+    return _p.setString(AppConstants.prefKeyActiveChatSession, id);
+  }
+
   bool get onboardingComplete =>
       getBoolOr(AppConstants.prefKeyOnboardingComplete, false);
 
@@ -259,6 +278,17 @@ class PreferencesService {
 
   Future<void> setAuthLockEnabled(bool value) =>
       setBool(AppConstants.prefKeyAuthLockEnabled, value);
+
+  // ─── Notifications ──────────────────────────────────────────────────────
+
+  /// Whether local notifications (session-disconnect / AI-completion) are on.
+  bool get notificationsEnabled => getBoolOr(
+        AppConstants.prefKeyNotificationsEnabled,
+        AppConstants.defaultNotificationsEnabled,
+      );
+
+  Future<void> setNotificationsEnabled(bool value) =>
+      setBool(AppConstants.prefKeyNotificationsEnabled, value);
 }
 
 /// Riverpod provider for the singleton.

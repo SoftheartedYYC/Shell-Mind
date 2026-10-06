@@ -128,6 +128,11 @@ class SshClientManager {
 
   bool get isConnected => _state.status == SshConnectionStatus.connected;
 
+  /// The live [SSHClient], exposed read-only for advanced features (SFTP and
+  /// port forwarding) that open their own channels over the same transport.
+  /// `null` until a connection has authenticated.
+  SSHClient? get client => _client;
+
   /// Whether this manager routes the first-connect trust prompt through a
   /// user-facing handler — the exact flag [resolveHandshakeTimeout] consults
   /// to pick the handshake budget for the next [connect].
@@ -329,6 +334,24 @@ class SshClientManager {
       throw AppFailureException(
         AppFailure.timeout(effectiveTimeout, cause: error),
       );
+    } catch (error) {
+      throw AppFailureException(mapError(error));
+    }
+  }
+
+  /// Opens an SFTP subsystem channel over the live connection.
+  ///
+  /// The returned [SftpClient] is owned by the caller, who must [close] it.
+  /// Throws [AppFailureException] when not connected.
+  Future<SftpClient> openSftp() async {
+    final SSHClient? client = _client;
+    if (client == null || !isConnected) {
+      throw AppFailureException(
+        AppFailure.ssh('Not connected — cannot open SFTP.'),
+      );
+    }
+    try {
+      return await client.sftp();
     } catch (error) {
       throw AppFailureException(mapError(error));
     }

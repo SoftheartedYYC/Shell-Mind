@@ -6,8 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:xterm/xterm.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/storage/preferences_service.dart';
 import '../../../../shared/ssh/ssh_session_registry.dart';
 import '../../data/ssh_client_manager.dart';
+import '../terminal_schemes.dart';
 
 // ─── Terminal instance (per server, autoDispose with page) ────────────────
 
@@ -99,6 +101,28 @@ class CtrlKeyController extends Notifier<bool> {
   void toggle() => state = !state;
   void arm() => state = true;
   void release() => state = false;
+}
+
+/// The currently selected terminal colour scheme, persisted in preferences.
+///
+/// The terminal page watches this to swap the xterm palette live; the settings
+/// page exposes a picker bound to [TerminalColorSchemeController.setScheme].
+final NotifierProvider<TerminalColorSchemeController, TerminalColorScheme>
+    terminalColorSchemeProvider = NotifierProvider<
+        TerminalColorSchemeController, TerminalColorScheme>(
+  TerminalColorSchemeController.new,
+);
+
+class TerminalColorSchemeController extends Notifier<TerminalColorScheme> {
+  @override
+  TerminalColorScheme build() => TerminalColorScheme.byId(
+        ref.read(preferencesServiceProvider).terminalColorSchemeId,
+      );
+
+  Future<void> setScheme(TerminalColorScheme scheme) async {
+    state = scheme;
+    await ref.read(preferencesServiceProvider).setTerminalColorSchemeId(scheme.id);
+  }
 }
 
 /// Maps an ASCII letter code point to its control byte (a→1 … z→26), or null

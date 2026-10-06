@@ -56,8 +56,9 @@ import 'package:shell_mind/core/services/update_service.dart';
 import 'package:shell_mind/core/storage/preferences_service.dart';
 import 'package:shell_mind/core/storage/secure_storage_service.dart';
 import 'package:shell_mind/core/utils/result.dart';
-import 'package:shell_mind/features/ai_chat/data/chat_history_store.dart';
+import 'package:shell_mind/features/ai_chat/data/chat_sessions_store.dart';
 import 'package:shell_mind/features/ai_chat/domain/entities/chat_message.dart';
+import 'package:shell_mind/features/ai_chat/domain/entities/chat_session.dart';
 import 'package:shell_mind/features/ai_chat/domain/repositories/chat_repository.dart';
 import 'package:shell_mind/features/ai_chat/presentation/pages/ai_chat_page.dart';
 import 'package:shell_mind/features/ai_chat/presentation/providers/chat_providers.dart';
@@ -137,25 +138,45 @@ import 'package:shell_mind/features/settings/presentation/widgets/update_section
         Result<String>.success('Hello from mock repo');
   }
 
-  /// Volatile transcript store — keeps ChatNotifier persistence wiring happy
+  /// Volatile session store — keeps ChatNotifier persistence wiring happy
   /// without touching the `chat_history` Hive box.
-  class _InMemoryChatHistoryStore implements ChatHistoryStore {
-    List<ChatMessage> _saved = const <ChatMessage>[];
+  class _InMemorySessionsStore implements ChatSessionsStore {
+    List<ChatSession> _sessions = const <ChatSession>[];
 
     @override
-    Future<List<ChatMessage>> load() async =>
-        List<ChatMessage>.unmodifiable(_saved);
+    Future<List<ChatSession>> loadAll() async =>
+        List<ChatSession>.unmodifiable(_sessions);
 
     @override
-    void saveMessages(List<ChatMessage> messages) =>
-        _saved = List<ChatMessage>.unmodifiable(messages);
+    Future<ChatSession?> getSession(String id) async {
+      for (final ChatSession s in _sessions) {
+        if (s.id == id) return s;
+      }
+      return null;
+    }
 
     @override
-    Future<void> flush(List<ChatMessage> messages) async =>
-        _saved = List<ChatMessage>.unmodifiable(messages);
+    void scheduleSave(ChatSession session) {
+      _sessions = <ChatSession>[session];
+    }
 
     @override
-    Future<void> clear() async => _saved = const <ChatMessage>[];
+    Future<void> saveSession(ChatSession session) async {
+      _sessions = <ChatSession>[session];
+    }
+
+    @override
+    Future<void> deleteSession(String id) async {
+      _sessions = _sessions
+          .where((ChatSession s) => s.id != id)
+          .toList(growable: false);
+    }
+
+    @override
+    Future<void> renameSession(String id, String title) async {}
+
+    @override
+    Future<void> clearAll() async => _sessions = const <ChatSession>[];
 
     @override
     bool get hasPendingWrite => false;
@@ -242,12 +263,12 @@ import 'package:shell_mind/features/settings/presentation/widgets/update_section
   List<Override> _buildOverrides({
     required ServerConfigRepository serverRepo,
     required ChatRepository chatRepo,
-    required ChatHistoryStore history,
+    required ChatSessionsStore history,
   }) =>
       <Override>[
         serverConfigRepositoryProvider.overrideWithValue(serverRepo),
         chatRepositoryProvider.overrideWithValue(chatRepo),
-        chatHistoryStoreProvider.overrideWithValue(history),
+        chatSessionsStoreProvider.overrideWithValue(history),
         // Chat tab renders the transcript mode (not the setup guide) and the
         // composer stays enabled.
         apiKeyProvider.overrideWith((Ref ref) async => 'test-key'),
@@ -313,7 +334,7 @@ void main() {
       overrides: _buildOverrides(
         serverRepo: _FakeServerConfigRepository(_fixtureFleet()),
         chatRepo: _RecordingChatRepository(),
-        history: _InMemoryChatHistoryStore(),
+        history: _InMemorySessionsStore(),
       ),
     );
     addTearDown(container.dispose);
@@ -346,7 +367,7 @@ void main() {
       overrides: _buildOverrides(
         serverRepo: _FakeServerConfigRepository(_fixtureFleet()),
         chatRepo: _RecordingChatRepository(),
-        history: _InMemoryChatHistoryStore(),
+        history: _InMemorySessionsStore(),
       ),
     );
     addTearDown(container.dispose);
@@ -375,7 +396,7 @@ void main() {
       overrides: _buildOverrides(
         serverRepo: _FakeServerConfigRepository(_fixtureFleet()),
         chatRepo: _RecordingChatRepository(),
-        history: _InMemoryChatHistoryStore(),
+        history: _InMemorySessionsStore(),
       ),
     );
     addTearDown(container.dispose);
@@ -405,7 +426,7 @@ void main() {
       overrides: _buildOverrides(
         serverRepo: _FakeServerConfigRepository(_fixtureFleet()),
         chatRepo: chatRepo,
-        history: _InMemoryChatHistoryStore(),
+        history: _InMemorySessionsStore(),
       ),
     );
     addTearDown(container.dispose);
@@ -449,7 +470,7 @@ void main() {
       overrides: _buildOverrides(
         serverRepo: _FakeServerConfigRepository(_fixtureFleet()),
         chatRepo: _RecordingChatRepository(),
-        history: _InMemoryChatHistoryStore(),
+        history: _InMemorySessionsStore(),
       ),
     );
     addTearDown(container.dispose);

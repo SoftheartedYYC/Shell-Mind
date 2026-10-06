@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
 import 'core/services/command_audit_log.dart';
 import 'core/services/crash_report_service.dart';
+import 'core/services/notification_service.dart';
 import 'core/storage/hive_storage_service.dart';
 import 'core/storage/preferences_service.dart';
 import 'features/ai_chat/data/custom_ai_provider_store.dart';
@@ -86,6 +87,10 @@ Future<void> _bootstrap() async {
     platformLabel: Platform.operatingSystem,
     localeTag: PlatformDispatcher.instance.locale.toString(),
   );
+
+  // Local notifications (session-disconnect / AI-completion). Initialised
+  // fire-and-forget so a permission prompt never blocks first paint.
+  unawaited(NotificationService.instance.init());
 
   runApp(
     ProviderScope(

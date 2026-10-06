@@ -167,6 +167,25 @@ class ServerConfigListController extends AsyncNotifier<List<ServerConfig>> {
     });
   }
 
+  /// Bulk-imports [servers] (already re-issued fresh ids by the transfer
+  /// layer). Returns how many were actually added. Imported configs carry no
+  /// credentials — the user re-enters them on first connect.
+  Future<int> importServers(List<ServerConfig> servers) async {
+    final ServerConfigRepository repo =
+        ref.read(serverConfigRepositoryProvider);
+    int added = 0;
+    for (final ServerConfig config in servers) {
+      try {
+        await repo.save(config);
+        added++;
+      } catch (_) {
+        // Skip conflicting/malformed entries without failing the import.
+      }
+    }
+    await _reload();
+    return added;
+  }
+
   /// Manual pull-to-refresh — re-reads from disk.
   Future<void> refresh() => _reload();
 

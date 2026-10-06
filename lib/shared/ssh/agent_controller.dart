@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/command_audit_log.dart';
+import '../../core/services/notification_service.dart';
 import '../../core/utils/result.dart';
 import '../../core/storage/preferences_service.dart';
 import '../../features/ai_chat/presentation/providers/chat_providers.dart';
@@ -466,6 +467,8 @@ class AgentController extends Notifier<AgentState> {
     if (blocks.isEmpty) {
       // Nothing to run — the loop naturally terminates.
       state = state.copyWith(status: AgentStatus.idle, isAutoMode: false);
+      // Surface completion when the app is backgrounded.
+      unawaited(NotificationService.instance.notifyAiTaskComplete());
       return;
     }
 

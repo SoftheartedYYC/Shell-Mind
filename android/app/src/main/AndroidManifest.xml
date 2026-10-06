@@ -22,6 +22,11 @@
         android:name="android.permission.USE_FINGERPRINT"
         android:maxSdkVersion="27" />
 
+    <!-- ── Local notifications (session-disconnect / AI-completion) ──────────
+         POST_NOTIFICATIONS is a runtime permission on Android 13+ (prompted via
+         flutter_local_notifications). Harmless no-op on older versions. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:label="ShellMind"
         android:name="${applicationName}"

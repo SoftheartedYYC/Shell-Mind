@@ -23,10 +23,13 @@ import '../../../server_config/presentation/providers/server_config_providers.da
 import '../../data/ssh_client_manager.dart';
 import '../../domain/entities/connection_state.dart';
 import '../providers/ssh_providers.dart';
+import '../providers/terminal_providers.dart';
 import '../providers/terminal_tab_providers.dart';
+import '../terminal_schemes.dart';
 import '../widgets/keyboard_toolbar.dart';
 import '../widgets/terminal_chrome.dart';
 import '../widgets/terminal_server_picker_sheet.dart';
+import '../widgets/tunnel_sheet.dart';
 import '../widgets/terminal_view.dart';
 
 /// Live SSH terminal with multi-tab session switching.
@@ -266,6 +269,18 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     );
   }
 
+  /// Opens the SFTP file browser for the active tab's server.
+  void _openSftp() {
+    HapticFeedback.selectionClick();
+    context.push(RoutePaths.sftpFor(_activeTabId));
+  }
+
+  /// Opens the port-forwarding (SSH tunnel) manager for the active tab.
+  void _openTunnels() {
+    HapticFeedback.selectionClick();
+    TunnelSheet.show(context, _activeTabId);
+  }
+
   // ─── Command snippets ────────────────────────────────────────────────────
 
   /// Opens the snippet picker; the chosen command is piped into the live
@@ -329,6 +344,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     final TerminalTabStatus tabStatus =
         ref.watch(terminalTabStatusProvider(activeId));
     final CachedTerminal? cached = ref.watch(terminalTabCacheProvider)[activeId];
+    final TerminalColorScheme scheme = ref.watch(terminalColorSchemeProvider);
 
     // Auto-reconnect feedback: re-attach the mirrored chrome state to the
     // resumed session on success (the registry replaced the manager) and
@@ -389,6 +405,8 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                   : null,
               onFontSmaller: () => _bumpFontSize(-1),
               onFontLarger: () => _bumpFontSize(1),
+              onSftp: live ? _openSftp : null,
+              onTunnels: live ? _openTunnels : null,
             ),
             TerminalTabStrip(
               openIds: tabs.openIds,
@@ -416,7 +434,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
             ),
             Expanded(
               child: ColoredBox(
-                color: kTerminalTheme.background,
+                color: scheme.background,
                 child: Stack(
                   children: <Widget>[
                     // The active tab's terminal is always mounted so its I/O
@@ -429,6 +447,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                           key: ValueKey<Terminal>(cached.terminal),
                           terminal: cached.terminal,
                           controller: _controllerFor(activeId),
+                          scheme: scheme,
                           fontSize: _fontSize,
                           focusNode: _focusNode,
                           readOnly: !live,
@@ -436,7 +455,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                       )
                     else
                       Positioned.fill(
-                        child: ColoredBox(color: kTerminalTheme.background),
+                        child: ColoredBox(color: scheme.background),
                       ),
                     if (!live)
                       Positioned.fill(

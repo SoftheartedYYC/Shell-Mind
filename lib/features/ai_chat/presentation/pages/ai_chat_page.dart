@@ -97,7 +97,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage>
       if (!mounted) return;
       ref
           .read(chatMessagesProvider.notifier)
-          .restoreFromHistory(ref.read(chatHistoryStoreProvider))
+          .restoreFromHistory(ref.read(chatSessionsStoreProvider))
           .whenComplete(() {
         if (!mounted) return;
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -176,6 +176,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage>
               onClear: clearChat,
               onExport: exportChat,
               onManageServers: openServerManager,
+              onSessions: openSessions,
             ),
             Expanded(
               child: _ChatBody(

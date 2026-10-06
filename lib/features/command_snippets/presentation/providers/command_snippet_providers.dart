@@ -42,6 +42,25 @@ class CommandSnippetsController extends AsyncNotifier<List<CommandSnippet>> {
     await _refresh();
   }
 
+  /// Bulk-imports [snippets] (already re-issued fresh ids by the transfer
+  /// layer). Returns how many were actually added; a duplicate/conflicting id
+  /// is skipped without failing the whole import.
+  Future<int> importSnippets(List<CommandSnippet> snippets) async {
+    final CommandSnippetRepository repo =
+        ref.read(commandSnippetRepositoryProvider);
+    int added = 0;
+    for (final CommandSnippet snippet in snippets) {
+      try {
+        await repo.add(snippet);
+        added++;
+      } catch (_) {
+        // Duplicate id / malformed entry — skip and continue.
+      }
+    }
+    await _refresh();
+    return added;
+  }
+
   Future<void> _refresh() async {
     state = const AsyncValue<List<CommandSnippet>>.loading();
     state = await AsyncValue.guard(

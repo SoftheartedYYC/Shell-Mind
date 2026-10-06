@@ -7,11 +7,12 @@ import '../../../../core/storage/preferences_service.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/utils/result.dart';
 import '../../data/ai_service.dart';
-import '../../data/chat_history_store.dart';
+import '../../data/chat_sessions_store.dart';
 import '../../data/chat_repository_impl.dart';
 import '../../data/custom_ai_provider_store.dart';
 import '../../domain/entities/ai_provider.dart';
 import '../../domain/entities/chat_message.dart';
+import '../../domain/entities/chat_session.dart';
 import '../../domain/repositories/chat_repository.dart';
 import '../../../../shared/ssh/ssh_command_executor.dart';
 import '../../../../shared/ssh/ssh_session_registry.dart';
@@ -256,6 +257,12 @@ class ChatNotifier extends Notifier<ChatState> {
   /// notifier can distinguish "writing" from "cleared" state transitions.
   bool _restoreInFlight = false;
 
+  /// Id of the active session (lazily minted for a fresh, unsaved session).
+  String? _sessionId;
+
+  /// Creation time of the active session, preserved across persists.
+  DateTime? _sessionCreatedAt;
+
   @override
   ChatState build() {
     ref.onDispose(() => _subscription?.cancel());
@@ -265,37 +272,96 @@ class ChatNotifier extends Notifier<ChatState> {
   String _nextId(String prefix) =>
       '$prefix-${DateTime.now().microsecondsSinceEpoch}-${_idCounter++}';
 
+  // ─── Active-session helpers ─────────────────────────────────────────────
+
+  /// Ensures the active session has an id (minting one for a fresh session and
+  /// persisting it as the active id), without mutating the transcript.
+  void _ensureSession() {
+    _sessionId ??= ref.read(activeChatSessionIdProvider) ??
+        'session-${DateTime.now().microsecondsSinceEpoch}';
+    _sessionCreatedAt ??= DateTime.now();
+    if (ref.read(activeChatSessionIdProvider) == null) {
+      ref.read(activeChatSessionIdProvider.notifier).set(_sessionId);
+    }
+  }
+
+  /// Builds the immutable session snapshot for the current transcript,
+  /// deriving its title from the first user turn.
+  ChatSession _currentSession() {
+    _ensureSession();
+    return ChatSession(
+      id: _sessionId!,
+      title: ChatSession.deriveTitle(state.messages),
+      messages: state.messages,
+      createdAt: _sessionCreatedAt!,
+      updatedAt: DateTime.now(),
+    );
+  }
+
   // ─── History persistence ────────────────────────────────────────────────
 
-  /// Restores the persisted transcript from [store] into state. No-op when
-  /// already restored, while streaming, or when the box holds nothing.
-  ///
-  /// Streaming placeholders that never completed are restored as finished
-  /// turns by the store itself.
-  Future<void> restoreFromHistory(ChatHistoryStore store) async {
+  /// Restores the persisted sessions from [store] into state, activating the
+  /// previously selected session (or the most recent one). No-op when already
+  /// restored, while streaming, or when no sessions exist yet.
+  Future<void> restoreFromHistory(ChatSessionsStore store) async {
     if (_historyRestored || state.isStreaming || _restoreInFlight) return;
     _restoreInFlight = true;
     try {
-      final List<ChatMessage> messages = await store.load();
-      if (messages.isEmpty) return;
+      final List<ChatSession> sessions = await store.loadAll();
+      if (sessions.isEmpty) return;
+      final String? active = ref.read(activeChatSessionIdProvider);
+      ChatSession target = sessions.first;
+      if (active != null) {
+        for (final ChatSession s in sessions) {
+          if (s.id == active) {
+            target = s;
+            break;
+          }
+        }
+      }
+      _sessionId = target.id;
+      _sessionCreatedAt = target.createdAt;
+      ref.read(activeChatSessionIdProvider.notifier).set(target.id);
       _historyRestored = true;
-      state = ChatState(messages: List<ChatMessage>.unmodifiable(messages));
+      state =
+          ChatState(messages: List<ChatMessage>.unmodifiable(target.messages));
     } finally {
       _restoreInFlight = false;
     }
+  }
+
+  /// Activates [session] (persisted list entry) without sending a request.
+  Future<void> switchToSession(ChatSession session) async {
+    if (state.isStreaming) stopStreaming();
+    _sessionId = session.id;
+    _sessionCreatedAt = session.createdAt;
+    ref.read(activeChatSessionIdProvider.notifier).set(session.id);
+    _historyRestored = true;
+    state =
+        ChatState(messages: List<ChatMessage>.unmodifiable(session.messages));
+  }
+
+  /// Starts a brand-new, empty session and makes it active.
+  Future<void> newSession() async {
+    if (state.isStreaming) stopStreaming();
+    _sessionId = 'session-${DateTime.now().microsecondsSinceEpoch}';
+    _sessionCreatedAt = DateTime.now();
+    ref.read(activeChatSessionIdProvider.notifier).set(_sessionId);
+    _historyRestored = true;
+    state = const ChatState();
   }
 
   /// Schedules a debounced persistence write of the current transcript.
   /// Called after every message-list mutation; the store coalesces bursts
   /// (a streaming reply) into a single disk write.
   void _persistMessages() {
-    ref.read(chatHistoryStoreProvider).saveMessages(state.messages);
+    ref.read(chatSessionsStoreProvider).scheduleSave(_currentSession());
   }
 
   /// Persists the transcript immediately (flushing any pending debounced
   /// write). Used at stream completion where the transcript is final.
   Future<void> _flushMessages() {
-    return ref.read(chatHistoryStoreProvider).flush(state.messages);
+    return ref.read(chatSessionsStoreProvider).saveSession(_currentSession());
   }
 
   /// Sends [text] as a user turn and begins streaming the assistant reply.
@@ -590,14 +656,20 @@ class ChatNotifier extends Notifier<ChatState> {
     }
   }
 
-  /// Wipes the conversation and any error state, and removes the persisted
-  /// transcript so a restart cannot resurrect the cleared history.
+  /// Wipes the active conversation and removes its persisted session so a
+  /// restart cannot resurrect the cleared history, then starts a fresh one.
   void clearChat() {
     _subscription?.cancel();
     _subscription = null;
+    final String? id = _sessionId;
+    if (id != null) {
+      unawaited(ref.read(chatSessionsStoreProvider).deleteSession(id));
+    }
     state = const ChatState();
     _historyRestored = false;
-    unawaited(ref.read(chatHistoryStoreProvider).clear());
+    _sessionId = null;
+    _sessionCreatedAt = null;
+    ref.read(activeChatSessionIdProvider.notifier).set(null);
   }
 
   void dismissError() {
@@ -626,19 +698,77 @@ class ChatNotifier extends Notifier<ChatState> {
 final NotifierProvider<ChatNotifier, ChatState> chatMessagesProvider =
     NotifierProvider<ChatNotifier, ChatState>(ChatNotifier.new);
 
-// ─── Chat history persistence ────────────────────────────────────────────
+// ─── Chat history persistence & multi-session ─────────────────────────────
 
-/// Hive-backed transcript store, overridable in tests.
-final Provider<ChatHistoryStore> chatHistoryStoreProvider =
-    Provider<ChatHistoryStore>((Ref ref) => ChatHistoryStore.instance);
+/// Hive-backed multi-session store, overridable in tests.
+final Provider<ChatSessionsStore> chatSessionsStoreProvider =
+    Provider<ChatSessionsStore>((Ref ref) => ChatSessionsStore.instance);
 
-/// Loads the persisted transcript into [chatMessagesProvider], restoring the
-/// conversation after an app restart. Streaming placeholders that never
-/// finished are restored as completed turns (handled by the store).
+/// Id of the currently active chat session (`null` = a fresh unsaved one).
+/// Persisted in [PreferencesService] so the selection survives restarts.
+final NotifierProvider<ActiveChatSessionController, String?>
+    activeChatSessionIdProvider =
+    NotifierProvider<ActiveChatSessionController, String?>(
+  ActiveChatSessionController.new,
+);
+
+class ActiveChatSessionController extends Notifier<String?> {
+  @override
+  String? build() {
+    try {
+      return ref.read(preferencesServiceProvider).activeChatSessionId;
+    } catch (_) {
+      // Preferences not initialised (plain unit tests) — no persisted id.
+      return null;
+    }
+  }
+
+  Future<void> set(String? id) async {
+    state = id;
+    try {
+      await ref.read(preferencesServiceProvider).setActiveChatSessionId(id);
+    } catch (_) {
+      // In-memory state remains authoritative when prefs are unavailable.
+    }
+  }
+}
+
+/// The persisted session list, most-recently-updated first.
+final AsyncNotifierProvider<ChatSessionsController, List<ChatSession>>
+    chatSessionsProvider =
+    AsyncNotifierProvider<ChatSessionsController, List<ChatSession>>(
+  ChatSessionsController.new,
+);
+
+class ChatSessionsController extends AsyncNotifier<List<ChatSession>> {
+  @override
+  Future<List<ChatSession>> build() =>
+      ref.read(chatSessionsStoreProvider).loadAll();
+
+  Future<void> refresh() async {
+    state = const AsyncValue<List<ChatSession>>.loading();
+    state = await AsyncValue.guard(
+      () => ref.read(chatSessionsStoreProvider).loadAll(),
+    );
+  }
+
+  Future<void> deleteSession(String id) async {
+    await ref.read(chatSessionsStoreProvider).deleteSession(id);
+    await refresh();
+  }
+
+  Future<void> renameSession(String id, String title) async {
+    await ref.read(chatSessionsStoreProvider).renameSession(id, title);
+    await refresh();
+  }
+}
+
+/// Loads the persisted sessions into [chatMessagesProvider], restoring the
+/// active conversation after an app restart.
 ///
 /// Safe to call more than once; subsequent calls are no-ops so navigating
 /// back to the chat page never duplicates history.
 Future<void> restoreChatHistory(Ref ref) async {
   final ChatNotifier notifier = ref.read(chatMessagesProvider.notifier);
-  await notifier.restoreFromHistory(ref.read(chatHistoryStoreProvider));
+  await notifier.restoreFromHistory(ref.read(chatSessionsStoreProvider));
 }

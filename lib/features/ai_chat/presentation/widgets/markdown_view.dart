@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../app/theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import 'code_highlighter.dart';
 
 /// A dependency-free Markdown renderer tuned for the Material theme.
 ///
@@ -567,9 +568,19 @@ class _CodeBlockViewState extends State<_CodeBlockView> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-            child: SelectableText(
-              widget.code.isEmpty ? ' ' : widget.code,
-              style: codeStyle,
+            child: SelectableText.rich(
+              TextSpan(
+                style: codeStyle,
+                children: widget.code.isEmpty
+                    ? const <TextSpan>[TextSpan(text: ' ')]
+                    : CodeHighlighter.toSpans(
+                        CodeHighlighter.highlight(
+                          widget.code,
+                          widget.language,
+                        ),
+                        base: codeStyle,
+                      ),
+              ),
             ),
           ),
         ],

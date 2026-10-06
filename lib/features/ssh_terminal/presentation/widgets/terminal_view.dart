@@ -1,38 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xterm/xterm.dart';
 
-/// Terminal background — always dark regardless of app theme.
-const Color _kTerminalBg = Color(0xFF1A1B26);
-
-/// A clean dark palette for the xterm renderer.
-///
-/// The 16 ANSI slots use a modern, readable palette (Tokyo Night inspired)
-/// that works well on dark backgrounds.
-const TerminalTheme kTerminalTheme = TerminalTheme(
-  cursor: Color(0xFF7AA2F7),
-  selection: Color(0x3A7AA2F7),
-  foreground: Color(0xFFC0CAF5),
-  background: _kTerminalBg,
-  black: Color(0xFF15161E),
-  red: Color(0xFFF7768E),
-  green: Color(0xFF9ECE6A),
-  yellow: Color(0xFFE0AF68),
-  blue: Color(0xFF7AA2F7),
-  magenta: Color(0xFFBB9AF7),
-  cyan: Color(0xFF7DCFFF),
-  white: Color(0xFFA9B1D6),
-  brightBlack: Color(0xFF414868),
-  brightRed: Color(0xFFF7768E),
-  brightGreen: Color(0xFF9ECE6A),
-  brightYellow: Color(0xFFE0AF68),
-  brightBlue: Color(0xFF7AA2F7),
-  brightMagenta: Color(0xFFBB9AF7),
-  brightCyan: Color(0xFF7DCFFF),
-  brightWhite: Color(0xFFC0CAF5),
-  searchHitBackground: Color(0x55E0AF68),
-  searchHitBackgroundCurrent: Color(0x99E0AF68),
-  searchHitForeground: Color(0xFF1A1B26),
-);
+import '../terminal_schemes.dart';
 
 /// Monospace stack used for terminal glyphs.
 const List<String> _kMonoFallback = <String>[
@@ -56,6 +25,7 @@ class ShellTerminalView extends StatelessWidget {
     super.key,
     required this.terminal,
     required this.controller,
+    required this.scheme,
     this.fontSize = 14,
     this.readOnly = false,
     this.focusNode,
@@ -63,6 +33,7 @@ class ShellTerminalView extends StatelessWidget {
 
   final Terminal terminal;
   final TerminalController controller;
+  final TerminalColorScheme scheme;
   final double fontSize;
   final bool readOnly;
   final FocusNode? focusNode;
@@ -70,12 +41,12 @@ class ShellTerminalView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: _kTerminalBg,
+      color: scheme.background,
       child: TerminalView(
         terminal,
         controller: controller,
         focusNode: focusNode,
-        theme: kTerminalTheme,
+        theme: scheme.theme,
         textStyle: TerminalStyle(
           fontSize: fontSize,
           height: 1.25,

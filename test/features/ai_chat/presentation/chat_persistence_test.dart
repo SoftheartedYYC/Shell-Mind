@@ -8,8 +8,9 @@ import 'package:hive_ce/hive.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shell_mind/core/constants/app_constants.dart';
 import 'package:shell_mind/core/storage/hive_storage_service.dart';
-import 'package:shell_mind/features/ai_chat/data/chat_history_store.dart';
+import 'package:shell_mind/features/ai_chat/data/chat_sessions_store.dart';
 import 'package:shell_mind/features/ai_chat/domain/entities/chat_message.dart';
+import 'package:shell_mind/features/ai_chat/domain/entities/chat_session.dart';
 import 'package:shell_mind/features/ai_chat/domain/repositories/chat_repository.dart';
 import 'package:shell_mind/features/ai_chat/presentation/providers/chat_providers.dart';
 import 'package:shell_mind/shared/ssh/ssh_command_executor.dart';
@@ -105,7 +106,7 @@ class _TestHiveStorageService implements HiveStorageService {
 
 void main() {
   late Directory tempDir;
-  late ChatHistoryStore store;
+  late ChatSessionsStore store;
   late MockChatRepository mockRepo;
   late ProviderContainer container;
   late StreamController<String> streamController;
@@ -115,7 +116,7 @@ void main() {
     Hive.init(tempDir.path);
     await Hive.openBox<dynamic>(AppConstants.hiveBoxChatHistory);
 
-    store = ChatHistoryStore(hive: _TestHiveStorageService());
+    store = ChatSessionsStore(hive: _TestHiveStorageService());
     mockRepo = MockChatRepository();
     streamController = StreamController<String>();
     when(() => mockRepo.sendMessageStream(
@@ -125,7 +126,7 @@ void main() {
 
     container = ProviderContainer(overrides: <Override>[
       chatRepositoryProvider.overrideWithValue(mockRepo),
-      chatHistoryStoreProvider.overrideWithValue(store),
+      chatSessionsStoreProvider.overrideWithValue(store),
     ]);
   });
 
@@ -141,6 +142,24 @@ void main() {
     await Hive.close();
     tempDir.deleteSync(recursive: true);
   });
+
+  /// The most-recent session's messages (the single active session here).
+  Future<List<ChatMessage>> persisted() async {
+    final List<ChatSession> sessions = await store.loadAll();
+    if (sessions.isEmpty) return const <ChatMessage>[];
+    return sessions.first.messages;
+  }
+
+  /// Seeds the box with one session holding [messages], as a prior run would.
+  Future<void> seedSession(List<ChatMessage> messages) async {
+    await store.saveSession(ChatSession(
+      id: 'session-seed',
+      title: ChatSession.deriveTitle(messages),
+      messages: messages,
+      createdAt: DateTime(2024, 1, 1),
+      updatedAt: DateTime(2024, 1, 1),
+    ));
+  }
 
   /// Waits until the transcript has been persisted to Hive (the write path is
   /// debounced for scheduled saves; flush paths settle immediately).
@@ -166,18 +185,18 @@ void main() {
 
       await waitPersisted();
 
-      final List<ChatMessage> persisted = await store.load();
-      expect(persisted, hasLength(2));
-      expect(persisted[0].isUser, isTrue);
-      expect(persisted[0].content, 'Hello AI');
-      expect(persisted[1].isAssistant, isTrue);
-      expect(persisted[1].content, 'streamed answer part two');
-      expect(persisted[1].isStreaming, isFalse);
+      final List<ChatMessage> persistedMessages = await persisted();
+      expect(persistedMessages, hasLength(2));
+      expect(persistedMessages[0].isUser, isTrue);
+      expect(persistedMessages[0].content, 'Hello AI');
+      expect(persistedMessages[1].isAssistant, isTrue);
+      expect(persistedMessages[1].content, 'streamed answer part two');
+      expect(persistedMessages[1].isStreaming, isFalse);
     });
 
     test('restoreFromHistory loads the last transcript once', () async {
       // Seed the box as a previous session would have left it.
-      await store.flush(<ChatMessage>[
+      await seedSession(<ChatMessage>[
         ChatMessage.user(id: 'u-old', content: 'previous question'),
         ChatMessage.assistantStreaming(id: 'a-old', content: 'previous answer')
             .finish(),
@@ -219,7 +238,7 @@ void main() {
       // The debounced save scheduled by sendMessage must not resurrect the
       // cleared history.
       await waitPersisted();
-      expect(await store.load(), isEmpty);
+      expect(await persisted(), isEmpty);
     });
 
     test('stopStreaming keeps the partial reply and persists it', () async {
@@ -237,10 +256,10 @@ void main() {
       expect(state.messages.last.content, 'partial ans');
 
       await waitPersisted();
-      final List<ChatMessage> persisted = await store.load();
-      expect(persisted, hasLength(2));
-      expect(persisted.last.content, 'partial ans');
-      expect(persisted.last.isStreaming, isFalse);
+      final List<ChatMessage> persistedMessages = await persisted();
+      expect(persistedMessages, hasLength(2));
+      expect(persistedMessages.last.content, 'partial ans');
+      expect(persistedMessages.last.isStreaming, isFalse);
     });
 
     test('stopStreaming with no tokens drops the empty placeholder', () async {
@@ -260,9 +279,9 @@ void main() {
           reason: 'a 0-token assistant placeholder must be dropped on stop');
 
       await waitPersisted();
-      final List<ChatMessage> persisted = await store.load();
-      expect(persisted, hasLength(1));
-      expect(persisted.single.isUser, isTrue);
+      final List<ChatMessage> persistedMessages = await persisted();
+      expect(persistedMessages, hasLength(1));
+      expect(persistedMessages.single.isUser, isTrue);
     });
 
     test('restoreFromHistory drops legacy empty assistant frames', () async {
@@ -270,7 +289,7 @@ void main() {
       // assistant frame with no content (stopped before the first token).
       // It must be cleaned up on load instead of rendering a blank bubble.
       final DateTime base = DateTime(2024, 1, 1, 12);
-      await store.flush(<ChatMessage>[
+      await seedSession(<ChatMessage>[
         ChatMessage.user(
             id: 'u-1', content: 'question', timestamp: base),
         ChatMessage(
@@ -317,9 +336,9 @@ void main() {
 
       await waitPersisted();
 
-      final List<ChatMessage> persisted = await store.load();
-      expect(persisted.first.isTool, isTrue);
-      expect(persisted.first.toolPayload!.command, 'df -h');
+      final List<ChatMessage> persistedMessages = await persisted();
+      expect(persistedMessages.first.isTool, isTrue);
+      expect(persistedMessages.first.toolPayload!.command, 'df -h');
     });
   });
 }

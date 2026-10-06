@@ -12,7 +12,7 @@ import '../../../server_config/domain/entities/server_config.dart';
 import '../../../server_config/presentation/providers/server_config_providers.dart';
 import '../../domain/entities/connection_state.dart';
 import '../providers/terminal_tab_providers.dart';
-import 'terminal_view.dart';
+import '../terminal_schemes.dart';
 
 // ─── Top bar ──────────────────────────────────────────────────────────────
 
@@ -27,6 +27,8 @@ class TerminalTopBar extends StatelessWidget {
     required this.onDisconnect,
     required this.onFontSmaller,
     required this.onFontLarger,
+    required this.onSftp,
+    required this.onTunnels,
   });
 
   final String serverName;
@@ -37,6 +39,8 @@ class TerminalTopBar extends StatelessWidget {
   final VoidCallback? onDisconnect;
   final VoidCallback onFontSmaller;
   final VoidCallback onFontLarger;
+  final VoidCallback? onSftp;
+  final VoidCallback? onTunnels;
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +95,42 @@ class TerminalTopBar extends StatelessWidget {
             color: colors.primary,
             onTap: onAskAi,
           ),
+          if (onSftp != null || onTunnels != null)
+            PopupMenuButton<String>(
+              tooltip: l10n.terminalMoreTooltip,
+              icon: Icon(Icons.more_vert_rounded,
+                  size: 18, color: colors.onSurfaceVariant),
+              padding: EdgeInsets.zero,
+              splashRadius: 18,
+              onSelected: (String value) {
+                if (value == 'sftp') onSftp?.call();
+                if (value == 'tunnels') onTunnels?.call();
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                if (onSftp != null)
+                  PopupMenuItem<String>(
+                    value: 'sftp',
+                    child: Row(
+                      children: <Widget>[
+                        const Icon(Icons.folder_open_rounded, size: 18),
+                        const SizedBox(width: 12),
+                        Text(l10n.sftpTooltip),
+                      ],
+                    ),
+                  ),
+                if (onTunnels != null)
+                  PopupMenuItem<String>(
+                    value: 'tunnels',
+                    child: Row(
+                      children: <Widget>[
+                        const Icon(Icons.swap_horiz_rounded, size: 18),
+                        const SizedBox(width: 12),
+                        Text(l10n.tunnelsTooltip),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           _BarButton(
             icon: Icons.text_decrease_rounded,
             tooltip: l10n.terminalTooltipSmallerText,
@@ -492,15 +532,26 @@ class _MetaChip extends StatelessWidget {
 /// A dimmed, centred panel laid over the terminal for non-live states.
 /// Uses a dark semi-transparent background since it sits over the terminal.
 class OverlayShell extends StatelessWidget {
-  const OverlayShell({super.key, required this.child, this.opacity = 0.88});
+  const OverlayShell({
+    super.key,
+    required this.child,
+    this.opacity = 0.88,
+    this.background,
+  });
 
   final Widget child;
   final double opacity;
 
+  /// Overlay backdrop; defaults to the Tokyo Night terminal background so a
+  /// non-live surface always sits on a dark, on-brand colour.
+  final Color? background;
+
   @override
   Widget build(BuildContext context) {
+    final Color backdrop =
+        background ?? TerminalColorScheme.tokyoNight.background;
     return Container(
-      color: kTerminalTheme.background.withValues(alpha: opacity),
+      color: backdrop.withValues(alpha: opacity),
       alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: SingleChildScrollView(

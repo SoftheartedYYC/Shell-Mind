@@ -6,7 +6,9 @@ import '../../../../app/auth_lock.dart';
 import '../../../../app/router.dart';
 import '../../../../app/theme.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/supported_languages.dart';
 import '../../../../core/services/storage_inspector.dart';
+import '../../../../core/storage/preferences_service.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -16,8 +18,10 @@ import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/update_provider.dart';
 import '../widgets/ai_settings_section.dart';
+import '../widgets/data_transfer_section.dart';
 import '../widgets/ssh_reconnect_section.dart';
 import '../widgets/storage_dialogs.dart';
+import '../widgets/terminal_scheme_section.dart';
 import '../widgets/update_section.dart';
 
 /// Settings page — clean Material 3 design with theme switching.
@@ -52,12 +56,26 @@ class SettingsPage extends ConsumerWidget {
               label: l10n.settingsSectionSsh,
               children: <Widget>[
                 const SshReconnectSection(),
+                const TerminalSchemeTile(),
               ],
             ),
             _Section(
               label: l10n.settingsSectionServers,
               children: <Widget>[
                 _HideIpTile(),
+              ],
+            ),
+            _Section(
+              label: l10n.settingsSectionNotifications,
+              children: <Widget>[
+                const _NotificationsTile(),
+              ],
+            ),
+            _Section(
+              label: l10n.settingsSectionDataTransfer,
+              children: <Widget>[
+                const SnippetTransferTile(),
+                const ServerTransferTile(),
               ],
             ),
             _Section(
@@ -172,33 +190,125 @@ class _AppearanceSection extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SegmentedButton<String>(
-              segments: <ButtonSegment<String>>[
-                ButtonSegment<String>(
-                  value: 'system',
-                  icon: const Icon(Icons.language_rounded),
-                  label: Text(l10n.settingsLanguageSystem),
-                ),
-                ButtonSegment<String>(
-                  value: 'zh',
-                  label: Text(l10n.settingsLanguageZh),
-                ),
-                ButtonSegment<String>(
-                  value: 'en',
-                  label: Text(l10n.settingsLanguageEn),
-                ),
-              ],
-              selected: <String>{currentLanguage},
-              onSelectionChanged: (Set<String> selection) {
-                final String code = selection.first;
-                localeNotifier.setLocale(code == 'system' ? null : Locale(code));
-              },
-              showSelectedIcon: false,
-            ),
+          _LanguageTile(
+            currentLanguage: currentLanguage,
+            onChanged: localeNotifier.setLocale,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Row that shows the active language and opens a bottom sheet listing every
+/// supported language (each in its own script) so the app can switch among
+/// many locales instead of the old three-way segmented control.
+class _LanguageTile extends StatelessWidget {
+  const _LanguageTile({
+    required this.currentLanguage,
+    required this.onChanged,
+  });
+
+  final String currentLanguage;
+  final Future<void> Function(Locale? locale) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final LanguageOption current = languageOptionFor(currentLanguage);
+    final String label = current.code == 'system'
+        ? l10n.settingsLanguageSystem
+        : current.nativeName;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _showLanguageSheet(context, l10n),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.language_rounded,
+                  size: 20, color: colors.onSurfaceVariant),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  l10n.settingsLanguageTitle,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.chevron_right_rounded,
+                  size: 18, color: colors.onSurfaceVariant),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showLanguageSheet(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+              child: Text(
+                l10n.settingsLanguageTitle,
+                style: Theme.of(ctx).textTheme.titleMedium,
+              ),
+            ),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: kSupportedLanguages.length,
+                itemBuilder: (BuildContext ctx, int index) {
+                  final LanguageOption option = kSupportedLanguages[index];
+                  final bool selected = option.code == currentLanguage;
+                  final String label = option.code == 'system'
+                      ? l10n.settingsLanguageSystem
+                      : option.nativeName;
+                  return ListTile(
+                    title: Text(label),
+                    trailing: selected
+                        ? Icon(
+                            Icons.check_circle_rounded,
+                            color: Theme.of(ctx).colorScheme.primary,
+                          )
+                        : null,
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      onChanged(
+                        option.code == 'system'
+                            ? null
+                            : Locale(option.code),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }
@@ -575,6 +685,71 @@ class _HideIpTile extends ConsumerWidget {
               onChanged: (bool value) => ref
                   .read(hideIpAddressesProvider.notifier)
                   .setHideIpAddresses(value),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Notifications tile ────────────────────────────────────────────────────
+
+/// Switch tile for background-alert notifications.
+class _NotificationsTile extends ConsumerStatefulWidget {
+  const _NotificationsTile();
+
+  @override
+  ConsumerState<_NotificationsTile> createState() => _NotificationsTileState();
+}
+
+class _NotificationsTileState extends ConsumerState<_NotificationsTile> {
+  bool? _value;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final bool value = _value ??
+        ref.read(preferencesServiceProvider).notificationsEnabled;
+
+    return Material(
+      color: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.notifications_outlined,
+                size: 20, color: colors.onSurfaceVariant),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    l10n.settingsNotificationsTitle,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colors.onSurface,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  Text(
+                    l10n.settingsNotificationsDesc,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: value,
+              onChanged: (bool next) async {
+                setState(() => _value = next);
+                await ref
+                    .read(preferencesServiceProvider)
+                    .setNotificationsEnabled(next);
+              },
             ),
           ],
         ),

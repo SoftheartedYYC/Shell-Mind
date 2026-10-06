@@ -21,6 +21,7 @@ class ChatHeader extends ConsumerWidget {
     required this.onClear,
     required this.onExport,
     required this.onManageServers,
+    required this.onSessions,
   });
 
   final bool isStreaming;
@@ -33,6 +34,7 @@ class ChatHeader extends ConsumerWidget {
   final VoidCallback onClear;
   final VoidCallback onExport;
   final VoidCallback onManageServers;
+  final VoidCallback onSessions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -75,6 +77,13 @@ class ChatHeader extends ConsumerWidget {
             ),
           ),
           StatusPill(label: label, color: color, pulse: pulse),
+          // Multi-session manager (search / switch / rename / delete).
+          IconButton(
+            onPressed: onSessions,
+            tooltip: l10n.sessionsTitle,
+            icon: Icon(Icons.history_rounded,
+                size: 22, color: colors.onSurfaceVariant),
+          ),
           // Export transcript to Markdown (disabled on an empty transcript).
           IconButton(
             onPressed: canExport ? onExport : null,

@@ -13,9 +13,10 @@ import 'package:shell_mind/core/network/dio_client.dart';
 import 'package:shell_mind/core/storage/preferences_service.dart';
 import 'package:shell_mind/core/utils/result.dart';
 import 'package:shell_mind/features/ai_chat/data/ai_service.dart';
-import 'package:shell_mind/features/ai_chat/data/chat_history_store.dart';
+import 'package:shell_mind/features/ai_chat/data/chat_sessions_store.dart';
 import 'package:shell_mind/features/ai_chat/domain/entities/ai_provider.dart';
 import 'package:shell_mind/features/ai_chat/domain/entities/chat_message.dart';
+import 'package:shell_mind/features/ai_chat/domain/entities/chat_session.dart';
 import 'package:shell_mind/features/ai_chat/presentation/providers/chat_providers.dart';
 import 'package:shell_mind/features/server_config/domain/entities/server_config.dart';
 import 'package:shell_mind/features/ssh_terminal/data/ssh_client_manager.dart';
@@ -49,7 +50,7 @@ ResponseBody _sseBody(String sse) => ResponseBody(
       },
     );
 
-class MockChatHistoryStore extends Mock implements ChatHistoryStore {}
+class MockChatSessionsStore extends Mock implements ChatSessionsStore {}
 
 /// Decodes the outgoing request body regardless of whether Dio's transformer
 /// already serialised it to a String/bytes.
@@ -100,21 +101,22 @@ void main() {
     // Same rationale as chat_providers_test.dart: these tests exercise the
     // network path, not persistence, so a silent no-op store keeps the real
     // Hive-backed singleton out of the (uninitialised) storage layer.
-    final MockChatHistoryStore chatStore = MockChatHistoryStore();
-    when(() => chatStore.flush(any())).thenAnswer((_) async {});
-    when(() => chatStore.clear()).thenAnswer((_) async {});
-    when(() => chatStore.load()).thenAnswer((_) async => <ChatMessage>[]);
+    final MockChatSessionsStore chatStore = MockChatSessionsStore();
+    when(() => chatStore.saveSession(any())).thenAnswer((_) async {});
+    when(() => chatStore.deleteSession(any())).thenAnswer((_) async {});
+    when(() => chatStore.loadAll()).thenAnswer((_) async => <ChatSession>[]);
     return ProviderContainer(
       overrides: <Override>[
         dioProvider.overrideWithValue(dio),
         selectedProviderProvider.overrideWithValue(testProvider),
         apiKeyProvider.overrideWith((Ref ref) async => 'test-key'),
-        chatHistoryStoreProvider.overrideWithValue(chatStore),
+        chatSessionsStoreProvider.overrideWithValue(chatStore),
       ],
     );
   }
 
   setUp(() async {
+    registerFallbackValue(ChatSession.empty());
     SharedPreferences.setMockInitialValues(<String, Object>{});
     await PreferencesService.instance.init();
   });

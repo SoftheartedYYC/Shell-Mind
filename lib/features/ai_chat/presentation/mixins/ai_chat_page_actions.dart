@@ -19,6 +19,7 @@ import '../providers/chat_providers.dart';
 import '../widgets/agent_timeline_sheet.dart';
 import '../widgets/command_confirm_dialog.dart';
 import '../widgets/server_selector_sheet.dart';
+import '../widgets/sessions_sheet.dart';
 
 /// Mixin carrying all imperative actions of the AI chat page: composer
 /// wiring, sheet/dialog launching, transcript export, and the code-block
@@ -151,6 +152,12 @@ mixin AiChatPageActions<T extends StatefulWidget> on State<T> {
   Future<void> openTimeline() async {
     composerFocus.unfocus();
     await AgentTimelineSheet.show(context);
+  }
+
+  /// Opens the multi-session manager (search / switch / rename / delete).
+  Future<void> openSessions() async {
+    composerFocus.unfocus();
+    await SessionsSheet.show(context);
   }
 
   // ─── Export ─────────────────────────────────────────────────────────────

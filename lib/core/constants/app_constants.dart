@@ -6,8 +6,8 @@ abstract final class AppConstants {
   // ─── Identity ───────────────────────────────────────────────────────────
   static const String appName = 'ShellMind';
   static const String appTagline = 'SSH · AI · Command';
-  static const String appVersion = '1.6.1';
-  static const int appBuildNumber = 13;
+  static const String appVersion = '1.7.0';
+  static const int appBuildNumber = 14;
 
   /// Emitted at the top of exported terminal transcripts.
   static const String userAgent = '$appName/$appVersion';
@@ -72,6 +72,10 @@ abstract final class AppConstants {
   /// when the transcript exceeds this bound.
   static const int kMaxChatHistoryMessages = 200;
 
+  /// Hard cap on the number of persisted chat sessions. The oldest sessions
+  /// are evicted when the list exceeds this bound.
+  static const int kMaxChatSessions = 50;
+
   /// SSE stream termination marker emitted by OpenAI-compatible servers.
   static const String sseDoneMarker = '[DONE]';
 
@@ -122,6 +126,7 @@ abstract final class AppConstants {
   static const String prefKeyThemeMode = 'pref.theme_mode';
   static const String prefKeyTerminalFontSize = 'pref.terminal_font_size';
   static const String prefKeyTerminalFontFamily = 'pref.terminal_font_family';
+  static const String prefKeyTerminalColorScheme = 'pref.terminal_color_scheme';
   static const String prefKeyHapticFeedback = 'pref.haptic_feedback';
   /// Legacy provider/model keys — kept for backward-compatible migration.
   static const String prefKeyAiProvider = 'pref.ai_provider';
@@ -179,6 +184,9 @@ abstract final class AppConstants {
   static const String prefKeyOnboardingComplete = 'pref.onboarding_complete';
   static const String prefKeyLocale = 'pref.locale';
 
+  /// Id of the currently open chat session (`null` = a fresh unsaved session).
+  static const String prefKeyActiveChatSession = 'pref.active_chat_session';
+
   /// When true, user-facing surfaces display masked host/IP addresses.
   static const String prefKeyHideIpAddresses = 'pref.hide_ip_addresses';
 
@@ -192,6 +200,10 @@ abstract final class AppConstants {
   /// When true, the app requires fingerprint/face verification at launch and
   /// whenever it returns to the foreground (biometric app lock).
   static const String prefKeyAuthLockEnabled = 'pref.auth_lock_enabled';
+
+  /// When true, the app posts local notifications for background session
+  /// disconnects and AI task completion.
+  static const String prefKeyNotificationsEnabled = 'pref.notifications_enabled';
 
   // ─── Defaults (used as fallbacks when prefs are absent) ─────────────────
   static const double defaultTerminalFontSize = 13.5;
@@ -213,6 +225,9 @@ abstract final class AppConstants {
 
   /// Default per-command execution timeout.
   static const int kDefaultCommandTimeoutSeconds = 30;
+
+  /// Local notifications default to on.
+  static const bool defaultNotificationsEnabled = true;
 
   // ─── SSH auto-reconnect defaults ────────────────────────────────────────
   /// Auto-reconnect defaults to on: a dropped session transparently retries.

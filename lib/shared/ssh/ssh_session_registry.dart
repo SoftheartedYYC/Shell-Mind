@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/global_keys.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/services/notification_service.dart';
 import '../../core/storage/preferences_service.dart';
 import '../../core/storage/secure_storage_service.dart';
 import '../../core/utils/result.dart';
@@ -344,6 +345,11 @@ class SshSessionRegistry extends Notifier<Map<String, RegisteredSession>> {
   /// Handles an unexpected (non user-initiated) session drop.
   void _onSessionDropped(RegisteredSession session) {
     final String serverId = session.serverId;
+
+    // Surface the drop when the app is backgrounded (the terminal is not
+    // visible) so the user learns their session went away.
+    unawaited(
+        NotificationService.instance.notifySessionDisconnected(session.serverName));
 
     // A loop already running (e.g. its dial produced a transient error state)
     // owns this server's fate.
