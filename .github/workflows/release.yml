@@ -138,12 +138,30 @@ jobs:
           sha256sum Shell-Mind-v${VERSION}-*.apk > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
+      # Extract the release notes for the current version from CHANGELOG.md
+      # (a hand-written, human-readable Chinese description) instead of relying
+      # solely on GitHub's auto-generated English commit/PR summary. Falls back
+      # to a minimal body if the version section is missing.
+      - name: Prepare release notes
+        run: |
+          awk -v ver="${VERSION}" '
+            BEGIN { found = 0 }
+            $0 ~ ("## \\[" ver "\\]") { found = 1 }
+            found && $0 ~ /^## \[/ && !($0 ~ ("\\[" ver "\\]")) { exit }
+            found { print }
+          ' CHANGELOG.md > release_notes.md
+          if [ ! -s release_notes.md ]; then
+            echo "ShellMind v${VERSION}" > release_notes.md
+          fi
+          echo "--- release notes ---"
+          cat release_notes.md
+
       - name: Upload APKs to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Shell-Mind v${{ env.VERSION }}
-          generate_release_notes: true
+          body_path: release_notes.md
           fail_on_unmatched_files: true
           files: |
             build/app/outputs/flutter-apk/Shell-Mind-v${{ env.VERSION }}-arm64-v8a.apk
