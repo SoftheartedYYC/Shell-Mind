@@ -64,7 +64,7 @@ class ServerConfigListController extends AsyncNotifier<List<ServerConfig>> {
 
   /// Synchronous lookup against the currently-loaded list.
   ServerConfig? byId(String id) {
-    final List<ServerConfig>? list = state.valueOrNull;
+    final List<ServerConfig>? list = state.value;
     if (list == null) return null;
     for (final ServerConfig config in list) {
       if (config.id == id) return config;
@@ -146,7 +146,7 @@ class ServerConfigListController extends AsyncNotifier<List<ServerConfig>> {
   /// Removal is applied optimistically (synchronously) so swipe-to-dismiss
   /// gestures stay in lock-step with the list, then reconciled from disk.
   Future<Result<void>> deleteServer(String id) {
-    final List<ServerConfig>? current = state.valueOrNull;
+    final List<ServerConfig>? current = state.value;
     if (current != null) {
       state = AsyncData(<ServerConfig>[
         for (final ServerConfig config in current)

@@ -238,7 +238,7 @@ class _ServersPageState extends ConsumerState<ServersPage> {
   Widget build(BuildContext context) {
     final AsyncValue<List<ServerConfig>> async =
         ref.watch(serverConfigListProvider);
-    final List<ServerConfig> all = async.valueOrNull ?? const <ServerConfig>[];
+    final List<ServerConfig> all = async.value ?? const <ServerConfig>[];
     // Live status for the per-card connection badges.
     final Map<String, RegisteredSession> sessions =
         ref.watch(sshSessionRegistryProvider);

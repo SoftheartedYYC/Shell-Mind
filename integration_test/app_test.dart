@@ -47,6 +47,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -332,9 +333,9 @@ void main() {
     expect(find.byType(FloatingActionButton), findsOneWidget);
 
     // The repository layer actually fed the list controller.
-    expect(container.read(serverConfigListProvider).valueOrNull, isNotNull);
+    expect(container.read(serverConfigListProvider).value, isNotNull);
     expect(
-      container.read(serverConfigListProvider).valueOrNull!.length,
+      container.read(serverConfigListProvider).value!.length,
       2,
     );
   });

@@ -64,7 +64,7 @@ class _ModelPickerSheetState extends ConsumerState<ModelPickerSheet> {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final AsyncValue<AvailableModelsState> async =
         ref.watch(availableModelsProvider);
-    final AvailableModelsState? current = async.valueOrNull;
+    final AvailableModelsState? current = async.value;
     final String selectedId =
         ref.watch(aiSettingsProvider.select((AiSettingsState s) => s.model)) ??
             ref.read(aiSettingsProvider).effectiveProvider.defaultModel.id;
@@ -233,7 +233,7 @@ class _ModelPickerSheetState extends ConsumerState<ModelPickerSheet> {
         ref.read(aiSettingsProvider).effectiveProvider.id;
     final Set<String> existing = <String>{
       for (final AiModel m
-          in ref.read(availableModelsProvider).valueOrNull?.models ??
+          in ref.read(availableModelsProvider).value?.models ??
               const <AiModel>[])
         m.id,
     };

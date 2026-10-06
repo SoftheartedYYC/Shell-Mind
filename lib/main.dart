@@ -89,6 +89,10 @@ Future<void> _bootstrap() async {
         preferencesServiceProvider
             .overrideWithValue(PreferencesService.instance),
       ],
+      // Riverpod 3 auto-retries failing providers by default. The app renders
+      // explicit error states with manual retry affordances (models fetch, fleet
+      // load, key probe…), so disable automatic retry to preserve that UX.
+      retry: (int retryCount, Object error) => null,
       child: const ShellMindApp(),
     ),
   );

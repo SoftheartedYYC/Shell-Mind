@@ -78,7 +78,7 @@ final terminalForServerProvider =
 
 /// Selection controller shared with the [TerminalView] so the toolbar can
 /// copy the current selection and clear it after pasting.
-final AutoDisposeProvider<TerminalController> terminalControllerProvider =
+final Provider<TerminalController> terminalControllerProvider =
     Provider.autoDispose<TerminalController>((ref) => TerminalController());
 
 /// Whether the Ctrl modifier is currently armed by the keyboard toolbar.
@@ -86,13 +86,13 @@ final AutoDisposeProvider<TerminalController> terminalControllerProvider =
 /// Consumed by [terminalForServerProvider]'s `onOutput` handler so the modifier
 /// applies to the *next* character typed on the system soft keyboard, then
 /// releases.
-final AutoDisposeNotifierProvider<CtrlKeyController, bool>
+final NotifierProvider<CtrlKeyController, bool>
     ctrlKeyStateProvider =
     NotifierProvider.autoDispose<CtrlKeyController, bool>(
   CtrlKeyController.new,
 );
 
-class CtrlKeyController extends AutoDisposeNotifier<bool> {
+class CtrlKeyController extends Notifier<bool> {
   @override
   bool build() => false;
 

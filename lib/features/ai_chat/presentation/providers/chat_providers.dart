@@ -117,7 +117,7 @@ final Provider<AiService> aiServiceProvider = Provider<AiService>((Ref ref) {
   final AiProvider provider = ref.watch(selectedProviderProvider);
   final AiModel model = ref.watch(selectedModelProvider);
   final PreferencesService prefs = ref.watch(preferencesServiceProvider);
-  final String apiKey = ref.watch(apiKeyProvider).valueOrNull ?? '';
+  final String apiKey = ref.watch(apiKeyProvider).value ?? '';
   return AiService(
     client: client,
     provider: provider,

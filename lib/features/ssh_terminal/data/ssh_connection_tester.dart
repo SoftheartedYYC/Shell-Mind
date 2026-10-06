@@ -105,7 +105,8 @@ class SshConnectionTester {
       return mapException(error);
     } finally {
       try {
-        client?.close();
+        // dartssh2 4.x: close() is async — await full transport teardown.
+        await client?.close();
       } catch (_) {}
       try {
         await socket?.close();

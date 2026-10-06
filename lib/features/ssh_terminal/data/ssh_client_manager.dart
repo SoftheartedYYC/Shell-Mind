@@ -359,7 +359,9 @@ class SshClientManager {
     final SSHClient? client = _client;
     _client = null;
     try {
-      client?.close();
+      // dartssh2 4.x: close() is async — await it so the transport (including
+      // its socket) is fully torn down before the socket close below.
+      await client?.close();
     } catch (_) {}
 
     final SSHSocket? socket = _socket;

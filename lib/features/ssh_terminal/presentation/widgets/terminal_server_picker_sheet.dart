@@ -81,7 +81,7 @@ class _TerminalServerPickerSheetState
     final AppLocalizations l10n = AppLocalizations.of(context);
     final ColorScheme colors = Theme.of(context).colorScheme;
     final List<ServerConfig> servers =
-        ref.watch(serverConfigListProvider).valueOrNull ?? const <ServerConfig>[];
+        ref.watch(serverConfigListProvider).value ?? const <ServerConfig>[];
     final Map<String, RegisteredSession> sessions =
         ref.watch(sshSessionRegistryProvider);
     final Map<String, SshServerConnectAttempt> attempts =

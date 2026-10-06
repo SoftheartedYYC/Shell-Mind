@@ -10,10 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.8
-  flutter_riverpod: ^2.6.1
-  go_router: ^14.8.1
-  dartssh2: ^2.11.0
+  flutter_riverpod: ^3.0.0
+  go_router: ^18.0.2
+  dartssh2: ^4.0.0
   xterm: ^4.0.0
   dio: ^5.7.0
   hive_ce: ^2.7.0
@@ -24,6 +23,7 @@ dependencies:
   local_auth: ^2.3.0
 
   # ── In-app update (GitHub Releases) ─────────────────────────────────────
+  crypto: ^3.0.7                # SHA-256 integrity check of the downloaded APK
   package_info_plus: ^8.0.0    # current app version/build number
   path_provider: ^2.1.0        # writable dir for the downloaded APK
   open_filex: ^4.5.0           # hands the APK to the system installer
@@ -31,12 +31,12 @@ dependencies:
   url_launcher: ^6.3.0         # open GitHub issues page from Settings
   flutter_localizations:
     sdk: flutter
-  intl: any
+  intl: ^0.20.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   build_runner: ^2.4.0
   hive_ce_generator: ^1.9.0
   json_serializable: ^6.8.0

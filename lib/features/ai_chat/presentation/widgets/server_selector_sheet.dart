@@ -89,7 +89,7 @@ class _ServerSelectorSheetState extends ConsumerState<ServerSelectorSheet> {
     final Map<String, SshServerConnectAttempt> attempts =
         ref.watch(sshServerConnectProvider);
 
-    final List<ServerConfig> servers = fleet.valueOrNull ??
+    final List<ServerConfig> servers = fleet.value ??
         const <ServerConfig>[];
 
     return DraggableScrollableSheet(

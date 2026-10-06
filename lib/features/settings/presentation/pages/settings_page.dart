@@ -645,7 +645,7 @@ class _AuthLockTileState extends ConsumerState<_AuthLockTile> {
   /// is on, the device-capability hint when the device cannot verify.
   String _subtitle(AppLocalizations l10n) {
     final bool deviceCapable =
-        ref.watch(biometricCapabilityProvider).valueOrNull ?? false;
+        ref.watch(biometricCapabilityProvider).value ?? false;
     if (!deviceCapable) return l10n.authLockUnavailableDesc;
     return l10n.authLockToggleDesc;
   }

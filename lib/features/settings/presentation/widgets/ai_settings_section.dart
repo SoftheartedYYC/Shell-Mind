@@ -579,7 +579,7 @@ class _Row extends StatelessWidget {
                   ),
             ),
           ),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );

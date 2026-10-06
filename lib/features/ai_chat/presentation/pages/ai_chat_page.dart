@@ -314,7 +314,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   Widget build(BuildContext context) {
     final ChatState chat = ref.watch(chatMessagesProvider);
     final AsyncValue<bool> keyStatus = ref.watch(apiKeyConfiguredProvider);
-    final bool hasKey = keyStatus.valueOrNull ?? false;
+    final bool hasKey = keyStatus.value ?? false;
     final AiProvider provider = ref.watch(selectedProviderProvider);
     final AgentState agent = ref.watch(agentControllerProvider);
     // Master gate: the settings "auto-execute commands" switch. The bar is a
@@ -362,7 +362,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
                       label: AppLocalizations.of(context)
                           .aiChatCheckingCredentials),
                 ),
-                error: (Object _, StackTrace __) => _ApiKeySetupGuide(
+                error: (Object _, StackTrace _) => _ApiKeySetupGuide(
                   providerName: provider.name,
                   onOpenSettings: _openSettings,
                 ),

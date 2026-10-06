@@ -255,7 +255,7 @@ void main() {
 }
 
 /// Helper matcher for AsyncLoading state.
-isLoading() => const AsyncValueMatcher(isLoading: true);
+Matcher isLoading() => const AsyncValueMatcher(isLoading: true);
 
 class AsyncValueMatcher extends Matcher {
   const AsyncValueMatcher({this.isLoading = false});

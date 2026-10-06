@@ -118,7 +118,7 @@ class _SnippetPickerSheetState extends ConsumerState<SnippetPickerSheet> {
                 padding: EdgeInsets.symmetric(vertical: 40),
                 child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
               ),
-              error: (Object _, StackTrace __) => Padding(
+              error: (Object _, StackTrace _) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 32),
                 child: Center(
                   child: Text(

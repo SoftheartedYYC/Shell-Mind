@@ -915,7 +915,7 @@ class _TerminalTab extends ConsumerWidget {
 
     String name = serverId;
     for (final ServerConfig config
-        in ref.watch(serverConfigListProvider).valueOrNull ??
+        in ref.watch(serverConfigListProvider).value ??
             const <ServerConfig>[]) {
       if (config.id == serverId) {
         name = config.name;
