@@ -84,7 +84,7 @@ Al enviar una etiqueta `v*` (p. ej., `v1.4.1`) se activa [GitHub Actions](.githu
 1. Verifica que la etiqueta coincida con la versión en `pubspec.yaml` (de lo contrario, falla);
 2. Ejecuta la puerta de pruebas (`flutter pub get` / `flutter analyze` / `flutter test`; cualquier fallo aborta el lanzamiento);
 3. Compila APK de lanzamiento firmados (`--split-per-abi`, con el nombre `Shell-Mind-v{version}-{abi}.apk` para arm64-v8a / armeabi-v7a / x86_64);
-4. Extrae las notas de lanzamiento en chino de la versión correspondiente desde [CHANGELOG.md](CHANGELOG.md), crea una publicación en GitHub Release y sube automáticamente todos los APK por ABI y las sumas de comprobación.
+4. Extrae las notas de lanzamiento en chino de la versión correspondiente desde [CHANGELOG.md](../CHANGELOG.md), crea una publicación en GitHub Release y sube automáticamente todos los APK por ABI y las sumas de comprobación.
 
 Deben configurarse dos Secrets del repositorio en **Settings → Secrets and variables → Actions** (ambos son Base64 del contenido de los archivos):
 

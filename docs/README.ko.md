@@ -84,7 +84,7 @@ flutter test
 1. 태그가 `pubspec.yaml`의 버전과 일치하는지 확인합니다(일치하지 않으면 실패);
 2. 테스트 게이트를 실행합니다(`flutter pub get` / `flutter analyze` / `flutter test`, 실패 시 릴리스가 중단됨);
 3. 서명된 릴리스 APK를 빌드합니다(`--split-per-abi`, arm64-v8a / armeabi-v7a / x86_64용 `Shell-Mind-v{version}-{abi}.apk` 이름);
-4. [CHANGELOG.md](CHANGELOG.md)에서 해당 버전의 중국어 릴리스 노트를 추출하고, GitHub Release를 생성한 뒤 모든 ABI별 APK와 체크섬을 자동으로 업로드합니다.
+4. [CHANGELOG.md](../CHANGELOG.md)에서 해당 버전의 중국어 릴리스 노트를 추출하고, GitHub Release를 생성한 뒤 모든 ABI별 APK와 체크섬을 자동으로 업로드합니다.
 
 **Settings → Secrets and variables → Actions**에서 두 개의 저장소 Secret을 설정해야 합니다(둘 다 파일 내용의 Base64):
 

@@ -84,7 +84,7 @@ Le push d'un tag `v*` (par ex. `v1.4.1`) déclenche [GitHub Actions](.github/wor
 1. Vérifie que le tag correspond à la version dans `pubspec.yaml` (échec sinon) ;
 2. Exécute la porte de tests (`flutter pub get` / `flutter analyze` / `flutter test`, tout échec interrompt la publication) ;
 3. Compile les APK de release signés (`--split-per-abi`, nommés `Shell-Mind-v{version}-{abi}.apk` pour arm64-v8a / armeabi-v7a / x86_64) ;
-4. Extrait les notes de version en chinois de la version correspondante depuis [CHANGELOG.md](CHANGELOG.md), crée une GitHub Release et téléverse automatiquement tous les APK par ABI ainsi que les sommes de contrôle.
+4. Extrait les notes de version en chinois de la version correspondante depuis [CHANGELOG.md](../CHANGELOG.md), crée une GitHub Release et téléverse automatiquement tous les APK par ABI ainsi que les sommes de contrôle.
 
 Deux Secrets du dépôt doivent être configurés sous **Settings → Secrets and variables → Actions** (tous deux sont le Base64 du contenu des fichiers) :
 

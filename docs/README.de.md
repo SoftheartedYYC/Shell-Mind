@@ -84,7 +84,7 @@ Das Pushen eines `v*`-Tags (z. B. `v1.4.1`) löst [GitHub Actions](.github/workf
 1. Prüft, ob der Tag mit der Version in `pubspec.yaml` übereinstimmt (andernfalls Fehlschlag);
 2. Führt den Test-Gate aus (`flutter pub get` / `flutter analyze` / `flutter test`, jeder Fehler bricht den Release ab);
 3. Baut signierte Release-APKs (`--split-per-abi`, benannt als `Shell-Mind-v{version}-{abi}.apk` für arm64-v8a / armeabi-v7a / x86_64);
-4. Extrahiert die chinesischen Release-Notizen der passenden Version aus [CHANGELOG.md](CHANGELOG.md), erstellt ein GitHub Release und lädt alle nach ABI aufgeteilten APKs und Prüfsummen automatisch hoch.
+4. Extrahiert die chinesischen Release-Notizen der passenden Version aus [CHANGELOG.md](../CHANGELOG.md), erstellt ein GitHub Release und lädt alle nach ABI aufgeteilten APKs und Prüfsummen automatisch hoch.
 
 Zwei Repository-Secrets müssen unter **Settings → Secrets and variables → Actions** konfiguriert werden (beide sind Base64 der Dateiinhalte):
 

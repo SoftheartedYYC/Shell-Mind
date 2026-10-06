@@ -84,7 +84,7 @@ flutter test
 1. タグが `pubspec.yaml` 内のバージョンと一致することを検証します（一致しない場合は失敗します）。
 2. テストゲートを実行します（`flutter pub get` / `flutter analyze` / `flutter test`。いずれかが失敗するとリリースを中止します）。
 3. 署名付きリリース APK をビルドします（`--split-per-abi`、arm64-v8a / armeabi-v7a / x86_64 向けに `Shell-Mind-v{version}-{abi}.apk` という名前で）。
-4. 対応するバージョンの中国語リリースノートを [CHANGELOG.md](CHANGELOG.md) から抽出し、GitHub Release を作成して、すべての ABI 別 APK とチェックサムを自動的にアップロードします。
+4. 対応するバージョンの中国語リリースノートを [CHANGELOG.md](../CHANGELOG.md) から抽出し、GitHub Release を作成して、すべての ABI 別 APK とチェックサムを自動的にアップロードします。
 
 **Settings → Secrets and variables → Actions** の下に、リポジトリの Secrets を 2 つ設定する必要があります（どちらもファイル内容の Base64 です）:
 

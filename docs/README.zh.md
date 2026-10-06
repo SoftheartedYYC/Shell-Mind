@@ -84,7 +84,7 @@ flutter test
 1. 校验 tag 与 `pubspec.yaml` 中的版本一致（不一致直接失败）；
 2. 运行测试门禁（`flutter pub get` / `flutter analyze` / `flutter test`，任一失败即中止发布）；
 3. 构建签名的 Release APK（`--split-per-abi`，产物命名 `Shell-Mind-v{version}-{abi}.apk`，含 arm64-v8a / armeabi-v7a / x86_64 三个包）；
-4. 从 [CHANGELOG.md](CHANGELOG.md) 提取对应版本的中文变更说明作为 Release Notes，创建 GitHub Release 并上传全部分包 APK 与校验和。
+4. 从 [CHANGELOG.md](../CHANGELOG.md) 提取对应版本的中文变更说明作为 Release Notes，创建 GitHub Release 并上传全部分包 APK 与校验和。
 
 需要在仓库 **Settings → Secrets and variables → Actions** 配置两个 Secrets（均为文件内容的 Base64 编码）：
 

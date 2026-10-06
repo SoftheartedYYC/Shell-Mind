@@ -84,7 +84,7 @@ L'invio di un tag `v*` (ad es. `v1.4.1`) attiva [GitHub Actions](.github/workflo
 1. Verifica che il tag corrisponda alla versione in `pubspec.yaml` (in caso contrario fallisce);
 2. Esegue il gate dei test (`flutter pub get` / `flutter analyze` / `flutter test`; qualsiasi errore interrompe la release);
 3. Compila gli APK di release firmati (`--split-per-abi`, denominati `Shell-Mind-v{version}-{abi}.apk` per arm64-v8a / armeabi-v7a / x86_64);
-4. Estrae le note di release in cinese della versione corrispondente da [CHANGELOG.md](CHANGELOG.md), crea una GitHub Release e carica automaticamente tutti gli APK per ABI e i relativi checksum.
+4. Estrae le note di release in cinese della versione corrispondente da [CHANGELOG.md](../CHANGELOG.md), crea una GitHub Release e carica automaticamente tutti gli APK per ABI e i relativi checksum.
 
 Devono essere configurati due Secrets del repository in **Settings → Secrets and variables → Actions** (entrambi sono il Base64 del contenuto dei file):
 
