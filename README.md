@@ -9,7 +9,7 @@
 ![Flutter](https://img.shields.io/badge/Flutter-3.47%2B-02569B?logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-3.13%2B-0175C2?logo=dart&logoColor=white)
 ![Release](https://img.shields.io/github/v/release/SoftheartedYYC/Shell-Mind?include_prereleases&logo=github)
-![License](https://img.shields.io/badge/License-TBD-lightgrey)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
 ---
 
@@ -34,8 +34,8 @@
 ### 从 Releases 安装
 
 1. 前往 [Releases](https://github.com/SoftheartedYYC/Shell-Mind/releases) 页面。
-2. 下载最新 APK 并安装到 Android 设备。
-3. 应用内也支持检查更新（基于 GitHub Releases）。
+2. 下载对应架构的 APK 并安装到 Android 设备（现代手机选 `arm64-v8a`，老旧 32 位设备选 `armeabi-v7a`，`x86_64` 仅供模拟器）。
+3. 应用内也支持检查更新（基于 GitHub Releases，自动按设备 ABI 选择匹配包）。
 
 ### 从源码构建
 
@@ -48,11 +48,13 @@ flutter pub get
 flutter run
 ```
 
-构建 Release APK：
+构建 Release APK（按 ABI 分包，与 CI 发布产物一致）：
 
 ```bash
-flutter build apk --release
+flutter build apk --release --split-per-abi
 ```
+
+产物位于 `build/app/outputs/flutter-apk/`，生成 `app-arm64-v8a-release.apk`、`app-armeabi-v7a-release.apk`、`app-x86_64-release.apk` 三个包。仅本地真机调试时也可直接 `flutter build apk --release`（默认 fat 包约 63 MB，仅适合本机安装）。
 
 > **签名配置**：Release 签名需要两个文件（均已被 `.gitignore` 排除，不会提交仓库）：
 >
@@ -67,7 +69,7 @@ flutter build apk --release
 # 静态分析
 flutter analyze
 
-# 单元与 Widget 测试（480 例）
+# 单元与 Widget 测试（全量）
 flutter test
 ```
 
@@ -76,8 +78,9 @@ flutter test
 推送 `v*` 格式的 tag（如 `v1.4.1`）会触发 [GitHub Actions](.github/workflows/release.yml)：
 
 1. 校验 tag 与 `pubspec.yaml` 中的版本一致（不一致直接失败）；
-2. 构建签名的 Release APK（产物命名 `Shell-Mind-v{version}.apk`）；
-3. 自动创建 GitHub Release 并上传 APK。
+2. 运行测试门禁（`flutter pub get` / `flutter analyze` / `flutter test`，任一失败即中止发布）；
+3. 构建签名的 Release APK（`--split-per-abi`，产物命名 `Shell-Mind-v{version}-{abi}.apk`，含 arm64-v8a / armeabi-v7a / x86_64 三个包）；
+4. 自动创建 GitHub Release 并上传全部分包 APK 与校验和。
 
 需要在仓库 **Settings → Secrets and variables → Actions** 配置两个 Secrets（均为文件内容的 Base64 编码）：
 
@@ -111,7 +114,7 @@ PowerShell 生成方式：`[Convert]::ToBase64String([IO.File]::ReadAllBytes('<�
 
 ## 许可证
 
-License: TBD。
+本项目基于 [MIT License](LICENSE) 发布。
 
 ---
 
@@ -126,7 +129,7 @@ Flutter-based Android SSH terminal + AI assistant app. Connect to your servers o
 ![Flutter](https://img.shields.io/badge/Flutter-3.47%2B-02569B?logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-3.13%2B-0175C2?logo=dart&logoColor=white)
 ![Release](https://img.shields.io/github/v/release/SoftheartedYYC/Shell-Mind?include_prereleases&logo=github)
-![License](https://img.shields.io/badge/License-TBD-lightgrey)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
 ---
 
@@ -151,8 +154,8 @@ Flutter-based Android SSH terminal + AI assistant app. Connect to your servers o
 ### Install from Releases
 
 1. Go to the [Releases](https://github.com/SoftheartedYYC/Shell-Mind/releases) page.
-2. Download the latest APK and install it on your Android device.
-3. The app also checks for updates in-app (via GitHub Releases).
+2. Download the APK matching your device's ABI and install it (`arm64-v8a` for modern phones, `armeabi-v7a` for legacy 32-bit devices, `x86_64` for emulators only).
+3. The app also checks for updates in-app (via GitHub Releases, auto-selecting the asset matching the device ABI).
 
 ### Build from Source
 
@@ -165,11 +168,13 @@ flutter pub get
 flutter run
 ```
 
-Build a release APK:
+Build release APKs (per-ABI split, matching the CI release artifacts):
 
 ```bash
-flutter build apk --release
+flutter build apk --release --split-per-abi
 ```
+
+Artifacts land in `build/app/outputs/flutter-apk/` as `app-arm64-v8a-release.apk`, `app-armeabi-v7a-release.apk`, and `app-x86_64-release.apk`. For local device testing only, plain `flutter build apk --release` also works (a ~63 MB fat APK for local install).
 
 > **Signing**: a signed release build requires two files (both excluded by `.gitignore` and never committed):
 >
@@ -184,7 +189,7 @@ flutter build apk --release
 # Static analysis
 flutter analyze
 
-# Unit & widget tests (480 tests)
+# Unit & widget tests (full suite)
 flutter test
 ```
 
@@ -193,8 +198,9 @@ flutter test
 Pushing a `v*` tag (e.g. `v1.4.1`) triggers [GitHub Actions](.github/workflows/release.yml):
 
 1. Verifies the tag matches the version in `pubspec.yaml` (fails otherwise);
-2. Builds a signed release APK (`Shell-Mind-v{version}.apk`);
-3. Creates a GitHub Release and uploads the APK automatically.
+2. Runs the test gate (`flutter pub get` / `flutter analyze` / `flutter test`, any failure aborts the release);
+3. Builds signed release APKs (`--split-per-abi`, named `Shell-Mind-v{version}-{abi}.apk` for arm64-v8a / armeabi-v7a / x86_64);
+4. Creates a GitHub Release and uploads all per-ABI APKs and checksums automatically.
 
 Two repository Secrets must be configured under **Settings → Secrets and variables → Actions** (both are Base64 of file contents):
 
@@ -228,4 +234,4 @@ This app lets an AI agent run commands on real servers, and fully automatic mode
 
 ## License
 
-License: TBD.
+This project is released under the [MIT License](LICENSE).

@@ -1,9 +1,13 @@
 name: Release APK
 
-# Trigger: push a tag like v1.5.0 -> build a signed release APK and attach it
-# to the GitHub Release. The in-app updater matches the asset name
-# `Shell-Mind-v{version}.apk` (see lib/core/services/update_service.dart),
-# so the naming below is load-bearing - do not change it casually.
+# Trigger: push a tag like v1.5.0 -> build signed release APKs and attach them
+# to the GitHub Release. Since the switch to `--split-per-abi`, three per-ABI
+# APKs are produced and uploaded under a versioned, ABI-tagged naming scheme:
+#   Shell-Mind-v{version}-{abi}.apk   (arm64-v8a / armeabi-v7a / x86_64)
+# The in-app updater (see lib/core/services/update_service.dart +
+# lib/core/utils/release_selector.dart) picks the asset whose name carries the
+# device ABI first, then falls back to universal / static preference order, so
+# the naming below is load-bearing - do not change it casually.
 on:
   push:
     tags:
@@ -19,7 +23,7 @@ concurrency:
 
 jobs:
   build-and-release:
-    name: Build signed release APK
+    name: Build signed release APKs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -98,20 +102,51 @@ jobs:
           fi
           echo "VERSION=$PUBSPEC_VERSION" >> "$GITHUB_ENV"
 
-      - name: Build release APK
-        run: flutter build apk --release
+      # Test gate: fail fast before any build work when analyze or tests fail.
+      - name: "Test gate: pub get"
+        run: flutter pub get
 
-      - name: Rename APK asset
+      - name: "Test gate: analyze"
+        run: flutter analyze
+
+      - name: "Test gate: test"
+        run: flutter test
+
+      # One APK per ABI: app-{abi}-release.apk (arm64-v8a, armeabi-v7a, x86_64).
+      - name: Build per-ABI release APKs
+        run: flutter build apk --release --split-per-abi
+
+      # Rename every per-ABI artifact to the load-bearing updater scheme and
+      # fail the build if any expected ABI build is missing.
+      - name: Rename APK assets
         run: |
-          ASSET="build/app/outputs/flutter-apk/Shell-Mind-v${VERSION}.apk"
-          cp build/app/outputs/flutter-apk/app-release.apk "$ASSET"
-          ls -la build/app/outputs/flutter-apk/
+          cd build/app/outputs/flutter-apk
+          for ABI in arm64-v8a armeabi-v7a x86_64; do
+            SRC="app-${ABI}-release.apk"
+            test -s "$SRC" || { echo "::error::Expected per-ABI artifact $SRC not found after build"; exit 1; }
+            cp "$SRC" "Shell-Mind-v${VERSION}-${ABI}.apk"
+          done
+          ls -la
 
-      - name: Upload APK to GitHub Release
+      # GitHub now exposes a native `digest` (sha256:<hex>) for every uploaded
+      # release asset, which the in-app updater already parses (first wave).
+      # SHA256SUMS.txt additionally ships the bare-hex checksums so they can be
+      # verified by hand outside the app.
+      - name: Generate SHA256 checksums
+        run: |
+          cd build/app/outputs/flutter-apk
+          sha256sum Shell-Mind-v${VERSION}-*.apk > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Upload APKs to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Shell-Mind v${{ env.VERSION }}
           generate_release_notes: true
           fail_on_unmatched_files: true
-          files: build/app/outputs/flutter-apk/Shell-Mind-v${{ env.VERSION }}.apk
+          files: |
+            build/app/outputs/flutter-apk/Shell-Mind-v${{ env.VERSION }}-arm64-v8a.apk
+            build/app/outputs/flutter-apk/Shell-Mind-v${{ env.VERSION }}-armeabi-v7a.apk
+            build/app/outputs/flutter-apk/Shell-Mind-v${{ env.VERSION }}-x86_64.apk
+            build/app/outputs/flutter-apk/SHA256SUMS.txt

@@ -274,6 +274,7 @@ class TerminalTabStatus {
     this.maxAttempts,
     this.errorMessage,
     this.failureKind,
+    this.failureReason,
     this.authenticating = false,
   });
 
@@ -284,7 +285,8 @@ class TerminalTabStatus {
         attempt = 0,
         maxAttempts = null,
         errorMessage = null,
-        failureKind = null;
+        failureKind = null,
+        failureReason = null;
 
   const TerminalTabStatus.reconnecting(int attempt, int? maxAttempts)
       : this(
@@ -295,11 +297,13 @@ class TerminalTabStatus {
 
   const TerminalTabStatus.gaveUp() : this(phase: TerminalTabPhase.gaveUp);
 
-  const TerminalTabStatus.error(String message, {String? failureKind})
+  const TerminalTabStatus.error(String message,
+      {String? failureKind, String? failureReason})
       : this(
           phase: TerminalTabPhase.error,
           errorMessage: message,
           failureKind: failureKind,
+          failureReason: failureReason,
         );
 
   const TerminalTabStatus.closed() : this(phase: TerminalTabPhase.closed);
@@ -317,6 +321,10 @@ class TerminalTabStatus {
 
   /// [FailureKind] name behind [TerminalTabPhase.error], for colour-coding.
   final String? failureKind;
+
+  /// Machine-readable failure marker (e.g. `host_key_rejected` from
+  /// [hostKeyRejectionReason]) letting the UI special-case localisation.
+  final String? failureReason;
 
   /// While [phase] is [TerminalTabPhase.connecting]: the handshake already
   /// reached the authentication step (refines the chrome's status label).
@@ -380,6 +388,7 @@ final ProviderFamily<TerminalTabStatus, String> terminalTabStatusProvider =
       SshConnectionStatus.error => TerminalTabStatus.error(
           current.errorMessage ?? 'error',
           failureKind: current.failureKind,
+          failureReason: current.failureReason,
         ),
     };
   }

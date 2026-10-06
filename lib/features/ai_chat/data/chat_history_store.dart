@@ -150,6 +150,14 @@ class ChatHistoryStore {
       // A message persisted mid-stream is a turn that never completed —
       // restore it as a finished turn instead of a dangling cursor.
       if (message.isStreaming) return message.finish();
+      // Legacy dirty frames: a finished assistant turn with no text and no
+      // tool payload renders as a blank bubble — drop it so transcripts
+      // restored from an older build are cleaned up on load.
+      if (message.role == MessageRole.assistant &&
+          message.content.trim().isEmpty &&
+          message.toolPayload == null) {
+        return null;
+      }
       return message;
     } catch (error) {
       debugPrint('[ChatHistoryStore] corrupt entry skipped: $error');

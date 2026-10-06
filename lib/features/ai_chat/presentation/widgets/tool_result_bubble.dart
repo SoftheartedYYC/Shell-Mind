@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/chat_message.dart';
 
 /// Displays SSH command execution result in a specialized message bubble.
@@ -12,7 +13,7 @@ import '../../domain/entities/chat_message.dart';
 ///   entirely when both stdout and stderr are blank
 /// - Separate stderr section if present (always expanded)
 /// - "Analyze with AI" button at bottom
-class ToolResultBubble extends StatelessWidget {
+class ToolResultBubble extends StatefulWidget {
   const ToolResultBubble({
     super.key,
     required this.payload,
@@ -23,8 +24,21 @@ class ToolResultBubble extends StatelessWidget {
   final VoidCallback? onAnalyze;
 
   @override
+  State<ToolResultBubble> createState() => _ToolResultBubbleState();
+}
+
+class _ToolResultBubbleState extends State<ToolResultBubble> {
+  static const int _visibleLines = 10;
+
+  /// Whether the full stdout is shown (only relevant when output exceeds
+  /// [_visibleLines]).
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final ToolPayload payload = widget.payload;
     final bool isSuccess = payload.exitCode == 0;
     final Color borderColor = isSuccess ? context.sem.success : colors.error;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -35,10 +49,11 @@ class ToolResultBubble extends StatelessWidget {
     final String stderr = payload.stderr.trim();
     final List<String> stdoutLines =
         stdout.isNotEmpty ? stdout.split('\n') : <String>[];
-    final int visibleLines = 10;
-    final bool hasMoreOutput = stdoutLines.length > visibleLines;
+    final bool hasMoreOutput = stdoutLines.length > _visibleLines;
     final List<String> displayedLines =
-        hasMoreOutput ? stdoutLines.sublist(0, visibleLines) : stdoutLines;
+        hasMoreOutput && !_expanded
+            ? stdoutLines.sublist(0, _visibleLines)
+            : stdoutLines;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -120,7 +135,7 @@ class ToolResultBubble extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '退出码：${payload.exitCode}',
+                                  l10n.aiToolResultExitCode(payload.exitCode),
                                   style: TextStyle(
                                     fontFamily: AppTheme.monoFont,
                                     fontFamilyFallback: AppTheme.monoFallback,
@@ -163,9 +178,12 @@ class ToolResultBubble extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  // Output header
+                  // Output header — tapping toggles expand/collapse when there
+                  // is more output than the collapsed preview.
                   InkWell(
-                    onTap: () {},
+                    onTap: hasMoreOutput
+                        ? () => setState(() => _expanded = !_expanded)
+                        : null,
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
                       padding: const EdgeInsets.all(10),
@@ -178,7 +196,7 @@ class ToolResultBubble extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            '命令输出',
+                            l10n.aiToolResultOutput,
                             style: Theme.of(context).textTheme.labelMedium?.copyWith(
                                   color: colors.onSurfaceVariant,
                                   fontWeight: FontWeight.w600,
@@ -187,7 +205,9 @@ class ToolResultBubble extends StatelessWidget {
                           if (hasMoreOutput) ...<Widget>[
                             const Spacer(),
                             Icon(
-                              Icons.expand_more_rounded,
+                              _expanded
+                                  ? Icons.expand_less_rounded
+                                  : Icons.expand_more_rounded,
                               size: 16,
                               color: colors.onSurfaceVariant,
                             ),
@@ -220,9 +240,20 @@ class ToolResultBubble extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       alignment: Alignment.center,
                       child: OutlinedButton.icon(
-                        onPressed: () {}, // TODO: Expand logic
-                        icon: const Icon(Icons.expand_more_rounded, size: 14),
-                        label: Text('${stdoutLines.length - visibleLines} 行更多输出'),
+                        onPressed: () => setState(() => _expanded = !_expanded),
+                        icon: Icon(
+                          _expanded
+                              ? Icons.expand_less_rounded
+                              : Icons.expand_more_rounded,
+                          size: 14,
+                        ),
+                        label: Text(
+                          _expanded
+                              ? l10n.aiToolResultExpandedHide
+                              : l10n.aiToolResultCollapsedShow(
+                                  stdoutLines.length - _visibleLines,
+                                ),
+                        ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: colors.primary,
                           minimumSize: const Size(0, 28),
@@ -251,7 +282,7 @@ class ToolResultBubble extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                '错误输出:',
+                                l10n.aiToolResultStderrLabel,
                                 style: TextStyle(
                                   color: colors.error,
                                   fontWeight: FontWeight.w600,
@@ -281,13 +312,13 @@ class ToolResultBubble extends StatelessWidget {
           ],
 
           // Footer with analyze button
-          if (onAnalyze != null)
+          if (widget.onAnalyze != null)
             Padding(
               padding: const EdgeInsets.all(12),
               child: FilledButton.icon(
-                onPressed: onAnalyze,
+                onPressed: widget.onAnalyze,
                 icon: Icon(Icons.auto_awesome_rounded, size: 18),
-                label: Text('让 AI 分析输出'),
+                label: Text(l10n.aiToolResultAnalyzeButton),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size(double.infinity, 40),
                 ),

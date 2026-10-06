@@ -13,195 +13,14 @@ import '../constants/app_constants.dart';
 import '../utils/release_selector.dart';
 import '../utils/result.dart';
 import '../utils/version_utils.dart';
+import 'device_abi.dart';
+import 'update_digest.dart';
+import 'update_models.dart';
 
-// ─── Failure reason markers ─────────────────────────────────────────────
-
-/// Stable string markers stored in [AppFailure.details] under the `reason`
-/// key. The service layer cannot reach `BuildContext`, so it tags failures
-/// with a machine-readable reason and the UI maps that to a localised string
-/// (see `describeUpdateFailure`). Keeping the vocabulary here means both the
-/// producer and the localiser agree on the exact tokens.
-abstract final class UpdateFailureReason {
-  /// GitHub reports no published release for the repository (both the
-  /// `/releases/latest` and the `/releases` fallback returned 404, or every
-  /// release was a filtered-out draft/pre-release).
-  static const String noReleases = 'noReleases';
-
-  /// Unauthenticated GitHub API rate limit (HTTP 403/429) was hit.
-  static const String rateLimit = 'rateLimit';
-
-  /// The response body could not be understood.
-  static const String badPayload = 'badPayload';
-}
-
-// ─── Value objects ────────────────────────────────────────────────────────
-
-/// Metadata describing a GitHub release that is newer than the running build.
-@immutable
-class UpdateInfo {
-  const UpdateInfo({
-    required this.version,
-    required this.tagName,
-    required this.releaseNotes,
-    required this.downloadUrl,
-    required this.fileSize,
-    required this.publishedAt,
-    required this.assetName,
-    this.releaseUrl = '',
-    this.isPrerelease = false,
-  });
-
-  /// Bare version string (`1.1.0`) — the `v` prefix is stripped.
-  final String version;
-
-  /// Git tag as published on GitHub (`v1.1.0`).
-  final String tagName;
-
-  /// Release body, rendered as (lightweight) markdown-free plain text.
-  final String releaseNotes;
-
-  /// Direct `browser_download_url` of the APK asset.
-  final String downloadUrl;
-
-  /// Asset size in bytes; `0` when GitHub did not report one.
-  final int fileSize;
-
-  final DateTime publishedAt;
-
-  /// File name of the asset, e.g. `Shell-Mind-v1.1.0.apk`.
-  final String assetName;
-
-  /// Human-facing release page (`https://github.com/.../releases/tag/v1.1.0`).
-  final String releaseUrl;
-
-  final bool isPrerelease;
-
-  UpdateInfo copyWith({
-    String? version,
-    String? tagName,
-    String? releaseNotes,
-    String? downloadUrl,
-    int? fileSize,
-    DateTime? publishedAt,
-    String? assetName,
-    String? releaseUrl,
-    bool? isPrerelease,
-  }) =>
-      UpdateInfo(
-        version: version ?? this.version,
-        tagName: tagName ?? this.tagName,
-        releaseNotes: releaseNotes ?? this.releaseNotes,
-        downloadUrl: downloadUrl ?? this.downloadUrl,
-        fileSize: fileSize ?? this.fileSize,
-        publishedAt: publishedAt ?? this.publishedAt,
-        assetName: assetName ?? this.assetName,
-        releaseUrl: releaseUrl ?? this.releaseUrl,
-        isPrerelease: isPrerelease ?? this.isPrerelease,
-      );
-
-  @override
-  bool operator ==(Object other) =>
-      other is UpdateInfo &&
-      other.tagName == tagName &&
-      other.downloadUrl == downloadUrl;
-
-  @override
-  int get hashCode => Object.hash(tagName, downloadUrl);
-
-  @override
-  String toString() => 'UpdateInfo($tagName, ${fileSize}B)';
-}
-
-/// A single tick of the APK download.
-///
-/// Emitted with increasing [downloaded] values, then exactly once as either
-/// a completion ([isComplete] with a non-null [filePath]), a cancellation
-/// ([isCancelled]) or a failure ([error] / [failure]).
-@immutable
-class DownloadProgress {
-  const DownloadProgress({
-    this.downloaded = 0,
-    this.total = 0,
-    this.isComplete = false,
-    this.isCancelled = false,
-    this.filePath,
-    this.error,
-    this.failure,
-    this.speedBytesPerSecond = 0,
-    this.elapsed = Duration.zero,
-  });
-
-  const DownloadProgress.initial() : this();
-
-  /// Bytes written to disk so far.
-  final int downloaded;
-
-  /// Total bytes, `0` while unknown (chunked / no Content-Length).
-  final int total;
-
-  /// `0.0`–`1.0`. Always `0.0` when [total] is unknown.
-  double get percentage =>
-      total <= 0 ? 0.0 : (downloaded / total).clamp(0.0, 1.0).toDouble();
-
-  /// True while the transfer is still running (not complete/cancelled/failed).
-  bool get isActive => !isComplete && !isCancelled && error == null;
-
-  /// Whether [total] is known, i.e. a determinate bar can be drawn.
-  bool get isDeterminate => total > 0;
-
-  final bool isComplete;
-  final bool isCancelled;
-
-  /// Absolute path of the finished APK (only when [isComplete]).
-  final String? filePath;
-
-  /// Human-readable error message (only on failure).
-  final String? error;
-
-  /// Structured counterpart of [error] for [ErrorBanner]-style rendering.
-  final AppFailure? failure;
-
-  /// Smoothed transfer rate, used for the `1.4 MB/s` readout.
-  final double speedBytesPerSecond;
-
-  final Duration elapsed;
-
-  /// Remaining time estimate, or `null` when it cannot be computed.
-  Duration? get remaining {
-    if (!isDeterminate || speedBytesPerSecond <= 0) return null;
-    final int left = total - downloaded;
-    if (left <= 0) return Duration.zero;
-    return Duration(milliseconds: (left / speedBytesPerSecond * 1000).round());
-  }
-
-  DownloadProgress copyWith({
-    int? downloaded,
-    int? total,
-    bool? isComplete,
-    bool? isCancelled,
-    String? filePath,
-    String? error,
-    AppFailure? failure,
-    double? speedBytesPerSecond,
-    Duration? elapsed,
-  }) =>
-      DownloadProgress(
-        downloaded: downloaded ?? this.downloaded,
-        total: total ?? this.total,
-        isComplete: isComplete ?? this.isComplete,
-        isCancelled: isCancelled ?? this.isCancelled,
-        filePath: filePath ?? this.filePath,
-        error: error ?? this.error,
-        failure: failure ?? this.failure,
-        speedBytesPerSecond: speedBytesPerSecond ?? this.speedBytesPerSecond,
-        elapsed: elapsed ?? this.elapsed,
-      );
-
-  @override
-  String toString() =>
-      'DownloadProgress(${(percentage * 100).toStringAsFixed(1)}%, '
-      '$downloaded/$total, complete: $isComplete)';
-}
+// Re-export the split-out value objects and digest helpers so every existing
+// importer of this entrypoint (`UpdateInfo`, `DownloadProgress`,
+// `UpdateFailureReason`, …) keeps compiling untouched.
+export 'update_models.dart';
 
 // ─── Service ──────────────────────────────────────────────────────────────
 
@@ -217,7 +36,8 @@ class DownloadProgress {
 class UpdateService {
   /// Both hooks exist for tests: inject a mocked [Dio] and a canned
   /// `PackageInfo` loader instead of touching the network or the platform.
-  UpdateService([this._dio, this._packageInfoLoader]);
+  /// [_abiLoader] likewise lets tests pin a device ABI without `dart:ffi`.
+  UpdateService([this._dio, this._packageInfoLoader, this._abiLoader]);
 
   // GitHub Releases source of truth.
   static const String repoOwner = 'SoftheartedYYC';
@@ -240,8 +60,26 @@ class UpdateService {
   /// socket read, which would thrash the widget tree.
   static const Duration _progressThrottle = Duration(milliseconds: 90);
 
+  /// Suffix of the digest sidecar written next to a verified download
+  /// (`Shell-Mind-v1.1.0.apk` → `Shell-Mind-v1.1.0.apk.sha256`). It is the
+  /// cross-session receipt that lets a restored download be re-verified
+  /// instead of blindly trusted (M-2, fail-closed).
+  static const String _digestSidecarSuffix = '.sha256';
+
+  /// Path of the digest sidecar paired with the APK at [apkPath].
+  static String _sidecarPathFor(String apkPath) =>
+      '$apkPath$_digestSidecarSuffix';
+
   final Dio? _dio;
   final Future<PackageInfo> Function()? _packageInfoLoader;
+
+  /// Optional device-ABI probe (defaults to [currentDeviceAbi]). Tests inject
+  /// a canned value so the asset selection can be pinned without `dart:ffi`.
+  final String? Function()? _abiLoader;
+
+  /// Memoised ABI for this service instance (the ABI cannot change at
+  /// runtime; one probe is enough).
+  String? _cachedAbi;
 
   Dio? _ownedDio;
   CancelToken? _activeDownload;
@@ -427,7 +265,14 @@ class UpdateService {
     final String tagName = (json['tag_name'] ?? json['name'] ?? '') as String;
     final String version = normalizeVersion(tagName);
 
-    final Map<String, dynamic>? apk = _pickApkAsset(json['assets'], version);
+    // Defensive against schema noise: a non-list `assets` field degrades to
+    // "no installable asset" exactly like the pre-split implementation did.
+    final Object? assets = json['assets'];
+    final Map<String, dynamic>? apk = pickApkAsset(
+      assets is List ? assets : null,
+      deviceAbi: _deviceAbi(),
+      preferredName: '$repoName-v$version.apk',
+    );
 
     return UpdateInfo(
       version: version,
@@ -439,38 +284,14 @@ class UpdateService {
       assetName: (apk?['name'] ?? '') as String,
       releaseUrl: (json['html_url'] ?? '') as String,
       isPrerelease: json['prerelease'] == true,
+      digest: normalizeDigest(apk?['digest']),
     );
   }
 
-  /// Chooses the most likely "universal" APK from a release's asset list.
-  ///
-  /// Preference order: exact `Shell-Mind-v{version}.apk` → any asset with the
-  /// android package MIME type → any `*.apk` (largest wins, which favours a
-  /// fat/universal build over per-ABI splits).
-  Map<String, dynamic>? _pickApkAsset(dynamic assets, String version) {
-    if (assets is! List) return null;
-
-    final List<Map<String, dynamic>> apks = <Map<String, dynamic>>[];
-    for (final dynamic a in assets) {
-      if (a is! Map<String, dynamic>) continue;
-      final String name = ((a['name'] ?? '') as String).toLowerCase();
-      final String contentType = ((a['content_type'] ?? '') as String);
-      final bool looksLikeApk = name.endsWith('.apk');
-      final bool hasApkMime = contentType.contains('android.package-archive');
-      if (looksLikeApk || hasApkMime) apks.add(a);
-    }
-    if (apks.isEmpty) return null;
-
-    final String preferred =
-        '$repoName-v$version.apk'.toLowerCase();
-    for (final Map<String, dynamic> a in apks) {
-      if (((a['name'] ?? '') as String).toLowerCase() == preferred) return a;
-    }
-
-    apks.sort((Map<String, dynamic> x, Map<String, dynamic> y) =>
-        _asInt(y['size']).compareTo(_asInt(x['size'])));
-    return apks.first;
-  }
+  /// The device's ABI, probed once per service instance. Tests inject a
+  /// canned loader; production uses the `dart:ffi` [currentDeviceAbi] probe.
+  String? _deviceAbi() =>
+      _cachedAbi ??= (_abiLoader?.call() ?? currentDeviceAbi());
 
   static int _asInt(dynamic v) => switch (v) {
         final int i => i,
@@ -506,9 +327,24 @@ class UpdateService {
   /// The returned stream always terminates with exactly one of:
   /// a completion event ([DownloadProgress.filePath]), a cancellation event,
   /// or a failure event. It never throws.
+  ///
+  /// Integrity (fail-closed, D3): the download is verified against
+  /// [expectedDigest] before it is allowed through:
+  /// * match → the completion event carries [DownloadProgress.filePath];
+  /// * mismatch → the file is deleted and a
+  ///   [UpdateFailureReason.digestMismatch] failure is emitted;
+  /// * missing/empty digest → the file is deleted and a
+  ///   [UpdateFailureReason.digestMissing] failure is emitted. Our release
+  ///   pipeline always publishes a `sha256:<hex>` digest on the APK asset,
+  ///   so an absent digest means the release metadata is unexpected and we
+  ///   refuse to install.
+  ///
+  /// Callers that parsed a release are expected to forward
+  /// [UpdateInfo.digest].
   Stream<DownloadProgress> downloadApk(
     String downloadUrl, {
     String? fileName,
+    String? expectedDigest,
     CancelToken? cancelToken,
   }) {
     final StreamController<DownloadProgress> controller =
@@ -538,10 +374,12 @@ class UpdateService {
         targetPath = file.path;
 
         // Remove a stale/partial artefact from an earlier attempt so the
-        // installer never sees a truncated APK.
+        // installer never sees a truncated APK. The old digest receipt goes
+        // too — it is re-written only after the new bytes verify.
         if (await file.exists()) {
           await file.delete();
         }
+        await _deleteDigestSidecar(targetPath);
 
         emit(const DownloadProgress());
 
@@ -601,6 +439,46 @@ class UpdateService {
           )));
           return;
         }
+
+        // ── Integrity gate (fail-closed) ──────────────────────────────────
+        // * digest match    → pass
+        // * digest mismatch → delete the file, report digestMismatch
+        // * digest missing  → delete the file, report digestMissing (D3)
+        // Either way a tampered/unexpected download never reaches the
+        // installer. There is no opt-out: a `null`/empty digest is treated
+        // exactly like a missing published digest and refused (D3).
+        final String? wanted = expectedDigest?.trim().toLowerCase();
+        if (wanted == null || wanted.isEmpty) {
+          await deleteDownload(targetPath);
+          emit(_failed(const AppFailure(
+            kind: FailureKind.validation,
+            message: 'Downloaded update has no published digest; refusing '
+                'to install (fail-closed).',
+            details: <String, dynamic>{
+              'reason': UpdateFailureReason.digestMissing,
+            },
+          )));
+          return;
+        }
+
+        final String? actual = await DigestVerifier.computeSha256(file);
+        if (actual == null || !DigestVerifier.constantTimeEquals(actual, wanted)) {
+          await deleteDownload(targetPath);
+          emit(_failed(const AppFailure(
+            kind: FailureKind.validation,
+            message: 'Downloaded update failed the SHA-256 integrity '
+                'check and was deleted.',
+            details: <String, dynamic>{
+              'reason': UpdateFailureReason.digestMismatch,
+            },
+          )));
+          return;
+        }
+
+        // Persist the verified digest as a sidecar receipt so a later
+        // session can re-verify this file before restoring it. Without the
+        // receipt a restart refuses to reinstall (fail-closed, M-2).
+        await _writeDigestSidecar(targetPath, wanted);
 
         clock.stop();
         emit(DownloadProgress(
@@ -808,7 +686,8 @@ class UpdateService {
     }, onError: (Object e, StackTrace st) => _mapError(e, st));
   }
 
-  /// Removes a previously downloaded APK (best effort).
+  /// Removes a previously downloaded APK and its digest sidecar (best
+  /// effort).
   Future<void> deleteDownload(String? filePath) async {
     if (filePath == null || filePath.isEmpty) return;
     try {
@@ -817,6 +696,7 @@ class UpdateService {
     } catch (_) {
       // Cleanup failures are never worth surfacing to the user.
     }
+    await _deleteDigestSidecar(filePath);
   }
 
   /// Resolves the absolute path of an APK that was downloaded during an
@@ -833,6 +713,90 @@ class UpdateService {
       // A missing file is a normal outcome, not an error.
     }
     return null;
+  }
+
+  /// Resolves a previously downloaded APK **only when it still passes the
+  /// same SHA-256 integrity gate the download itself went through**.
+  ///
+  /// Cross-session restore must never blindly trust a file found on disk
+  /// (M-2): between sessions the artefact may have been replaced, corrupted
+  /// or truncated. The verification mirrors the download-time gate:
+  ///
+  /// * the digest sidecar must exist and match [expectedDigest] — a missing
+  ///   sidecar means the APK predates this gate or its receipt was lost,
+  ///   and is refused (fail-closed);
+  /// * the APK bytes are re-hashed and must still match that digest.
+  ///
+  /// On any failure the APK and its sidecar are deleted so an unverifiable
+  /// artefact can neither reach the installer nor linger, and `null` is
+  /// returned.
+  Future<String?> locateVerifiedDownload(
+    String fileName, {
+    required String? expectedDigest,
+  }) async {
+    final String? path = await locateDownload(fileName);
+    if (path == null) return null;
+    try {
+      final File file = File(path);
+
+      // Gate 1: the sidecar receipt must agree with the release digest.
+      final String? wanted = expectedDigest?.trim().toLowerCase();
+      final String? recorded =
+          normalizeDigest(await _readDigestSidecar(path));
+      if (wanted == null ||
+          wanted.isEmpty ||
+          recorded == null ||
+          !DigestVerifier.constantTimeEquals(recorded, wanted)) {
+        await deleteDownload(path);
+        return null;
+      }
+
+      // Gate 2: the bytes on disk must still hash to that digest.
+      final String? actual = await DigestVerifier.computeSha256(file);
+      if (actual == null ||
+          !DigestVerifier.constantTimeEquals(actual, wanted)) {
+        await deleteDownload(path);
+        return null;
+      }
+
+      return path;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Reads the raw sidecar text next to the APK at [apkPath], `null` when
+  /// absent or unreadable. Normalisation/validation is the caller's job.
+  Future<String?> _readDigestSidecar(String apkPath) async {
+    try {
+      final File sidecar = File(_sidecarPathFor(apkPath));
+      if (!await sidecar.exists()) return null;
+      return await sidecar.readAsString();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Writes [digest] as the sidecar receipt of the APK at [apkPath].
+  ///
+  /// Best effort: a failed write only means the file will not be restorable
+  /// in a later session (fail-closed), never installable without proof.
+  Future<void> _writeDigestSidecar(String apkPath, String digest) async {
+    try {
+      await File(_sidecarPathFor(apkPath)).writeAsString(digest, flush: true);
+    } catch (_) {
+      // The download itself is still valid for this session.
+    }
+  }
+
+  /// Deletes the sidecar paired with the APK at [apkPath] (best effort).
+  Future<void> _deleteDigestSidecar(String apkPath) async {
+    try {
+      final File sidecar = File(_sidecarPathFor(apkPath));
+      if (await sidecar.exists()) await sidecar.delete();
+    } catch (_) {
+      // Cleanup failures are never worth surfacing to the user.
+    }
   }
 
   // ─── Download cache inspection ──────────────────────────────────
@@ -884,6 +848,7 @@ class UpdateService {
       try {
         freed += await f.length();
         await f.delete();
+        await _deleteDigestSidecar(f.path);
       } catch (_) {
         // A file that vanished mid-sweep is not worth surfacing.
       }

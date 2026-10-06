@@ -297,11 +297,19 @@ void main() {
           .read(commandSnippetsProvider.notifier)
           .addSnippet(command: 'two');
 
-      final String firstId =
-          container.read(commandSnippetsProvider).value!.last.id;
+      // Locate the target by command, not by list position: the repository
+      // sorts newest-first by createdAt and Dart's List.sort is unstable, so
+      // when both inserts land on the same DateTime.now() tick the 'two'
+      // entry can surface at either end (full-suite runs hit this reliably
+      // under load).
+      final String oneId = container
+          .read(commandSnippetsProvider)
+          .value!
+          .firstWhere((CommandSnippet s) => s.command == 'one')
+          .id;
       await container
           .read(commandSnippetsProvider.notifier)
-          .removeSnippet(firstId);
+          .removeSnippet(oneId);
 
       final List<CommandSnippet> remaining =
           container.read(commandSnippetsProvider).value!;

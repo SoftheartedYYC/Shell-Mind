@@ -248,9 +248,21 @@ class UpdateNotifier extends Notifier<UpdateState> {
 
   Future<void> _tryRestoreDownload(String assetName) async {
     if (assetName.isEmpty) return;
-    final String? path = await _service.locateDownload(assetName);
-    if (path == null) return;
+    final UpdateInfo? info = state.updateInfo;
+    if (info == null || info.assetName != assetName) return;
     // Only useful if the user has not already started a fresh download.
+    if (state.status == UpdateStatus.downloading) return;
+    // Cross-session integrity gate (fail-closed, M-2): the file found on
+    // disk must re-verify through the same SHA-256 channel the download
+    // used. A missing digest receipt (pre-gate leftover) or a mismatching
+    // one (replaced/corrupted artefact) makes the service delete the file
+    // and return null — nothing unverifiable is ever restored.
+    final String? path = await _service.locateVerifiedDownload(
+      assetName,
+      expectedDigest: info.digest,
+    );
+    if (path == null) return;
+    // The flow may have moved on while verification was running.
     if (state.status == UpdateStatus.downloading) return;
     if (state.updateInfo?.assetName != assetName) return;
     state = state.copyWith(
@@ -299,8 +311,13 @@ class UpdateNotifier extends Notifier<UpdateState> {
     // Pin the file name to the release asset so `locateDownload` can find it
     // again after a restart, even if the CDN URL is rewritten or encoded.
     final String? fileName = info.assetName.isEmpty ? null : info.assetName;
-    final Stream<DownloadProgress> stream =
-        _service.downloadApk(info.downloadUrl, fileName: fileName);
+    final Stream<DownloadProgress> stream = _service.downloadApk(
+      info.downloadUrl,
+      fileName: fileName,
+      // Fail-closed integrity (D3): verify the APK against the digest
+      // published on the release asset before it reaches the installer.
+      expectedDigest: info.digest,
+    );
 
     _subscription = stream.listen(
       _onProgress,

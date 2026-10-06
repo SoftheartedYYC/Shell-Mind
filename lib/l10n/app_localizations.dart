@@ -1838,6 +1838,18 @@ abstract class AppLocalizations {
   /// **'Not enough storage space to complete the update.'**
   String get updateErrStorage;
 
+  /// No description provided for @updateErrDigestMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The downloaded update failed the SHA-256 integrity check and was deleted. Please retry the download.'**
+  String get updateErrDigestMismatch;
+
+  /// No description provided for @updateErrDigestMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'The update package has no published integrity digest, so the update was refused. Please retry later.'**
+  String get updateErrDigestMissing;
+
   /// No description provided for @updateRetry.
   ///
   /// In en, this message translates to:
@@ -1963,6 +1975,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Allow the AI agent to run parsed commands without asking each time'**
   String get settingsAiAutoExecuteSubtitle;
+
+  /// No description provided for @settingsAiAutoConnectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Auto-Connect Servers'**
+  String get settingsAiAutoConnectTitle;
+
+  /// No description provided for @settingsAiAutoConnectSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow the AI assistant to automatically connect to configured-but-offline servers and run commands on them (saved credentials will be used)'**
+  String get settingsAiAutoConnectSubtitle;
 
   /// No description provided for @settingsAiMaxAutoLoopsTitle.
   ///
@@ -2245,18 +2269,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{lines} lines from terminal'**
   String aiContextLines(int lines);
-
-  /// No description provided for @aiAgentAutoModeOn.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto mode: on'**
-  String get aiAgentAutoModeOn;
-
-  /// No description provided for @aiAgentAutoModeOff.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto mode: off'**
-  String get aiAgentAutoModeOff;
 
   /// No description provided for @aiAgentStop.
   ///
@@ -2822,12 +2834,6 @@ abstract class AppLocalizations {
   /// **'Disconnect'**
   String get serverActionDisconnect;
 
-  /// No description provided for @aiAgentAutoModeDisabledHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto-execute is disabled in Settings'**
-  String get aiAgentAutoModeDisabledHint;
-
   /// No description provided for @exportChatAction.
   ///
   /// In en, this message translates to:
@@ -3079,6 +3085,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close tab'**
   String get terminalTabCloseTooltip;
+
+  /// No description provided for @hostKeyConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust this host?'**
+  String get hostKeyConfirmTitle;
+
+  /// No description provided for @hostKeyConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the first connection to this server. Verify its fingerprint before trusting it — this protects against man-in-the-middle attacks.'**
+  String get hostKeyConfirmMessage;
+
+  /// No description provided for @hostKeyEndpointLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SERVER'**
+  String get hostKeyEndpointLabel;
+
+  /// No description provided for @hostKeyFingerprintLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SHA-256 FINGERPRINT'**
+  String get hostKeyFingerprintLabel;
+
+  /// No description provided for @hostKeySecurityNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare the fingerprint against a value you obtained from the server operator out-of-band. Trusting a wrong fingerprint exposes your credentials.'**
+  String get hostKeySecurityNote;
+
+  /// No description provided for @hostKeyTrustAndConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust and connect'**
+  String get hostKeyTrustAndConnect;
+
+  /// No description provided for @hostKeyReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get hostKeyReject;
+
+  /// No description provided for @hostKeyAutoRejectCountdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-rejects in {seconds}s — trust is only recorded when you confirm.'**
+  String hostKeyAutoRejectCountdown(int seconds);
+
+  /// No description provided for @hostKeyMismatchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Host key changed'**
+  String get hostKeyMismatchTitle;
+
+  /// No description provided for @hostKeyMismatchMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The key presented by {host}:{port} differs from the one you previously trusted. The connection was blocked — this may be a man-in-the-middle attack, or the server was reinstalled. If you verified the new key, reset host trust on the server edit page and reconnect.'**
+  String hostKeyMismatchMessage(String host, int port);
+
+  /// No description provided for @hostKeyRejectedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection cancelled — the host key was not trusted. You can connect again to review the fingerprint.'**
+  String get hostKeyRejectedMessage;
+
+  /// No description provided for @serverResetTrustAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset host trust'**
+  String get serverResetTrustAction;
+
+  /// No description provided for @serverResetTrustDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Forget this server\'s stored fingerprint so the next connection asks for confirmation again.'**
+  String get serverResetTrustDesc;
+
+  /// No description provided for @serverResetTrustConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset host trust?'**
+  String get serverResetTrustConfirmTitle;
+
+  /// No description provided for @serverResetTrustConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The stored fingerprint for {identity}:{port} will be removed. The next connection will ask you to verify the host key again.'**
+  String serverResetTrustConfirmMessage(String identity, int port);
+
+  /// No description provided for @serverResetTrustConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get serverResetTrustConfirmAction;
+
+  /// No description provided for @serverResetTrustDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Host trust reset — reconnect to verify the fingerprint again.'**
+  String get serverResetTrustDone;
+
+  /// No description provided for @agentErrorNoTargetServer.
+  ///
+  /// In en, this message translates to:
+  /// **'No target server available'**
+  String get agentErrorNoTargetServer;
+
+  /// No description provided for @agentErrorExecFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Command execution failed'**
+  String get agentErrorExecFailed;
+
+  /// No description provided for @agentErrorConnectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to connect to the server automatically'**
+  String get agentErrorConnectFailed;
+
+  /// No description provided for @agentErrorConnectAuthRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved credentials for this server — auto-connect is not possible'**
+  String get agentErrorConnectAuthRequired;
+
+  /// No description provided for @agentErrorDangerSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped dangerous command: {command}'**
+  String agentErrorDangerSkipped(String command);
+
+  /// No description provided for @agentErrorUnexpected.
+  ///
+  /// In en, this message translates to:
+  /// **'Unexpected error'**
+  String get agentErrorUnexpected;
+
+  /// No description provided for @exportDocChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shell-Mind Chat Export'**
+  String get exportDocChatTitle;
+
+  /// No description provided for @exportDocExportedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported at: {time}'**
+  String exportDocExportedAt(String time);
+
+  /// No description provided for @exportDocMessageCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages: {count}'**
+  String exportDocMessageCount(int count);
+
+  /// No description provided for @exportDocUserSection.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get exportDocUserSection;
+
+  /// No description provided for @exportDocAssistantSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant'**
+  String get exportDocAssistantSection;
+
+  /// No description provided for @exportDocToolSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Tool execution'**
+  String get exportDocToolSection;
+
+  /// No description provided for @exportDocNoContent.
+  ///
+  /// In en, this message translates to:
+  /// **'_(no content)_'**
+  String get exportDocNoContent;
+
+  /// No description provided for @exportDocUnknownServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown server'**
+  String get exportDocUnknownServer;
+
+  /// No description provided for @exportDocExitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit code {code}'**
+  String exportDocExitCode(int code);
+
+  /// No description provided for @exportDocCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'Command'**
+  String get exportDocCommand;
+
+  /// No description provided for @exportDocOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'Output'**
+  String get exportDocOutput;
+
+  /// No description provided for @exportDocErrorOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'Error output'**
+  String get exportDocErrorOutput;
+
+  /// No description provided for @exportDocDiagTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shell-Mind Diagnostic Report'**
+  String get exportDocDiagTitle;
+
+  /// No description provided for @exportDocDiagCrashCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Captured errors: {count}'**
+  String exportDocDiagCrashCount(int count);
+
+  /// No description provided for @exportDocDiagCrashesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Captured errors'**
+  String get exportDocDiagCrashesSection;
+
+  /// No description provided for @exportDocDiagNone.
+  ///
+  /// In en, this message translates to:
+  /// **'(none)'**
+  String get exportDocDiagNone;
+
+  /// No description provided for @exportDocDiagErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error summary: {message}'**
+  String exportDocDiagErrorMessage(String message);
+
+  /// No description provided for @exportDocDiagAppVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'App version: {version}'**
+  String exportDocDiagAppVersion(String version);
+
+  /// No description provided for @exportDocDiagPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform: {platform}'**
+  String exportDocDiagPlatform(String platform);
+
+  /// No description provided for @exportDocDiagLocale.
+  ///
+  /// In en, this message translates to:
+  /// **'Language: {locale}'**
+  String exportDocDiagLocale(String locale);
+
+  /// No description provided for @exportDocDiagStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Local data usage: {value}'**
+  String exportDocDiagStorage(String value);
+
+  /// No description provided for @exportDocDiagAuditSection.
+  ///
+  /// In en, this message translates to:
+  /// **'AI command audit (last {limit} summaries)'**
+  String exportDocDiagAuditSection(int limit);
+
+  /// No description provided for @exportDocDiagSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'success'**
+  String get exportDocDiagSuccess;
+
+  /// No description provided for @exportDocDiagFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'failed'**
+  String get exportDocDiagFailed;
+
+  /// No description provided for @exportDocDiagExitCodeOf.
+  ///
+  /// In en, this message translates to:
+  /// **'exit code {code}'**
+  String exportDocDiagExitCodeOf(int code);
 }
 
 class _AppLocalizationsDelegate

@@ -1,13 +1,20 @@
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/app_localizations_en.dart';
 import 'entities/chat_message.dart';
 
 /// Pure Markdown exporter for AI chat transcripts.
 ///
 /// Converts an immutable [ChatMessage] list into a standalone Markdown
-/// document: a timestamped header, `## 用户` block-quoted user turns, `## 助手`
+/// document: a timestamped header, `## User` block-quoted user turns, `## Assistant`
 /// bodies, and tool executions rendered as fenced code blocks carrying the
 /// server name and exit code.
 ///
-/// No I/O and no Flutter dependencies — trivially unit-testable. File writing
+/// All natural-language labels come from [AppLocalizations] so the document
+/// follows the app language. [l10n] is optional: callers without a context
+/// (pure data / tests) may omit it and the export falls back to the English
+/// wordings; UI entry points should always inject `AppLocalizations.of(context)`.
+///
+/// No I/O — trivially unit-testable. File writing
 /// lives in the presentation layer (see `AiChatPage._exportChat`).
 class ChatExporter {
   const ChatExporter._();
@@ -18,18 +25,23 @@ class ChatExporter {
   /// fixed value in tests for deterministic output. Empty conversations
   /// produce a valid header with a zero message count; the UI gates the
   /// export action on a non-empty transcript.
-  static String export(List<ChatMessage> messages, {DateTime? exportedAt}) {
+  static String export(
+    List<ChatMessage> messages, {
+    AppLocalizations? l10n,
+    DateTime? exportedAt,
+  }) {
+    final AppLocalizations doc = l10n ?? AppLocalizationsEn();
     final DateTime at = exportedAt ?? DateTime.now();
     final StringBuffer buffer = StringBuffer();
     buffer
-      ..writeln('# Shell-Mind 对话导出')
+      ..writeln('# ${doc.exportDocChatTitle}')
       ..writeln()
-      ..writeln('- 导出时间：${formatTimestamp(at)}')
-      ..writeln('- 消息数：${messages.length}')
+      ..writeln('- ${doc.exportDocExportedAt(formatTimestamp(at))}')
+      ..writeln('- ${doc.exportDocMessageCount(messages.length)}')
       ..writeln();
     for (final ChatMessage message in messages) {
       if (message.isSystem) continue; // System prompts are not user-visible.
-      _writeMessage(buffer, message);
+      _writeMessage(buffer, message, doc);
     }
     return buffer.toString();
   }
@@ -49,25 +61,30 @@ class ChatExporter {
         '${p(time.hour)}:${p(time.minute)}:${p(time.second)}';
   }
 
-  static void _writeMessage(StringBuffer buffer, ChatMessage message) {
+  static void _writeMessage(
+    StringBuffer buffer,
+    ChatMessage message,
+    AppLocalizations doc,
+  ) {
     final String stamp = formatTimestamp(message.timestamp);
     if (message.isTool) {
-      _writeTool(buffer, message, stamp);
+      _writeTool(buffer, message, stamp, doc);
       return;
     }
     if (message.isUser) {
       buffer
-        ..writeln('## 用户 · $stamp')
+        ..writeln('## ${doc.exportDocUserSection} · $stamp')
         ..writeln()
         ..writeln(_quote(message.content))
         ..writeln();
       return;
     }
     // Assistant (and any non-tool, non-user turn): plain body.
-    final String body =
-        message.content.trim().isEmpty ? '_(无内容)_' : message.content;
+    final String body = message.content.trim().isEmpty
+        ? doc.exportDocNoContent
+        : message.content;
     buffer
-      ..writeln('## 助手 · $stamp')
+      ..writeln('## ${doc.exportDocAssistantSection} · $stamp')
       ..writeln()
       ..writeln(body)
       ..writeln();
@@ -80,37 +97,42 @@ class ChatExporter {
     StringBuffer buffer,
     ChatMessage message,
     String stamp,
+    AppLocalizations doc,
   ) {
     final ToolPayload? payload = message.toolPayload;
     if (payload == null) {
       // Degraded message (payload lost in an old snapshot): keep the wire
       // envelope as a plain text block so nothing is silently dropped.
       buffer
-        ..writeln('## 工具执行 · $stamp')
+        ..writeln('## ${doc.exportDocToolSection} · $stamp')
         ..writeln()
         ..writeln(_fence(message.content, language: 'text'))
         ..writeln();
       return;
     }
-    final String server =
-        payload.serverName.trim().isEmpty ? '未知服务器' : payload.serverName;
+    final String server = payload.serverName.trim().isEmpty
+        ? doc.exportDocUnknownServer
+        : payload.serverName;
     buffer
-      ..writeln('## 工具执行 · $server · 退出码 ${payload.exitCode} · $stamp')
+      ..writeln(
+        '## ${doc.exportDocToolSection} · $server · '
+        '${doc.exportDocExitCode(payload.exitCode)} · $stamp',
+      )
       ..writeln()
-      ..writeln('**命令**')
+      ..writeln('**${doc.exportDocCommand}**')
       ..writeln()
       ..writeln(_fence(payload.command, language: 'bash'))
       ..writeln();
     if (payload.stdout.trim().isNotEmpty) {
       buffer
-        ..writeln('**输出**')
+        ..writeln('**${doc.exportDocOutput}**')
         ..writeln()
         ..writeln(_fence(payload.stdout, language: 'text'))
         ..writeln();
     }
     if (payload.stderr.trim().isNotEmpty) {
       buffer
-        ..writeln('**错误输出**')
+        ..writeln('**${doc.exportDocErrorOutput}**')
         ..writeln()
         ..writeln(_fence(payload.stderr, language: 'text'))
         ..writeln();

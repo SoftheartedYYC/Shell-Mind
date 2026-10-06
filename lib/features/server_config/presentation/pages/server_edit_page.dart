@@ -3,12 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/global_keys.dart';
 import '../../../../app/theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/ssh/host_key_approval_dialog.dart';
+import '../../../../shared/ssh/host_key_store.dart';
 import '../../../ssh_terminal/data/ssh_connection_tester.dart';
 import '../../domain/entities/server_config.dart';
 import '../providers/server_config_providers.dart';
@@ -289,7 +292,20 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
     }
     if (!mounted) return;
 
-    final SshTestResult result = await SshConnectionTester.test(
+    // The probe shares the app-wide host-key trust policy: unknown keys go
+    // through the same first-connect dialog as real connections, and a
+    // fingerprint change is hard-rejected instead of silently accepted.
+    final SshTestResult result = await SshConnectionTester(
+      hostKeyStore: SecureHostKeyStore(ref.read(secureStorageServiceProvider)),
+      hostKeyApprovalHandler: (String approvalHost, int approvalPort,
+              String fingerprint) =>
+          HostKeyApprovalDialog.show(
+            rootNavigatorKey,
+            host: approvalHost,
+            port: approvalPort,
+            fingerprint: fingerprint,
+          ),
+    ).test(
       host: host,
       port: port,
       username: username,
@@ -393,6 +409,18 @@ class _ServerEditPageState extends ConsumerState<ServerEditPage> {
           ],
           const SizedBox(height: 16),
           const _SecurityNote(),
+          // First-connect trust management (D2): let the user forget a
+          // stored host-key fingerprint so the next connection prompts
+          // again. Only meaningful when editing an existing server whose
+          // address may have been connected to before.
+          if (_isEditing) ...<Widget>[
+            const SizedBox(height: 20),
+            _ResetHostTrustSection(
+              host: _host.text.trim(),
+              port: int.tryParse(_port.text.trim()) ??
+                  AppConstants.defaultSshPort,
+            ),
+          ],
         ],
       ),
     );
@@ -680,6 +708,116 @@ class _SecurityNote extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─── Reset host trust (D2) ───────────────────────────────────────────────
+
+/// "Reset host trust" section shown only in edit mode. Removes the stored
+/// host-key fingerprint for the current host:port so the next connection
+/// shows the first-connect confirmation dialog again.
+class _ResetHostTrustSection extends StatefulWidget {
+  const _ResetHostTrustSection({required this.host, required this.port});
+
+  /// Endpoint read from the form at build time. Kept as state on init so
+  /// the confirmation dialog uses the values the section was rendered with.
+  final String host;
+  final int port;
+
+  @override
+  State<_ResetHostTrustSection> createState() => _ResetHostTrustSectionState();
+}
+
+class _ResetHostTrustSectionState extends State<_ResetHostTrustSection> {
+  late final HostKeyStore _store;
+
+  @override
+  void initState() {
+    super.initState();
+    // Bound at construction — the page never swaps stores mid-lifetime.
+    _store = SecureHostKeyStore(
+      ProviderScope.containerOf(context, listen: false)
+          .read(secureStorageServiceProvider),
+    );
+  }
+
+  Future<void> _resetTrust() async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        icon: const Icon(Icons.verified_user_outlined),
+        title: Text(l10n.serverResetTrustConfirmTitle),
+        content: Text(l10n.serverResetTrustConfirmMessage(
+          widget.host,
+          widget.port,
+        )),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.serverResetTrustConfirmAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    await _store.remove(widget.host, widget.port);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.serverResetTrustDone)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.outlineVariant),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Icon(Icons.gpp_maybe_outlined, size: 18, color: colors.onSurfaceVariant),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  l10n.serverResetTrustAction,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.serverResetTrustDesc,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: _resetTrust,
+            child: Text(l10n.serverResetTrustConfirmAction),
+          ),
+        ],
+      ),
     );
   }
 }

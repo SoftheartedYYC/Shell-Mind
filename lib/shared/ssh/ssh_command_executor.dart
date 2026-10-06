@@ -181,7 +181,27 @@ class SshCommandExecutor {
   /// Heuristic screen for commands that could cause destructive or
   /// irreversible damage on a remote host. Callers (e.g. the AI assistant)
   /// should surface a confirmation prompt when this returns `true`.
+  ///
+  /// Deliberately conservative: patterns aim at *obvious* destruction only
+  /// (wiping the home directory, deleting via `find -delete`, truncating a
+  /// file to zero) while avoiding false positives where these tokens appear
+  /// merely as substrings of paths or other flags.
+  ///
+  /// GNU-style long options are normalised to their short forms *before*
+  /// matching (`--recursive` → `-r`, `--force` → `-f`), so variants like
+  /// `rm --recursive --force ~` hit the same detectors as `rm -rf ~`. The
+  /// rewrite is guarded on both sides (lookbehind/lookahead) so flag-looking
+  /// words such as `--recursive-dir` or `x--force` are left untouched.
   static bool isDangerous(String command) {
+    final String normalized = command
+        .replaceAllMapped(
+          RegExp(r'(?<![\w-])--recursive(?![\w=-])'),
+          (_) => '-r',
+        )
+        .replaceAllMapped(
+          RegExp(r'(?<![\w-])--force(?![\w=-])'),
+          (_) => '-f',
+        );
     const List<String> patterns = <String>[
       r'rm\s+(-[a-zA-Z]*f[a-zA-Z]*\s+)?/', // rm -rf /
       r'mkfs\.', // filesystem format
@@ -192,9 +212,40 @@ class SshCommandExecutor {
       r'halt',
       r'init\s+0',
       r':\(\)\s*\{.*\};\s*:', // fork bomb
-      r'chmod\s+-R\s+777\s+/', // recursive world-writable root
+      // Recursive world-writable root. `-r` is not a real chmod flag (the
+      // tool uses `-R`), but normalisation rewrites `chmod --recursive`
+      // to `-r`, so both spellings are accepted here — the false-positive
+      // cost (an invalid command being skipped with a warning) is far below
+      // the leak cost of missing the real thing.
+      r'chmod\s+-(?:R|r)\s+777\s+/', // recursive world-writable root
+      // `rm -rf ~` & variants (`-fr`, `-r -f`, `$HOME`, `${HOME}`, `~/sub`,
+      // `~user`). Two scanning lookaheads require *some* flag token carrying
+      // `r` AND *some* flag carrying `f` (combined or separate), so
+      // `rm -r dir`, `rm -f file` and absolute paths stay out of scope. The
+      // word-boundary lookbehind keeps `myrm`/`xrm` from matching.
+      // Same detector for multi-flag clusters and the bare-root target:
+      // covers `rm -r -f ~`, and — after normalisation — the long-option
+      // forms (`rm --recursive --force ~`). The `/` alternative extends the
+      // reach to `rm -r -f /` / `rm --recursive --force /` where the single
+      // cluster pattern above cannot see two separate flags.
+      r'(?<![\w/.~-])(?:sudo\s+)?rm\s+'
+      r'(?=(?:\s*-[a-zA-Z]+)+\s)'
+      r'(?=(?:\s*-[a-zA-Z]+)*\s*-[a-zA-Z]*r[a-zA-Z]*\b)'
+      r'(?=(?:\s*-[a-zA-Z]+)*\s*-[a-zA-Z]*f[a-zA-Z]*\b)'
+      r'(?:\s*-[a-zA-Z]+)+\s+'
+      r'(?:~[A-Za-z0-9_.+-]*(?:/\S*)?|\$HOME(?:/\S*)?|\$\{HOME\}(?:/\S*)?|/)'
+      r'(?:\s|$)',
+      // `find ... -delete` — mass deletion through find's own action flag.
+      // The `[^;|&]*` span may not cross command separators, and the
+      // lookbehind rejects `-delete` glued to a longer word (`-delete-me`).
+      r'(?<![\w/.-])find\s+[^;|&]*(?<![\w-])-delete(?:\s|$)',
+      // `truncate -s 0 <file>` (`-s0`, `--size=0`, `--size 0`, extra flags
+      // and an optional `sudo` prefix) — empty a file in place. The `0` must
+      // be a standalone word so `-s 100` never matches.
+      r'(?<![\w/.-])(?:sudo\s+)?truncate\s+(?:-\w+\s+)*'
+      r'(?:-s0(?=\s|$)|-s\s+0(?=\s|$)|--size(?:=|\s+)0(?=\s|$))',
     ];
-    return patterns.any((String p) => RegExp(p).hasMatch(command));
+    return patterns.any((String p) => RegExp(p).hasMatch(normalized));
   }
 }
 

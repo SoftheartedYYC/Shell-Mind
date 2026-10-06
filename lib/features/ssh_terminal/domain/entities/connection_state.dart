@@ -41,6 +41,7 @@ class SshConnectionState {
     this.serverName,
     this.connectedAt,
     this.failureKind,
+    this.failureReason,
   });
 
   /// Idle, closed connection.
@@ -48,21 +49,24 @@ class SshConnectionState {
       : status = SshConnectionStatus.disconnected,
         errorMessage = null,
         connectedAt = null,
-        failureKind = null;
+        failureKind = null,
+        failureReason = null;
 
   /// Dialing / handshaking.
   const SshConnectionState.connecting({this.serverName})
       : status = SshConnectionStatus.connecting,
         errorMessage = null,
         connectedAt = null,
-        failureKind = null;
+        failureKind = null,
+        failureReason = null;
 
   /// Transport ready, user authentication in progress.
   const SshConnectionState.authenticating({this.serverName})
       : status = SshConnectionStatus.authenticating,
         errorMessage = null,
         connectedAt = null,
-        failureKind = null;
+        failureKind = null,
+        failureReason = null;
 
   /// Live interactive shell.
   SshConnectionState.connected({
@@ -71,6 +75,7 @@ class SshConnectionState {
   })  : status = SshConnectionStatus.connected,
         errorMessage = null,
         failureKind = null,
+        failureReason = null,
         connectedAt = connectedAt ?? DateTime.now();
 
   /// Failed attempt carrying a human-readable reason.
@@ -78,6 +83,7 @@ class SshConnectionState {
     required String message,
     this.serverName,
     this.failureKind,
+    this.failureReason,
   })  : status = SshConnectionStatus.error,
         errorMessage = message,
         connectedAt = null;
@@ -97,6 +103,11 @@ class SshConnectionState {
   /// Optional [FailureKind] name, letting the UI colour-code the error.
   final String? failureKind;
 
+  /// Optional machine-readable failure marker (e.g. `host_key_rejected`) —
+  /// finer than [failureKind], letting the UI pick a message-specific to the
+  /// root cause (host-key change vs auth vs plain SSH error).
+  final String? failureReason;
+
   bool get isConnected => status == SshConnectionStatus.connected;
   bool get isError => status == SshConnectionStatus.error;
   bool get isBusy => status.isBusy;
@@ -108,6 +119,7 @@ class SshConnectionState {
     String? serverName,
     DateTime? connectedAt,
     String? failureKind,
+    String? failureReason,
   }) {
     return SshConnectionState(
       status: status ?? this.status,
@@ -115,6 +127,7 @@ class SshConnectionState {
       serverName: serverName ?? this.serverName,
       connectedAt: connectedAt ?? this.connectedAt,
       failureKind: failureKind ?? this.failureKind,
+      failureReason: failureReason ?? this.failureReason,
     );
   }
 
@@ -126,11 +139,12 @@ class SshConnectionState {
           other.errorMessage == errorMessage &&
           other.serverName == serverName &&
           other.connectedAt == connectedAt &&
-          other.failureKind == failureKind;
+          other.failureKind == failureKind &&
+          other.failureReason == failureReason;
 
   @override
-  int get hashCode =>
-      Object.hash(status, errorMessage, serverName, connectedAt, failureKind);
+  int get hashCode => Object.hash(
+      status, errorMessage, serverName, connectedAt, failureKind, failureReason);
 
   @override
   String toString() =>

@@ -985,6 +985,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Not enough storage space to complete the update.';
 
   @override
+  String get updateErrDigestMismatch =>
+      'The downloaded update failed the SHA-256 integrity check and was deleted. Please retry the download.';
+
+  @override
+  String get updateErrDigestMissing =>
+      'The update package has no published integrity digest, so the update was refused. Please retry later.';
+
+  @override
   String get updateRetry => 'Retry';
 
   @override
@@ -1052,6 +1060,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsAiAutoExecuteSubtitle =>
       'Allow the AI agent to run parsed commands without asking each time';
+
+  @override
+  String get settingsAiAutoConnectTitle => 'AI Auto-Connect Servers';
+
+  @override
+  String get settingsAiAutoConnectSubtitle =>
+      'Allow the AI assistant to automatically connect to configured-but-offline servers and run commands on them (saved credentials will be used)';
 
   @override
   String get settingsAiMaxAutoLoopsTitle => 'Max auto-loop iterations';
@@ -1214,12 +1229,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String aiContextLines(int lines) {
     return '$lines lines from terminal';
   }
-
-  @override
-  String get aiAgentAutoModeOn => 'Auto mode: on';
-
-  @override
-  String get aiAgentAutoModeOff => 'Auto mode: off';
 
   @override
   String get aiAgentStop => 'Stop auto mode';
@@ -1583,10 +1592,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serverActionDisconnect => 'Disconnect';
 
   @override
-  String get aiAgentAutoModeDisabledHint =>
-      'Auto-execute is disabled in Settings';
-
-  @override
   String get exportChatAction => 'Export as Markdown';
 
   @override
@@ -1727,4 +1732,185 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get terminalTabCloseTooltip => 'Close tab';
+
+  @override
+  String get hostKeyConfirmTitle => 'Trust this host?';
+
+  @override
+  String get hostKeyConfirmMessage =>
+      'This is the first connection to this server. Verify its fingerprint before trusting it — this protects against man-in-the-middle attacks.';
+
+  @override
+  String get hostKeyEndpointLabel => 'SERVER';
+
+  @override
+  String get hostKeyFingerprintLabel => 'SHA-256 FINGERPRINT';
+
+  @override
+  String get hostKeySecurityNote =>
+      'Compare the fingerprint against a value you obtained from the server operator out-of-band. Trusting a wrong fingerprint exposes your credentials.';
+
+  @override
+  String get hostKeyTrustAndConnect => 'Trust and connect';
+
+  @override
+  String get hostKeyReject => 'Reject';
+
+  @override
+  String hostKeyAutoRejectCountdown(int seconds) {
+    return 'Auto-rejects in ${seconds}s — trust is only recorded when you confirm.';
+  }
+
+  @override
+  String get hostKeyMismatchTitle => 'Host key changed';
+
+  @override
+  String hostKeyMismatchMessage(String host, int port) {
+    return 'The key presented by $host:$port differs from the one you previously trusted. The connection was blocked — this may be a man-in-the-middle attack, or the server was reinstalled. If you verified the new key, reset host trust on the server edit page and reconnect.';
+  }
+
+  @override
+  String get hostKeyRejectedMessage =>
+      'Connection cancelled — the host key was not trusted. You can connect again to review the fingerprint.';
+
+  @override
+  String get serverResetTrustAction => 'Reset host trust';
+
+  @override
+  String get serverResetTrustDesc =>
+      'Forget this server\'s stored fingerprint so the next connection asks for confirmation again.';
+
+  @override
+  String get serverResetTrustConfirmTitle => 'Reset host trust?';
+
+  @override
+  String serverResetTrustConfirmMessage(String identity, int port) {
+    return 'The stored fingerprint for $identity:$port will be removed. The next connection will ask you to verify the host key again.';
+  }
+
+  @override
+  String get serverResetTrustConfirmAction => 'Reset';
+
+  @override
+  String get serverResetTrustDone =>
+      'Host trust reset — reconnect to verify the fingerprint again.';
+
+  @override
+  String get agentErrorNoTargetServer => 'No target server available';
+
+  @override
+  String get agentErrorExecFailed => 'Command execution failed';
+
+  @override
+  String get agentErrorConnectFailed =>
+      'Failed to connect to the server automatically';
+
+  @override
+  String get agentErrorConnectAuthRequired =>
+      'No saved credentials for this server — auto-connect is not possible';
+
+  @override
+  String agentErrorDangerSkipped(String command) {
+    return 'Skipped dangerous command: $command';
+  }
+
+  @override
+  String get agentErrorUnexpected => 'Unexpected error';
+
+  @override
+  String get exportDocChatTitle => 'Shell-Mind Chat Export';
+
+  @override
+  String exportDocExportedAt(String time) {
+    return 'Exported at: $time';
+  }
+
+  @override
+  String exportDocMessageCount(int count) {
+    return 'Messages: $count';
+  }
+
+  @override
+  String get exportDocUserSection => 'User';
+
+  @override
+  String get exportDocAssistantSection => 'Assistant';
+
+  @override
+  String get exportDocToolSection => 'Tool execution';
+
+  @override
+  String get exportDocNoContent => '_(no content)_';
+
+  @override
+  String get exportDocUnknownServer => 'Unknown server';
+
+  @override
+  String exportDocExitCode(int code) {
+    return 'Exit code $code';
+  }
+
+  @override
+  String get exportDocCommand => 'Command';
+
+  @override
+  String get exportDocOutput => 'Output';
+
+  @override
+  String get exportDocErrorOutput => 'Error output';
+
+  @override
+  String get exportDocDiagTitle => 'Shell-Mind Diagnostic Report';
+
+  @override
+  String exportDocDiagCrashCount(int count) {
+    return 'Captured errors: $count';
+  }
+
+  @override
+  String get exportDocDiagCrashesSection => 'Captured errors';
+
+  @override
+  String get exportDocDiagNone => '(none)';
+
+  @override
+  String exportDocDiagErrorMessage(String message) {
+    return 'Error summary: $message';
+  }
+
+  @override
+  String exportDocDiagAppVersion(String version) {
+    return 'App version: $version';
+  }
+
+  @override
+  String exportDocDiagPlatform(String platform) {
+    return 'Platform: $platform';
+  }
+
+  @override
+  String exportDocDiagLocale(String locale) {
+    return 'Language: $locale';
+  }
+
+  @override
+  String exportDocDiagStorage(String value) {
+    return 'Local data usage: $value';
+  }
+
+  @override
+  String exportDocDiagAuditSection(int limit) {
+    return 'AI command audit (last $limit summaries)';
+  }
+
+  @override
+  String get exportDocDiagSuccess => 'success';
+
+  @override
+  String get exportDocDiagFailed => 'failed';
+
+  @override
+  String exportDocDiagExitCodeOf(int code) {
+    return 'exit code $code';
+  }
 }

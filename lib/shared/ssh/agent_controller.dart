@@ -7,8 +7,11 @@ import '../../core/services/command_audit_log.dart';
 import '../../core/utils/result.dart';
 import '../../core/storage/preferences_service.dart';
 import '../../features/ai_chat/presentation/providers/chat_providers.dart';
+import '../../features/server_config/domain/entities/server_config.dart';
+import '../../features/server_config/presentation/providers/server_config_providers.dart';
 import './command_block_parser.dart';
 import 'ssh_command_executor.dart';
+import 'ssh_server_connect_controller.dart';
 import 'ssh_session_registry.dart';
 
 /// Current status of the AI Agent loop.
@@ -29,6 +32,50 @@ enum AgentStatus {
   error,
 }
 
+/// Machine-readable kind of the last agent error.
+///
+/// Lets the UI map [AgentState.errorKind] to a localised message instead of
+/// rendering the raw (Chinese-only) fallback strings. [unexpected] is the
+/// catch-all for genuinely unpredictable exceptions where the raw
+/// `e.toString()` text in [AgentState.errorMessage] is shown as-is.
+enum AgentErrorKind {
+  /// No target server was selected / available for execution.
+  noTargetServer,
+
+  /// A confirmed or auto-loop command execution failed.
+  execFailed,
+
+  /// A dangerous command was skipped during the auto loop.
+  dangerSkipped,
+
+  /// AI auto-connect failed because the server has no usable saved
+  /// credential (auth kind).
+  connectAuthRequired,
+
+  /// AI auto-connect failed for a non-credential reason (unreachable host,
+  /// handshake error, unknown config …).
+  connectFailed,
+
+  /// Unpredictable exception — no localised equivalent exists.
+  unexpected,
+}
+
+/// Outcome of one on-demand connect attempt performed by [AgentController].
+enum AgentConnectOutcome {
+  /// The session went live.
+  success,
+
+  /// The server has no usable saved credential.
+  authRequired,
+
+  /// Any other failure (unreachable, handshake, unknown config …).
+  failed,
+
+  /// No live session and the auto-connect switch is off — the caller keeps
+  /// the legacy noTargetServer behaviour.
+  offline,
+}
+
 /// Agent execution state with immutability guarantees.
 @immutable
 class AgentState {
@@ -41,6 +88,8 @@ class AgentState {
     this.autoLoopCount = 0,
     this.maxAutoLoops = 5,
     this.errorMessage,
+    this.errorKind,
+    this.errorArg,
     this.results = const <CommandResult>[],
     this.taskRounds = 0,
     this.taskStartedAt,
@@ -54,6 +103,14 @@ class AgentState {
   final int autoLoopCount;
   final int maxAutoLoops;
   final String? errorMessage;
+
+  /// Machine-readable kind behind [errorMessage]; `null` when the message is
+  /// a raw exception (kind [AgentErrorKind.unexpected] keeps it populated).
+  final AgentErrorKind? errorKind;
+
+  /// Dynamic interpolation value for the localised message (e.g. the
+  /// truncated command for [AgentErrorKind.dangerSkipped]).
+  final String? errorArg;
 
   /// Display-only chain of command results for the current task / session,
   /// in execution order (newest last). Rendered by the agent timeline sheet.
@@ -80,6 +137,8 @@ class AgentState {
           autoLoopCount == other.autoLoopCount &&
           maxAutoLoops == other.maxAutoLoops &&
           errorMessage == other.errorMessage &&
+          errorKind == other.errorKind &&
+          errorArg == other.errorArg &&
           taskRounds == other.taskRounds &&
           taskStartedAt == other.taskStartedAt &&
           _listEquals(results, other.results);
@@ -94,6 +153,8 @@ class AgentState {
         autoLoopCount,
         maxAutoLoops,
         errorMessage,
+        errorKind,
+        errorArg,
         taskRounds,
         taskStartedAt,
         Object.hashAll(results),
@@ -108,6 +169,8 @@ class AgentState {
     int? autoLoopCount,
     int? maxAutoLoops,
     String? errorMessage,
+    AgentErrorKind? errorKind,
+    String? errorArg,
     List<CommandResult>? results,
     int? taskRounds,
     DateTime? taskStartedAt,
@@ -127,6 +190,17 @@ class AgentState {
       autoLoopCount: autoLoopCount ?? this.autoLoopCount,
       maxAutoLoops: maxAutoLoops ?? this.maxAutoLoops,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      // errorKind / errorArg follow errorMessage's lifecycle: [clearError]
+      // resets all three; a brand-new message without an explicit kind/arg
+      // drops the previous ones so a stale kind can never be mapped onto a
+      // different message; when no new message arrives both persist (matching
+      // the raw-message fallback behaviour).
+      errorKind: clearError
+          ? null
+          : (errorKind ?? (errorMessage != null ? null : this.errorKind)),
+      errorArg: clearError
+          ? null
+          : (errorArg ?? (errorMessage != null ? null : this.errorArg)),
       results: clearTask ? const <CommandResult>[] : (results ?? this.results),
       taskRounds: clearTask ? 0 : (taskRounds ?? this.taskRounds),
       taskStartedAt: clearTask ? null : (taskStartedAt ?? this.taskStartedAt),
@@ -153,15 +227,51 @@ bool _listEquals<T>(List<T> a, List<T> b) {
 
 /// AI Agent controller managing both confirmed execution and auto-loop modes.
 ///
-/// Two entry points:
+/// Entry points:
 /// - [executeConfirmed] — the user tapped "run" on a code block and confirmed;
 ///   executes once and feeds the result back into the conversation.
 /// - [startAutoMode] + [onAssistantResponseComplete] — a hands-off loop where
 ///   every finished AI reply is scanned for command blocks, executed, and the
 ///   results are sent back so the model can continue, up to [AgentState.maxAutoLoops].
+/// - [onAssistantResponseComplete] standalone — when the settings master
+///   switch (`aiAutoExecute`) is on, the first reply of a conversation arms
+///   the loop automatically; no explicit start call is needed.
 class AgentController extends Notifier<AgentState> {
   @override
-  AgentState build() => const AgentState();
+  AgentState build() {
+    // Default connect hook: route through [SshServerConnectController] so the
+    // credential resolution and registry registration reuse the exact same
+    // in-chat connection path the server picker uses. Overridable in tests
+    // (see the existing dialer-injection pattern in SshSessionRegistry).
+    connectHook = (String serverId, ServerConfig config) async {
+      final SshServerConnectController controller =
+          ref.read(sshServerConnectProvider.notifier);
+      final bool ok = await controller.connect(config);
+      if (ok) return AgentConnectOutcome.success;
+      return _connectOutcomeFrom(controller, serverId);
+    };
+    return const AgentState();
+  }
+
+  /// Injectable dial hook for tests: resolves credentials, connects the
+  /// server and returns the outcome. Bound to the real controller in build().
+  @visibleForTesting
+  late Future<AgentConnectOutcome> Function(String serverId, ServerConfig config)
+      connectHook;
+
+  /// Maps a failed connect attempt to a machine-readable outcome. Reads the
+  /// attempt state published by [SshServerConnectController]: `failureKind`
+  /// `'auth'` means no usable stored credential; anything else (or an absent
+  /// entry) is a generic connection failure.
+  AgentConnectOutcome _connectOutcomeFrom(
+    SshServerConnectController controller,
+    String serverId,
+  ) {
+    final SshServerConnectAttempt? attempt =
+        controller.state[serverId];
+    if (attempt?.failureKind == 'auth') return AgentConnectOutcome.authRequired;
+    return AgentConnectOutcome.failed;
+  }
 
   /// Confirmed mode: execute a single command (already confirmed by the user)
   /// on one or more servers, then append the results to the conversation.
@@ -170,8 +280,10 @@ class AgentController extends Notifier<AgentState> {
     required List<String> serverIds,
   }) async {
     if (serverIds.isEmpty) {
+      // Defensive: the chat page pre-checks connectivity, so this message is
+      // never rendered directly — the UI maps the failure kind instead.
       return Result<CommandResult>.failure(
-        AppFailure.validation('没有选择目标服务器'),
+        AppFailure.validation('No target server selected.'),
       );
     }
 
@@ -219,11 +331,12 @@ class AgentController extends Notifier<AgentState> {
       if (results.isEmpty) {
         state = state.copyWith(
           status: AgentStatus.error,
-          errorMessage: lastError ?? '命令执行失败',
+          errorMessage: lastError ?? 'Command execution failed.',
+          errorKind: AgentErrorKind.execFailed,
           clearExecuting: true,
         );
         return Result<CommandResult>.failure(
-          AppFailure.ssh(lastError ?? '命令执行失败'),
+          AppFailure.ssh(lastError ?? 'Command execution failed.'),
         );
       }
 
@@ -244,9 +357,13 @@ class AgentController extends Notifier<AgentState> {
       );
       return Result<CommandResult>.success(results.first);
     } catch (e) {
+      // Genuinely unpredictable failures keep the raw `e.toString()` text
+      // (localisation impossible by design); the kind lets the UI render a
+      // generic localised prefix when one exists.
       state = state.copyWith(
         status: AgentStatus.error,
         errorMessage: e.toString(),
+        errorKind: AgentErrorKind.unexpected,
         clearExecuting: true,
       );
       return Result<CommandResult>.failure(AppFailure.unexpected(e));
@@ -266,9 +383,9 @@ class AgentController extends Notifier<AgentState> {
   /// request is rejected, the state is left untouched and `false` is
   /// returned. Unreadable preferences (plain unit tests without an
   /// initialised [PreferencesService]) fail open so the loop mechanics stay
-  /// observable there — the production entry (chat page's agent bar) hides
-  /// the toggle entirely while the gate is off, so that fallback is
-  /// unreachable in real usage.
+  /// observable there. In production this call is a legacy compatibility
+  /// path: the chat UI no longer exposes a session toggle, and the settings
+  /// switch arms the loop via [onAssistantResponseComplete] directly.
   bool startAutoMode({String? defaultServerId, int? maxLoops}) {
     bool gateOpen;
     try {
@@ -304,8 +421,41 @@ class AgentController extends Notifier<AgentState> {
   /// In auto mode, parses [responseContent] for executable command blocks and,
   /// when any are found, executes them and feeds the results back — which in
   /// turn produces the next AI reply and re-enters this method.
-  void onAssistantResponseComplete(String responseContent) {
-    if (!state.isAutoMode) return;
+  ///
+  /// The loop arms itself from two sources:
+  /// - an explicit [startAutoMode] call (legacy chat-bar entry), or
+  /// - the settings master switch (`aiAutoExecute`): when it is on, the very
+  ///   first reply of a conversation enters auto mode without any toggle.
+  ///
+  /// [isContinuation] marks a reply that was triggered by feeding tool results
+  /// back (from either the auto loop or a confirmed execution). Continuations
+  /// never arm the loop themselves: a user stop must survive in-flight
+  /// continuations, and confirmed-execution follow-ups must stay non-automatic.
+  void onAssistantResponseComplete(
+    String responseContent, {
+    bool isContinuation = false,
+  }) {
+    if (!state.isAutoMode) {
+      // Unarmed: only the settings master switch may arm the loop here, and
+      // never for a continuation. Unreadable preferences fail closed — the
+      // safe default for autonomous command execution.
+      if (isContinuation) return;
+      bool gateOpen;
+      try {
+        gateOpen = ref.read(preferencesServiceProvider).aiAutoExecute;
+      } catch (_) {
+        gateOpen = false;
+      }
+      if (!gateOpen) return;
+
+      state = state.copyWith(
+        status: AgentStatus.idle,
+        isAutoMode: true,
+        autoLoopCount: 0,
+        maxAutoLoops: ref.read(preferencesServiceProvider).aiMaxAutoLoops,
+        clearError: true,
+      );
+    }
     if (state.status == AgentStatus.executing) return;
     if (state.autoLoopCount >= state.maxAutoLoops) {
       state = state.copyWith(status: AgentStatus.idle, isAutoMode: false);
@@ -356,23 +506,43 @@ class AgentController extends Notifier<AgentState> {
         // Dangerous commands are never auto-executed — skip and surface a note.
         if (SshCommandExecutor.isDangerous(block.command)) {
           state = state.copyWith(
-            errorMessage: '已跳过危险命令：${_truncate(block.command)}',
+            errorMessage: 'Skipped dangerous command: ${_truncate(block.command)}',
+            errorKind: AgentErrorKind.dangerSkipped,
+            errorArg: _truncate(block.command),
           );
           continue;
         }
 
-        final String? serverId = _resolveServerId(
+        final String? explicitTarget =
+            (block.targetServer != null && block.targetServer!.isNotEmpty)
+                ? block.targetServer
+                : null;
+        String? serverId = _resolveServerId(
           block.targetServer,
           fallbackServerId,
           registry,
         );
-        if (serverId == null || serverId.isEmpty) {
-          state = state.copyWith(
-            status: AgentStatus.error,
-            errorMessage: '没有可用的目标服务器',
-            clearExecuting: true,
+        // A target needs dialing when nothing was resolved, when the resolved
+        // id has no live session behind it, or when the block names a specific
+        // server that is not the live session the fallback produced — an
+        // offline explicit target must never silently reroute elsewhere.
+        // The entry alone is not enough: a session that dropped unexpectedly
+        // (auto-reconnect in progress or the loop already gave up) keeps its
+        // registry entry but its manager is disposed, so liveness is checked
+        // explicitly — otherwise the command would hit a dead transport.
+        final bool needsDial = serverId == null ||
+            serverId.isEmpty ||
+            registry.getSession(serverId) == null ||
+            !registry.getSession(serverId)!.isConnected ||
+            (explicitTarget != null &&
+                registry.getSession(serverId)!.serverName != explicitTarget);
+        if (needsDial) {
+          final String? dialledId = await _ensureSessionLive(
+            explicitTarget: explicitTarget,
+            resolvedServerId: explicitTarget == null ? serverId : null,
           );
-          break;
+          if (dialledId == null) break; // error state already published
+          serverId = dialledId;
         }
 
         final RegisteredSession? session = registry.getSession(serverId);
@@ -419,6 +589,7 @@ class AgentController extends Notifier<AgentState> {
       state = state.copyWith(
         status: AgentStatus.error,
         errorMessage: e.toString(),
+        errorKind: AgentErrorKind.unexpected,
         clearExecuting: true,
       );
     }
@@ -440,6 +611,112 @@ class AgentController extends Notifier<AgentState> {
       return fallbackServerId;
     }
     return registry.defaultSession?.serverId;
+  }
+
+  /// Makes sure a live session exists for the resolved target before command
+  /// execution — the AI auto-connect path.
+  ///
+  /// When the user enabled `aiAutoConnect`, an offline-but-configured target
+  /// is dialled on demand through the injectable [connectHook] (production
+  /// wiring resolves credentials from the secure keystore and registers the
+  /// session via [SshServerConnectController], which shares the registry's
+  /// TOFU host-key dialog and trust store). Failure outcomes map onto the
+  /// machine-readable [AgentErrorKind]s the UI localises; with the switch off
+  /// the legacy [AgentErrorKind.noTargetServer] behaviour is preserved.
+  ///
+  /// Returns the live server id on success, or `null` after publishing the
+  /// terminal error state.
+  Future<String?> _ensureSessionLive({
+    required String? explicitTarget,
+    required String? resolvedServerId,
+  }) async {
+    bool autoConnect;
+    try {
+      autoConnect = ref.read(preferencesServiceProvider).aiAutoConnect;
+    } catch (_) {
+      // Preferences not initialised (plain unit tests) — fail closed: the
+      // agent must never dial without the user's explicit consent.
+      autoConnect = false;
+    }
+    if (!autoConnect) {
+      state = state.copyWith(
+        status: AgentStatus.error,
+        errorMessage: 'No target server available.',
+        errorKind: AgentErrorKind.noTargetServer,
+        clearExecuting: true,
+      );
+      return null;
+    }
+
+    // Resolve the offline target against the saved fleet: an explicit
+    // `# server:` name wins, then the resolved id (stale fallback/default).
+    // Await the async fleet (not valueOrNull) so a not-yet-loaded list still
+    // resolves instead of degrading to noTargetServer.
+    List<ServerConfig> fleet;
+    try {
+      fleet = await ref.read(serverConfigListProvider.future);
+    } catch (_) {
+      fleet = const <ServerConfig>[];
+    }
+    ServerConfig? config;
+    if (explicitTarget != null) {
+      for (final ServerConfig c in fleet) {
+        if (c.name == explicitTarget) {
+          config = c;
+          break;
+        }
+      }
+    }
+    if (config == null &&
+        resolvedServerId != null &&
+        resolvedServerId.isNotEmpty) {
+      for (final ServerConfig c in fleet) {
+        if (c.id == resolvedServerId) {
+          config = c;
+          break;
+        }
+      }
+    }
+    if (config == null) {
+      state = state.copyWith(
+        status: AgentStatus.error,
+        errorMessage: 'No target server available.',
+        errorKind: AgentErrorKind.noTargetServer,
+        clearExecuting: true,
+      );
+      return null;
+    }
+
+    final AgentConnectOutcome outcome = await connectHook(config.id, config);
+    switch (outcome) {
+      case AgentConnectOutcome.success:
+        return config.id;
+      case AgentConnectOutcome.authRequired:
+        state = state.copyWith(
+          status: AgentStatus.error,
+          errorMessage: 'Server has no saved credentials.',
+          errorKind: AgentErrorKind.connectAuthRequired,
+          clearExecuting: true,
+        );
+        return null;
+      case AgentConnectOutcome.failed:
+        state = state.copyWith(
+          status: AgentStatus.error,
+          errorMessage: 'Failed to connect to the server automatically.',
+          errorKind: AgentErrorKind.connectFailed,
+          clearExecuting: true,
+        );
+        return null;
+      case AgentConnectOutcome.offline:
+        // Documented as "switch off" — keep the legacy behaviour.
+        state = state.copyWith(
+          status: AgentStatus.error,
+          errorMessage: 'No target server available.',
+          errorKind: AgentErrorKind.noTargetServer,
+          clearExecuting: true,
+        );
+        return null;
+    }
   }
 
   String _truncate(String command) =>

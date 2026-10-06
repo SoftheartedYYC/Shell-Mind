@@ -251,6 +251,151 @@ void main() {
       expect(SshCommandExecutor.isDangerous('rm file.txt'), isFalse);
     });
 
+    test('isDangerous detects home directory wipes (rm -rf ~ variants)', () {
+      expect(SshCommandExecutor.isDangerous('rm -rf ~'), isTrue);
+      expect(SshCommandExecutor.isDangerous('rm -fr ~'), isTrue);
+      expect(SshCommandExecutor.isDangerous('rm -r -f ~'), isTrue);
+      expect(SshCommandExecutor.isDangerous(r'rm -rf $HOME'), isTrue);
+      expect(SshCommandExecutor.isDangerous(r'rm -rf ${HOME}'), isTrue);
+      expect(SshCommandExecutor.isDangerous('rm -rf ~/projects'), isTrue);
+      expect(SshCommandExecutor.isDangerous(r'rm -rf $HOME/work'), isTrue);
+      expect(SshCommandExecutor.isDangerous('rm -rf ~bob'), isTrue);
+      expect(SshCommandExecutor.isDangerous('sudo rm -rf ~'), isTrue);
+      expect(SshCommandExecutor.isDangerous(r'sudo rm -fr $HOME'), isTrue);
+    });
+
+    test('isDangerous does not flag safe rm variants', () {
+      // Deleting a single file inside the home directory is not a home wipe
+      // (no recursive+force flags). Absolute-path wipes are intentionally
+      // covered by the pre-existing root pattern asserted above.
+      expect(SshCommandExecutor.isDangerous('rm ~/notes.txt'), isFalse);
+      expect(SshCommandExecutor.isDangerous('rm -i ~'), isFalse);
+      // Without the f flag (no force) the command is at least interactive.
+      expect(SshCommandExecutor.isDangerous('rm -r ~/projects'), isFalse);
+      expect(SshCommandExecutor.isDangerous('rm -r /tmp/cache'), isFalse);
+      // Without the r flag (no recursion) only single files are removed.
+      expect(SshCommandExecutor.isDangerous('rm -f ~'), isFalse);
+      expect(SshCommandExecutor.isDangerous('rm -f file~'), isFalse);
+      // A trailing tilde (backup suffix) is a normal filename, not the home
+      // directory — but `rm -rf ~` itself is still caught above.
+      expect(SshCommandExecutor.isDangerous('rm -f notes.txt~'), isFalse);
+      // Prefix-smuggled binaries must not match.
+      expect(SshCommandExecutor.isDangerous('myrm -rf ~'), isFalse);
+      // Relative paths are not home-directory wipes.
+      expect(SshCommandExecutor.isDangerous('rm -rf build/'), isFalse);
+      expect(SshCommandExecutor.isDangerous('rm -rf ./node_modules'), isFalse);
+    });
+
+    test('isDangerous detects find -delete', () {
+      expect(SshCommandExecutor.isDangerous('find / -name "*.tmp" -delete'),
+          isTrue);
+      expect(SshCommandExecutor.isDangerous('find . -delete'), isTrue);
+      expect(SshCommandExecutor.isDangerous('find /var/log -mtime +7 -delete'),
+          isTrue);
+      expect(SshCommandExecutor.isDangerous('sudo find /tmp -delete'), isTrue);
+      // `-delete` glued to a longer flag must not count.
+      expect(SshCommandExecutor.isDangerous('find . -name x -delete-me'),
+          isFalse);
+    });
+
+    test('isDangerous does not flag find without -delete', () {
+      expect(SshCommandExecutor.isDangerous('find / -name "*.log"'), isFalse);
+      expect(SshCommandExecutor.isDangerous('find . -type f -print'), isFalse);
+      // Piped to xargs rm is aggressive but goes through a real rm invocation;
+      // the -delete heuristic targets find's own destructive flag only.
+      expect(
+          SshCommandExecutor
+              .isDangerous('find /var/log -name "*.log" | xargs rm'),
+          isFalse);
+      // -delete mentioned after a command separator belongs to another command.
+      expect(
+          SshCommandExecutor.isDangerous('find . -print; echo -delete'), isFalse);
+    });
+
+    test('isDangerous detects truncate to zero', () {
+      expect(SshCommandExecutor.isDangerous('truncate -s 0 access.log'), isTrue);
+      expect(SshCommandExecutor.isDangerous('truncate -s0 access.log'), isTrue);
+      expect(SshCommandExecutor.isDangerous('truncate --size=0 access.log'),
+          isTrue);
+      expect(SshCommandExecutor.isDangerous('truncate --size 0 access.log'),
+          isTrue);
+      expect(
+          SshCommandExecutor.isDangerous('sudo truncate -s 0 /var/log/app.log'),
+          isTrue);
+      // Extra flags before -s.
+      expect(SshCommandExecutor.isDangerous('truncate -v -s 0 file'), isTrue);
+    });
+
+    test('isDangerous does not flag non-zero truncate', () {
+      // Resizing to a positive value keeps the content model intact.
+      expect(SshCommandExecutor.isDangerous('truncate -s 100 disk.img'),
+          isFalse);
+      expect(SshCommandExecutor.isDangerous('truncate -s 1M sparse.img'),
+          isFalse);
+      // Zero-ish sizes that are not the bare `0` token must not match.
+      expect(SshCommandExecutor.isDangerous('truncate -s 10 file'), isFalse);
+      // `0x…` / `00` are not the standalone zero token.
+      expect(SshCommandExecutor.isDangerous('truncate -s 0x10 file'), isFalse);
+      // Prefix-smuggled binaries must not match.
+      expect(SshCommandExecutor.isDangerous('mytruncate -s 0 file'), isFalse);
+      // Path substring must not trigger: the command itself is find/truncate.
+      expect(
+          SshCommandExecutor.isDangerous('ls /usr/bin/truncate -s 0.bin'),
+          isFalse);
+    });
+
+    test('isDangerous normalises GNU long options to short forms', () {
+      // --recursive → -r, --force → -f: the long spellings must hit the same
+      // detectors as the short ones (auto mode's only destructive gate).
+      expect(SshCommandExecutor.isDangerous('rm --recursive --force ~'), isTrue);
+      expect(SshCommandExecutor.isDangerous('rm --force --recursive ~'), isTrue);
+      expect(SshCommandExecutor.isDangerous('rm --recursive --force /'), isTrue);
+      expect(
+          SshCommandExecutor.isDangerous(r'sudo rm --recursive --force $HOME'),
+          isTrue);
+      expect(SshCommandExecutor.isDangerous('rm --recursive --force ~user'),
+          isTrue);
+      // Mixed short/long.
+      expect(SshCommandExecutor.isDangerous('rm -r --force ~'), isTrue);
+      expect(SshCommandExecutor.isDangerous('rm --recursive -f ~'), isTrue);
+      // chmod --recursive 777 / normalises into the chmod detector.
+      expect(SshCommandExecutor.isDangerous('chmod --recursive 777 /'), isTrue);
+    });
+
+    test('isDangerous long options without both flags stay safe', () {
+      // Only recursion (no force) keeps rm interactive.
+      expect(SshCommandExecutor.isDangerous('rm --recursive ~/projects'),
+          isFalse);
+      expect(SshCommandExecutor.isDangerous('rm --recursive /tmp/cache'),
+          isFalse);
+      // Only force (no recursion) removes single files.
+      expect(SshCommandExecutor.isDangerous('rm --force ~'), isFalse);
+      expect(SshCommandExecutor.isDangerous('rm --force notes.txt'), isFalse);
+      // Long options are not normalised when glued into longer words.
+      expect(SshCommandExecutor.isDangerous('rm --recursive-dir ~'), isFalse);
+      expect(SshCommandExecutor.isDangerous('rm --forcibly ~'), isFalse);
+      // A file literally named like a flag must not poison other tokens:
+      // no r/f flags around the real name.
+      expect(SshCommandExecutor.isDangerous('touch --recursive'), isFalse);
+    });
+
+    test('isDangerous leaves dash-glued long options untouched', () {
+      // The normalisation lookahead guards `-` too: `--recursive-dir` is one
+      // (unknown) token, not `--recursive` + suffix. Rewriting it to `-r-dir`
+      // corrupts the command and can fabricate flags — e.g. the old
+      // `(?![\w=])` lookahead turned `rm --recursive-dir --force ~` into
+      // `rm -r-dir -f ~`, a false positive on a command rm itself rejects.
+      expect(SshCommandExecutor.isDangerous('rm --recursive-dir ~'), isFalse);
+      expect(
+          SshCommandExecutor.isDangerous('rm --recursive-dir --force ~'),
+          isFalse);
+      expect(
+          SshCommandExecutor.isDangerous('rm --recursive --force-weird ~'),
+          isFalse);
+      // The genuine long spellings must still normalise and be caught.
+      expect(SshCommandExecutor.isDangerous('rm --recursive --force ~'), isTrue);
+    });
+
     test('timeout returns AppFailure.timeout', () async {
       when(() => manager1.runCommand(any(), timeout: any(named: 'timeout')))
           .thenThrow(

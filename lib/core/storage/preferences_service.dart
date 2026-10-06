@@ -177,6 +177,16 @@ class PreferencesService {
     return setInt(AppConstants.prefKeyAiMaxAutoLoops, clamped);
   }
 
+  /// Whether the AI agent may dial an offline-but-configured server with its
+  /// saved credentials before executing a command block targeting it.
+  bool get aiAutoConnect => getBoolOr(
+        AppConstants.prefKeyAiAutoConnect,
+        AppConstants.defaultAiAutoConnect,
+      );
+
+  Future<void> setAiAutoConnect(bool value) =>
+      setBool(AppConstants.prefKeyAiAutoConnect, value);
+
   // ─── Session state ──────────────────────────────────────────────────────
 
   /// Returns the user-selected locale, or `null` to follow the system.

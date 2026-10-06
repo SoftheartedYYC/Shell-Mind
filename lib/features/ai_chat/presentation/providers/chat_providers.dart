@@ -15,6 +15,8 @@ import '../../domain/entities/chat_message.dart';
 import '../../domain/repositories/chat_repository.dart';
 import '../../../../shared/ssh/ssh_command_executor.dart';
 import '../../../../shared/ssh/ssh_session_registry.dart';
+import '../../../server_config/domain/entities/server_config.dart';
+import '../../../server_config/presentation/providers/server_config_providers.dart';
 
 // ─── Provider / model selection ─────────────────────────────────────────
 
@@ -129,20 +131,43 @@ final Provider<AiService> aiServiceProvider = Provider<AiService>((Ref ref) {
 
 /// Concrete [ChatRepository] used across the feature.
 ///
-/// Injects a live callback that resolves the currently connected servers from
-/// [sshSessionRegistryProvider], so every AI request carries an up-to-date
-/// server roster in its system prompt.
+/// Injects a live callback that resolves the FULL configured-server roster —
+/// online sessions from [sshSessionRegistryProvider] plus offline configured
+/// servers from [serverConfigListProvider] — so every AI request carries an
+/// up-to-date roster (with `[connected]` / `[not connected]` badges) in its
+/// system prompt and can target any configured server by name.
 final Provider<ChatRepository> chatRepositoryProvider =
     Provider<ChatRepository>((Ref ref) {
   return ChatRepositoryImpl(
     ref.watch(aiServiceProvider),
-    activeServersGetter: () {
+    rosterGetter: () {
       final Map<String, RegisteredSession> sessions =
           ref.read(sshSessionRegistryProvider);
-      return sessions.values
-          .map((RegisteredSession s) =>
-              '${s.config.name} (${s.config.username}@${s.config.host}:${s.config.port})')
-          .toList();
+      final List<ServerRosterEntry> roster = <ServerRosterEntry>[
+        for (final RegisteredSession s in sessions.values)
+          ServerRosterEntry(
+            name: s.config.name,
+            user: s.config.username,
+            host: s.config.host,
+            port: s.config.port,
+            isOnline: true,
+          ),
+      ];
+      final List<ServerConfig> configured =
+          ref.read(serverConfigListProvider).value ??
+              const <ServerConfig>[];
+      final Set<String> onlineIds = sessions.keys.toSet();
+      for (final ServerConfig config in configured) {
+        if (onlineIds.contains(config.id)) continue;
+        roster.add(ServerRosterEntry(
+          name: config.name,
+          user: config.username,
+          host: config.host,
+          port: config.port,
+          isOnline: false,
+        ));
+      }
+      return roster;
     },
   );
 });
@@ -363,9 +388,21 @@ class ChatNotifier extends Notifier<ChatState> {
     final AppFailure failure = _toFailure(error, stack);
 
     // Cancellation is a normal "stop" — don't treat it as an error banner.
+    // A reply that never received a single token is dropped entirely (same
+    // contract as _onStreamDone) instead of leaving a blank bubble behind.
     if (failure.kind == FailureKind.cancelled) {
-      _patchMessage(assistantId, (ChatMessage m) => m.finish());
-      state = state.copyWith(isStreaming: false, isConnecting: false);
+      if (partial.trim().isEmpty) {
+        state = state.copyWith(
+          messages: state.messages
+              .where((ChatMessage m) => m.id != assistantId)
+              .toList(growable: false),
+          isStreaming: false,
+          isConnecting: false,
+        );
+      } else {
+        _patchMessage(assistantId, (ChatMessage m) => m.finish());
+        state = state.copyWith(isStreaming: false, isConnecting: false);
+      }
       await _flushMessages();
       return;
     }
@@ -396,7 +433,9 @@ class ChatNotifier extends Notifier<ChatState> {
     await _flushMessages();
   }
 
-  /// Aborts an in-flight stream, keeping whatever text arrived so far.
+  /// Aborts an in-flight stream, keeping whatever text arrived so far. A
+  /// reply that never received a single token is dropped entirely — freezing
+  /// its empty placeholder would leave a blank bubble in the transcript.
   void stopStreaming() {
     ChatMessage? streaming;
     for (final ChatMessage m in state.messages) {
@@ -410,7 +449,19 @@ class ChatNotifier extends Notifier<ChatState> {
     _subscription = null;
 
     if (streaming != null) {
-      _patchMessage(streaming.id, (ChatMessage m) => m.finish());
+      final String streamingId = streaming.id;
+      if (streaming.content.trim().isEmpty &&
+          streaming.toolPayload == null) {
+        // No tokens arrived — drop the empty placeholder (same contract as
+        // _onStreamDone) instead of persisting a blank turn.
+        state = state.copyWith(
+          messages: state.messages
+              .where((ChatMessage m) => m.id != streamingId)
+              .toList(growable: false),
+        );
+      } else {
+        _patchMessage(streamingId, (ChatMessage m) => m.finish());
+      }
     }
     state = state.copyWith(isStreaming: false, isConnecting: false);
     // The stopped partial reply is a final transcript — flush immediately so

@@ -68,14 +68,19 @@ Future<void> _bootstrap() async {
   // Adapters must be registered before init() eagerly opens the boxes.
   HiveStorageService.instance
       .registerAdapter<ServerConfigModel>(ServerConfigModelAdapter());
-  await HiveStorageService.instance.init();
-  await PreferencesService.instance.init();
-  // Custom AI providers live in the `app_meta` box — load after Hive init.
-  await CustomAiProviderStore.instance.preload();
-  // AI command audit trail also lives in `app_meta` — load after Hive init.
-  await CommandAuditLog.instance.preload();
-  // Crash ring buffer as well — load before the UI can read it.
-  await crash.preload();
+  // SharedPreferences and Hive are independent stores — open them in parallel
+  // so neither's disk/plugin latency delays the other on cold start.
+  await Future.wait(<Future<void>>[
+    HiveStorageService.instance.init(),
+    PreferencesService.instance.init(),
+  ]);
+  // The three Hive-backed snapshots are independent reads — load them
+  // concurrently once the boxes are open.
+  await Future.wait(<Future<void>>[
+    CustomAiProviderStore.instance.preload(),
+    CommandAuditLog.instance.preload(),
+    crash.preload(),
+  ]);
   // Stamp device info onto every subsequent crash entry.
   crash.configure(
     platformLabel: Platform.operatingSystem,

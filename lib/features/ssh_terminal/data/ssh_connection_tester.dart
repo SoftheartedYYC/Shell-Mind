@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:io' show SocketException;
 import 'dart:typed_data' show Uint8List;
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:dartssh2/dartssh2.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../server_config/domain/entities/server_config.dart';
+import '../../../../shared/ssh/host_key_store.dart';
 
 /// Outcome of a full SSH handshake + authentication probe.
 ///
@@ -39,15 +42,35 @@ enum SshTestResult {
 /// All exceptions are funnelled through [mapException] so callers receive a
 /// plain [SshTestResult] instead of raw protocol errors.
 class SshConnectionTester {
-  const SshConnectionTester._();
+  /// Creates a tester that participates in the app-wide host-key trust
+  /// policy: the first-connect confirmation dialog and the recorded
+  /// fingerprints are shared with every other connection path (terminal
+  /// page, AI auto-connect, in-chat picker).
+  ///
+  /// When [hostKeyStore] is `null` the probe falls back to the legacy
+  /// accept-any-key behaviour (kept for plain unit tests and callers that
+  /// run before the keystore is available).
+  const SshConnectionTester({
+    this.hostKeyStore,
+    this.hostKeyApprovalHandler,
+  });
+
+  /// Shared fingerprint store — the same instance the terminal page's
+  /// connection path uses, keyed by `host_port`.
+  final HostKeyStore? hostKeyStore;
+
+  /// First-connect confirmation bridge. Wired to the root navigator's
+  /// [HostKeyApprovalDialog] in production (see `server_edit_page.dart`).
+  final Future<bool> Function(String host, int port, String fingerprint)?
+      hostKeyApprovalHandler;
 
   /// Runs a complete SSH handshake + authentication attempt.
   ///
   /// [password] is used when [authType] is [AuthType.password]; [privateKey]
-  /// (with optional [passphrase]) is used when [authType] is
+  /// (with optional [passphrase]) was used when [authType] is
   /// [AuthType.privateKey]. No shell is opened — the connection is closed as
   /// soon as authentication resolves.
-  static Future<SshTestResult> test({
+  Future<SshTestResult> test({
     required String host,
     required int port,
     required String username,
@@ -86,7 +109,8 @@ class SshConnectionTester {
         socket,
         username: username,
         identities: identities,
-        onVerifyHostKey: _verifyHostKey,
+        onVerifyHostKey: (String type, Uint8List fingerprint) =>
+            _verifyHostKey(host, port, fingerprint),
         onPasswordRequest: usePassword ? () => pwd : null,
         // Many servers only offer keyboard-interactive; answer it with the
         // same password so the test mirrors a real login.
@@ -94,7 +118,10 @@ class SshConnectionTester {
             ? (SSHUserInfoRequest request) =>
                 request.prompts.map((_) => pwd).toList()
             : null,
-        handshakeTimeout: timeout,
+        handshakeTimeout: resolveHandshakeTimeout(
+          hostKeyApprovalHandler != null,
+          timeout,
+        ),
         authTimeout: timeout,
       );
 
@@ -114,10 +141,58 @@ class SshConnectionTester {
     }
   }
 
+  /// Handshake budget for one probe attempt.
+  ///
+  /// Mirrors the `SshClientManager.resolveHandshakeTimeout` invariant: when
+  /// the first-connect approval dialog may block inside key exchange, the
+  /// budget must cover the dialog countdown
+  /// ([AppConstants.sshHandshakeTimeoutWithApproval]); without a handler
+  /// nothing can stall the handshake, so the caller's [plainTimeout] applies
+  /// unchanged. TCP dialing and authentication keep [plainTimeout] either
+  /// way — the approval callback only ever fires during key exchange.
+  static Duration resolveHandshakeTimeout(
+    bool approvalWired,
+    Duration plainTimeout,
+  ) =>
+      approvalWired
+          ? AppConstants.sshHandshakeTimeoutWithApproval
+          : plainTimeout;
+
   /// First-connect trust: accept any host key so the probe never blocks on a
   /// verification prompt.
-  static FutureOr<bool> _verifyHostKey(String type, Uint8List fingerprint) =>
+  static FutureOr<bool> _verifyAnyHostKey(
+      String type, Uint8List fingerprint) =>
       true;
+
+  /// Host-key verification through the shared [verifyHostKeyTrust] policy.
+  ///
+  /// With no store bridged the probe keeps the legacy accept-any behaviour —
+  /// a credential test must never be the first thing to write a trust
+  /// record, and unit tests stay prompt-free.
+  Future<bool> _verifyHostKey(
+    String host,
+    int port,
+    Uint8List fingerprint,
+  ) async {
+    final HostKeyStore? store = hostKeyStore;
+    if (store == null) {
+      return _verifyAnyHostKey('', fingerprint);
+    }
+    return verifyHostKeyTrust(
+      store: store,
+      host: host,
+      port: port,
+      fingerprint: decodeHostKeyFingerprint(fingerprint),
+      approvalHandler: hostKeyApprovalHandler,
+    );
+  }
+
+  /// Test-only seam over the private verification path: lets unit tests
+  /// assert the injection wiring (store consulted, approval handler bridged,
+  /// fingerprint decoded) without opening a real socket.
+  @visibleForTesting
+  Future<bool> debugVerifyHostKey(String host, int port, Uint8List fingerprint) =>
+      _verifyHostKey(host, port, fingerprint);
 
   /// Pure mapping from a thrown object to an [SshTestResult].
   ///

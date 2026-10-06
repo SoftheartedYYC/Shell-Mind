@@ -604,6 +604,12 @@ String describeUpdateFailure(BuildContext context, AppFailure failure) {
 
   if (reason == UpdateFailureReason.noReleases) return l10n.updateErrNoReleases;
   if (reason == UpdateFailureReason.rateLimit) return l10n.updateErrRateLimit;
+  if (reason == UpdateFailureReason.digestMismatch) {
+    return l10n.updateErrDigestMismatch;
+  }
+  if (reason == UpdateFailureReason.digestMissing) {
+    return l10n.updateErrDigestMissing;
+  }
 
   return switch (failure.kind) {
     FailureKind.notFound => l10n.updateErrNoReleases,

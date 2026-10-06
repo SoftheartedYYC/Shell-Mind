@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/global_keys.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/storage/preferences_service.dart';
 import '../../core/storage/secure_storage_service.dart';
@@ -10,6 +12,8 @@ import '../../core/utils/result.dart';
 import '../../features/server_config/domain/entities/server_config.dart';
 import '../../features/ssh_terminal/data/ssh_client_manager.dart';
 import '../../features/ssh_terminal/domain/entities/connection_state.dart';
+import 'host_key_approval_dialog.dart';
+import 'host_key_store.dart';
 import 'ssh_reconnect_coordinator.dart';
 import 'ssh_reconnect_policy.dart';
 
@@ -153,8 +157,21 @@ class SshSessionRegistry extends Notifier<Map<String, RegisteredSession>> {
       await disconnect(config.id);
     }
 
-    // 3. Create a fresh manager owned by this registry.
-    final SshClientManager manager = SshClientManager();
+    // 3. Create a fresh manager owned by this registry. It shares the
+    //    app-wide host-key trust store (fingerprints keyed by host:port, so
+    //    deleting and re-adding a server never resets trust) and bridges the
+    //    first-connect confirmation dialog to the root navigator — the
+    //    dartssh2 callback has no BuildContext of its own.
+    final SshClientManager manager = SshClientManager(
+      hostKeyStore: SecureHostKeyStore(ref.read(secureStorageServiceProvider)),
+      hostKeyApprovalHandler: (String host, int port, String fingerprint) =>
+          HostKeyApprovalDialog.show(
+        rootNavigatorKey,
+        host: host,
+        port: port,
+        fingerprint: fingerprint,
+      ),
+    );
 
     // 4. Attempt connection.
     try {

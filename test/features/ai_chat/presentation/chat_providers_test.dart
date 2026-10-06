@@ -5,23 +5,36 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shell_mind/core/utils/result.dart';
 import 'package:shell_mind/features/ai_chat/data/ai_service.dart';
+import 'package:shell_mind/features/ai_chat/data/chat_history_store.dart';
 import 'package:shell_mind/features/ai_chat/domain/entities/chat_message.dart';
 import 'package:shell_mind/features/ai_chat/domain/repositories/chat_repository.dart';
 import 'package:shell_mind/features/ai_chat/presentation/providers/chat_providers.dart';
 
 class MockChatRepository extends Mock implements ChatRepository {}
 
+class MockChatHistoryStore extends Mock implements ChatHistoryStore {}
+
 void main() {
   late MockChatRepository mockRepo;
+  late MockChatHistoryStore mockStore;
 
   setUp(() {
     mockRepo = MockChatRepository();
+    // The notifier persists the transcript on every mutation; these tests only
+    // exercise in-memory state, so point it at a silent no-op store instead of
+    // the real Hive-backed singleton (which logs noisy "init() must be awaited"
+    // errors when run without Hive initialised).
+    mockStore = MockChatHistoryStore();
+    when(() => mockStore.flush(any())).thenAnswer((_) async {});
+    when(() => mockStore.clear()).thenAnswer((_) async {});
+    when(() => mockStore.load()).thenAnswer((_) async => <ChatMessage>[]);
   });
 
   ProviderContainer createContainer() {
     return ProviderContainer(
       overrides: [
         chatRepositoryProvider.overrideWithValue(mockRepo),
+        chatHistoryStoreProvider.overrideWithValue(mockStore),
       ],
     );
   }

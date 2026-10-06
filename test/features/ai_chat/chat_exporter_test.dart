@@ -1,10 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shell_mind/features/ai_chat/domain/chat_exporter.dart';
 import 'package:shell_mind/features/ai_chat/domain/entities/chat_message.dart';
+import 'package:shell_mind/l10n/app_localizations.dart';
+import 'package:shell_mind/l10n/app_localizations_en.dart';
+import 'package:shell_mind/l10n/app_localizations_zh.dart';
 
 void main() {
   final DateTime t1 = DateTime(2026, 10, 3, 9, 30, 5);
   final DateTime t2 = DateTime(2026, 10, 3, 9, 30, 6);
+
+  // Export through the Chinese document wordings so assertions keep matching
+  // the (byte-identical) pre-l10n hardcoded strings.
+  final AppLocalizations zh = AppLocalizationsZh();
+
+  String exportMd(List<ChatMessage> messages, {DateTime? exportedAt}) =>
+      ChatExporter.export(messages, l10n: zh, exportedAt: exportedAt);
 
   ToolPayload payload({
     String serverName = 'web-01',
@@ -26,7 +36,7 @@ void main() {
 
   group('ChatExporter.export — header', () {
     test('writes title, timestamp and message count', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage.user(id: 'u1', content: 'hi', timestamp: t1),
         ],
@@ -38,7 +48,7 @@ void main() {
     });
 
     test('empty conversation yields a valid header and no turns', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         const <ChatMessage>[],
         exportedAt: t1,
       );
@@ -51,7 +61,7 @@ void main() {
 
   group('ChatExporter.export — user messages', () {
     test('renders as quoted section with timestamp', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage.user(id: 'u1', content: '查看磁盘占用', timestamp: t1),
         ],
@@ -62,7 +72,7 @@ void main() {
     });
 
     test('multi-line user message quotes every line', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage.user(id: 'u1', content: '第一行\n\n第三行', timestamp: t1),
         ],
@@ -72,7 +82,7 @@ void main() {
     });
 
     test('CRLF user message is quoted without stray \\r', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage.user(id: 'u1', content: 'a\r\nb', timestamp: t1),
         ],
@@ -86,7 +96,7 @@ void main() {
   group('ChatExporter.export — assistant messages', () {
     test('renders body verbatim (markdown preserved)', () {
       const String body = '使用 `df -h`：\n\n```bash\ndf -h\n```\n\n- 项目 **一**';
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage(
             id: 'a1',
@@ -102,7 +112,7 @@ void main() {
     });
 
     test('empty assistant placeholder renders a placeholder note', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage(
             id: 'a1',
@@ -119,7 +129,7 @@ void main() {
 
   group('ChatExporter.export — tool messages', () {
     test('renders server name, exit code, command and stdout', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage.toolResult(id: 't1', payload: payload(), timestamp: t1),
         ],
@@ -137,7 +147,7 @@ void main() {
     });
 
     test('renders stderr section only when non-empty', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage.toolResult(
             id: 't1',
@@ -158,7 +168,7 @@ void main() {
     });
 
     test('blank server name falls back to 未知服务器', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage.toolResult(
             id: 't1',
@@ -172,7 +182,7 @@ void main() {
     });
 
     test('message without payload degrades to a text block', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage(
             id: 't1',
@@ -190,7 +200,7 @@ void main() {
 
   group('ChatExporter.export — misc', () {
     test('system messages are skipped', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage(
             id: 's1',
@@ -209,7 +219,7 @@ void main() {
 
     test('content containing triple backticks cannot break the fence', () {
       const String tricky = '```toml\n[agent]\n```';
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage.toolResult(
             id: 't1',
@@ -226,7 +236,7 @@ void main() {
     });
 
     test('full conversation keeps chronological order', () {
-      final String md = ChatExporter.export(
+      final String md = exportMd(
         <ChatMessage>[
           ChatMessage.user(id: 'u1', content: 'q1', timestamp: t1),
           ChatMessage(
@@ -252,6 +262,34 @@ void main() {
     test('formats yyyyMMdd-HHmmss', () {
       expect(ChatExporter.fileStamp(DateTime(2026, 1, 3, 7, 8, 9)),
           '20260103-070809');
+    });
+  });
+
+  group('ChatExporter.export — localisation', () {
+    test('English l10n renders English section labels', () {
+      final String md = ChatExporter.export(
+        <ChatMessage>[
+          ChatMessage.user(id: 'u1', content: 'hi', timestamp: t1),
+        ],
+        l10n: AppLocalizationsEn(),
+        exportedAt: t2,
+      );
+      expect(md, startsWith('# Shell-Mind Chat Export'));
+      expect(md, contains('- Exported at: 2026-10-03 09:30:06'));
+      expect(md, contains('- Messages: 1'));
+      expect(md, contains('## User · 2026-10-03 09:30:05'));
+      expect(md, isNot(contains('对话导出')));
+      expect(md, isNot(contains('## 用户')));
+    });
+
+    test('omitting l10n falls back to the English wordings', () {
+      final String md = ChatExporter.export(
+        const <ChatMessage>[],
+        exportedAt: t1,
+      );
+      expect(md, startsWith('# Shell-Mind Chat Export'));
+      expect(md, contains('- Messages: 0'));
+      expect(md, isNot(contains('消息数')));
     });
   });
 }

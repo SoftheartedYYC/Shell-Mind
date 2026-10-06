@@ -7,7 +7,18 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/result.dart';
+import '../../../shared/ssh/host_key_store.dart';
 import '../domain/entities/connection_state.dart';
+
+/// Machine-readable marker placed in `AppFailure.details['reason']` when the
+/// user declined the first-connect trust prompt. The presentation layer
+/// checks this marker to render a localised, host-key-specific error.
+const String hostKeyRejectionReason = 'host_key_rejected';
+
+/// Marker for the more severe case: a stored fingerprint does not match the
+/// key the server just presented (possible MITM or server reinstall). Kept
+/// distinct from [hostKeyRejectionReason] so the UI can escalate the wording.
+const String hostKeyMismatchReason = 'host_key_mismatch';
 
 /// Immutable result of a non-interactive `exec` command run over SSH.
 ///
@@ -53,7 +64,38 @@ class CommandExecutionResult {
 /// [mapError] into an [AppFailure] and re-thrown as [AppFailureException] so
 /// the repository layer can convert them into a [Failure] result.
 class SshClientManager {
-  SshClientManager();
+  /// Creates the manager.
+  ///
+  /// [hostKeyStore] persists trusted host-key fingerprints keyed by
+  /// `<host>_<port>`; defaults to a non-persisting in-memory store. Without a
+  /// store every session would be treated as a first connection.
+  ///
+  /// [hostKeyApprovalHandler] resolves the user-facing trust prompt for
+  /// first-time connections: receives `(host, port, fingerprint)` and returns
+  /// `true` when the user chose to trust the host. It is only invoked when no
+  /// record exists yet — a stored match skips it, a stored mismatch rejects
+  /// outright. Defaults to auto-accept (legacy behaviour) so plain
+  /// `SshClientManager()` usages keep working; the app wires a dialog-based
+  /// handler at the registry layer.
+  SshClientManager({
+    HostKeyStore? hostKeyStore,
+    this._hostKeyApprovalHandler,
+  }) : _hostKeyStore = hostKeyStore ?? InMemoryHostKeyStore();
+
+  final HostKeyStore _hostKeyStore;
+  final Future<bool> Function(String host, int port, String fingerprint)?
+      _hostKeyApprovalHandler;
+
+  /// Outcome of the most recent host-key rejection during the in-flight
+  /// [connect] (user declined vs fingerprint change), threaded into the
+  /// resulting [AppFailure.details] for localisation. Reset per attempt.
+  ///
+  /// Safe as a single field: [_connecting] serialises every [connect] on this
+  /// manager, so the KEX-callback write and the catch-block read always belong
+  /// to the same attempt. The *endpoint*, by contrast, is passed per-connection
+  /// through a closure (see [connect]) because the dartssh2 host-key callback
+  /// carries no endpoint identity of its own.
+  HostKeyRejection? _hostKeyRejection;
 
   SSHSocket? _socket;
   SSHClient? _client;
@@ -85,6 +127,16 @@ class SshClientManager {
   SshConnectionState get currentState => _state;
 
   bool get isConnected => _state.status == SshConnectionStatus.connected;
+
+  /// Whether this manager routes the first-connect trust prompt through a
+  /// user-facing handler — the exact flag [resolveHandshakeTimeout] consults
+  /// to pick the handshake budget for the next [connect].
+  ///
+  /// Exposed so the M-3 decoupling can be asserted *per manager* (wired →
+  /// extended budget, unwired → plain timeout) rather than only through the
+  /// pure function in isolation.
+  @visibleForTesting
+  bool get hasHostKeyApprovalHandler => _hostKeyApprovalHandler != null;
 
   /// Dials, authenticates, and opens an interactive PTY shell.
   ///
@@ -145,11 +197,27 @@ class SshClientManager {
       );
       _socket = socket;
 
+      // Handshake budget: with an approval handler wired, the first connect
+      // blocks inside key exchange while the user reviews the fingerprint —
+      // dartssh2 starts the handshake timer at SSHClient construction and
+      // only cancels it once the transport is ready, so the dialog's await is
+      // covered by this budget and it must exceed the dialog countdown.
+      // Without a handler nothing can block the handshake, so the plain
+      // connect timeout applies. TCP dialing stays bounded by
+      // [AppConstants.sshConnectTimeout] via SSHSocket.connect either way.
+      final Duration handshakeTimeout = resolveHandshakeTimeout(
+        hasHostKeyApprovalHandler,
+      );
+
       final SSHClient client = SSHClient(
         socket,
         username: username,
         identities: identities,
-        onVerifyHostKey: _verifyHostKey,
+        // Endpoint identity travels with this attempt via closure: the
+        // dartssh2 callback carries no host/port, and sharing a mutable field
+        // across attempts risks reading a later attempt's endpoint.
+        onVerifyHostKey: (String type, Uint8List fingerprint) =>
+            _verifyHostKey(type, fingerprint, host, port),
         onPasswordRequest: usePassword ? () => password : null,
         // Many servers only offer keyboard-interactive; answer it with the
         // same password so login still works there.
@@ -158,7 +226,7 @@ class SshClientManager {
                 request.prompts.map((_) => password).toList()
             : null,
         keepAliveInterval: AppConstants.sshKeepAliveInterval,
-        handshakeTimeout: AppConstants.sshConnectTimeout,
+        handshakeTimeout: handshakeTimeout,
         authTimeout: AppConstants.sshConnectTimeout,
         printDebug: AppConstants.debugSsh
             ? (String? m) => debugPrint('[ssh] $m')
@@ -189,13 +257,15 @@ class SshClientManager {
 
       _emit(SshConnectionState.connected(serverName: serverName));
     } catch (error) {
-      final AppFailure failure = mapError(error);
+      final AppFailure failure =
+          mapError(error, hostKeyRejection: _hostKeyRejection);
       _intentionalClose = true; // teardown below must not emit "disconnected"
       await _teardown();
       _emit(SshConnectionState.error(
         message: failure.message,
         serverName: serverName,
         failureKind: failure.kind.name,
+        failureReason: failure.details['reason'] as String?,
       ));
       throw AppFailureException(failure);
     } finally {
@@ -283,9 +353,51 @@ class SshClientManager {
 
   // ─── Internals ─────────────────────────────────────────────────────────
 
-  /// First-connect trust: accept the host key so the shell can open without a
-  /// blocking prompt. (A known-hosts store can layer on top later.)
-  FutureOr<bool> _verifyHostKey(String type, Uint8List fingerprint) => true;
+  /// Resolves the dartssh2 `handshakeTimeout` for a connect attempt.
+  ///
+  /// Approval-enabled managers get the extended budget so the trust dialog's
+  /// await (which runs inside key exchange) cannot be overtaken by the
+  /// handshake timer; dialog-less managers keep the plain connect timeout.
+  /// Exposed as a pure function for unit-testing the decoupling.
+  static Duration resolveHandshakeTimeout(bool approvalWired) =>
+      approvalWired
+          ? AppConstants.sshHandshakeTimeoutWithApproval
+          : AppConstants.sshConnectTimeout;
+
+  /// Host-key verification (first-connect confirmation, D2 semantics).
+  ///
+  /// * No stored record → ask the user via [hostKeyApprovalHandler]:
+  ///   approved → persist the fingerprint and accept; rejected → reject.
+  /// * Stored record matches → accept silently.
+  /// * Stored record differs → reject (likely MITM); the user must reset
+  ///   the host's trust from the server edit page.
+  ///
+  /// The fingerprint arrives already OpenSSH-encoded (`SHA256:<base64>`) from
+  /// `dartssh2`'s handshake, so it is stored verbatim. Returning `false` makes
+  /// dartssh2 abort the handshake with `SSHHostkeyError`, which [mapError]
+  /// turns into an [AppFailure] tagged with [hostKeyRejectionReason] so the
+  /// UI can localise it; the rejection *outcome* (declined vs mismatch) is
+  /// kept in [_hostKeyRejection] and folded into the failure details too.
+  /// The endpoint arguments are supplied per-connection by the [connect]
+  /// closure rather than read from shared fields, so an in-flight callback can
+  /// never observe another attempt's endpoint.
+  Future<bool> _verifyHostKey(
+    String type,
+    Uint8List fingerprint,
+    String host,
+    int port,
+  ) async {
+    final String fp = decodeHostKeyFingerprint(fingerprint);
+    _hostKeyRejection = null;
+    return verifyHostKeyTrust(
+      store: _hostKeyStore,
+      host: host,
+      port: port,
+      fingerprint: fp,
+      approvalHandler: _hostKeyApprovalHandler,
+      onRejection: (HostKeyRejection outcome) => _hostKeyRejection = outcome,
+    );
+  }
 
   void _pumpShell(SSHSession shell) {
     _stdoutSub = shell.stdout.listen(
@@ -382,7 +494,16 @@ class SshClientManager {
   /// Normalises any thrown object from the connect/IO path into an
   /// [AppFailure] with a human-readable message. Exposed so the repository can
   /// reuse it when wrapping [connect] in [Result.guard].
-  static AppFailure mapError(Object error) {
+  ///
+  /// Optional [hostKeyRejection] decorates `SSHHostkeyError` results with
+  /// the machine-readable `reason` marker (`host_key_rejected` when the user
+  /// declined the first-connect prompt, `host_key_mismatch` on a fingerprint
+  /// change) — the caller passes the value recorded during the in-flight
+  /// handshake so the UI can localise each case.
+  static AppFailure mapError(
+    Object error, {
+    HostKeyRejection? hostKeyRejection,
+  }) {
     if (error is AppFailureException) return error.failure;
     if (error is AppFailure) return error;
 
@@ -425,8 +546,20 @@ class SshClientManager {
           cause: error);
     }
     if (error is SSHHostkeyError) {
-      return AppFailure.ssh('Host key rejected: ${error.message}',
-          cause: error);
+      // The host-key callback returned false (first-connect rejection or
+      // fingerprint mismatch). The marker lets the UI render a localised,
+      // specific message and point the user at "reset host trust".
+      return AppFailure(
+        kind: FailureKind.ssh,
+        message: 'Host key rejected: ${error.message}',
+        cause: error,
+        recoverable: true,
+        details: <String, dynamic>{
+          'reason': hostKeyRejection == HostKeyRejection.mismatch
+              ? hostKeyMismatchReason
+              : hostKeyRejectionReason,
+        },
+      );
     }
     if (error is SSHChannelOpenError) {
       return AppFailure.ssh(

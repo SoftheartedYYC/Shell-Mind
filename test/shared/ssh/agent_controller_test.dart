@@ -19,6 +19,34 @@ class MockSshClientManager extends Mock implements SshClientManager {}
 
 class MockChatRepository extends Mock implements ChatRepository {}
 
+/// Executor stub whose multi-server entry always throws a raw (non-AppFailure)
+/// exception — drives the controller's [AgentErrorKind.unexpected] path.
+class _ThrowingExecutor implements SshCommandExecutor {
+  @override
+  Future<Result<CommandResult>> execute({
+    required String serverId,
+    required String command,
+    Duration timeout = SshCommandExecutor.defaultTimeout,
+  }) async =>
+      Result<CommandResult>.failure(AppFailure.ssh('unused'));
+
+  @override
+  Future<List<Result<CommandResult>>> executeOnMultiple({
+    required List<String> serverIds,
+    required String command,
+    bool parallel = true,
+    Duration timeout = SshCommandExecutor.defaultTimeout,
+  }) async =>
+      throw StateError('socket gone');
+
+  @override
+  Future<Result<CommandResult>> executeOnDefault({
+    required String command,
+    Duration timeout = SshCommandExecutor.defaultTimeout,
+  }) async =>
+      Result<CommandResult>.failure(AppFailure.ssh('unused'));
+}
+
 void main() {
   const String serverId = 'server-1';
 
@@ -66,10 +94,14 @@ void main() {
     await aiStreamController.close();
   });
 
-  ProviderContainer createContainer({bool registerSession = true}) {
+  ProviderContainer createContainer({
+    bool registerSession = true,
+    List<Override> overrides = const <Override>[],
+  }) {
     final ProviderContainer container = ProviderContainer(
-      overrides: [
+      overrides: <Override>[
         chatRepositoryProvider.overrideWithValue(chatRepo),
+        ...overrides,
       ],
     );
     addTearDown(container.dispose);
@@ -128,6 +160,11 @@ void main() {
 
       expect(result.isFailure, isTrue);
       expect(result.failureOrNull!.failure.kind, FailureKind.validation);
+      // Defensive pre-check leaves the state untouched: no error is published
+      // (the chat page maps this failure via its own Result handling).
+      final AgentState state = container.read(agentControllerProvider);
+      expect(state.errorKind, isNull);
+      expect(state.errorMessage, isNull);
       verifyNever(
         () => manager.runCommand(any(), timeout: any(named: 'timeout')),
       );
@@ -147,6 +184,11 @@ void main() {
 
       expect(result.isFailure, isTrue);
       expect(container.read(agentControllerProvider).status, AgentStatus.error);
+      // Execution failure is classified as [AgentErrorKind.execFailed] so the
+      // UI can render a localised message in any app language.
+      final AgentState state = container.read(agentControllerProvider);
+      expect(state.errorKind, AgentErrorKind.execFailed);
+      expect(state.errorMessage, isNotNull);
     });
 
     test('auto loop terminates when no more commands', () {
@@ -254,6 +296,11 @@ rm -rf /
       final AgentState state = container.read(agentControllerProvider);
       expect(state.errorMessage, isNotNull);
       expect(state.status, AgentStatus.idle);
+      // Skipped dangerous commands carry a machine-readable kind plus the
+      // truncated command as the interpolation argument.
+      expect(state.errorKind, AgentErrorKind.dangerSkipped);
+      expect(state.errorArg, isNotNull);
+      expect(state.errorArg, contains('rm -rf /'));
     });
 
     test('reset restores initial state', () async {
@@ -266,6 +313,97 @@ rm -rf /
 
       final AgentState state = container.read(agentControllerProvider);
       expect(state, const AgentState());
+    });
+
+    test('auto loop reports noTargetServer for unknown # server: tag',
+        () async {
+      // No sessions registered at all: an AI block that names a server can
+      // never resolve, so the loop must stop with the machine-readable
+      // noTargetServer kind instead of a raw Chinese-only string.
+      final ProviderContainer container = createContainer(
+        registerSession: false,
+      );
+      final AgentController agent =
+          container.read(agentControllerProvider.notifier);
+
+      agent.startAutoMode(maxLoops: 5);
+      agent.onAssistantResponseComplete('''
+```bash
+# server: ghost-host
+uptime
+```
+''');
+
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+
+      verifyNever(
+        () => manager.runCommand(any(), timeout: any(named: 'timeout')),
+      );
+      final AgentState state = container.read(agentControllerProvider);
+      // The error surfaces through the machine-readable kind + message (the
+      // UI maps these to a localised string); the round ends idle because the
+      // post-loop bookkeeping runs before any await can observe the transient
+      // error status.
+      expect(state.status, AgentStatus.idle);
+      expect(state.errorKind, AgentErrorKind.noTargetServer);
+      expect(state.errorMessage, isNotNull);
+    });
+
+    test('unexpected executor exception is classified as unexpected kind',
+        () async {
+      final ProviderContainer container = createContainer(
+        overrides: <Override>[
+          sshCommandExecutorProvider.overrideWithValue(_ThrowingExecutor()),
+        ],
+      );
+      final AgentController agent =
+          container.read(agentControllerProvider.notifier);
+
+      // A raw (non-AppFailure) exception escapes the executor entirely; the
+      // controller keeps the `e.toString()` text but tags the state with the
+      // unexpected kind so the UI knows no localised equivalent exists.
+      final Result<CommandResult> result = await agent.executeConfirmed(
+        command: 'echo hi',
+        serverIds: const <String>[serverId],
+      );
+
+      expect(result.isFailure, isTrue);
+      final AgentState state = container.read(agentControllerProvider);
+      expect(state.status, AgentStatus.error);
+      expect(state.errorKind, AgentErrorKind.unexpected);
+      expect(state.errorMessage, contains('socket gone'));
+    });
+
+    test('clearError resets errorKind and errorArg together', () {
+      final ProviderContainer container = createContainer();
+
+      // Simulate a dangerSkipped note landing in the state.
+      final AgentState withError = container
+          .read(agentControllerProvider)
+          .copyWith(
+            errorMessage: 'Skipped dangerous command: rm -rf /',
+            errorKind: AgentErrorKind.dangerSkipped,
+            errorArg: 'rm -rf /',
+          );
+      expect(withError.errorKind, AgentErrorKind.dangerSkipped);
+
+      // A fresh execution turn clears the error: kind and arg must reset
+      // together with the message so a stale kind can never be mapped onto
+      // a different (localised) message by the UI.
+      final AgentState cleared = withError.copyWith(
+        status: AgentStatus.executing,
+        clearError: true,
+      );
+      expect(cleared.errorMessage, isNull);
+      expect(cleared.errorKind, isNull);
+      expect(cleared.errorArg, isNull);
+
+      // A brand-new message without an explicit kind drops the previous kind.
+      final AgentState newMessage =
+          withError.copyWith(errorMessage: 'fresh failure');
+      expect(newMessage.errorMessage, 'fresh failure');
+      expect(newMessage.errorKind, isNull);
+      expect(newMessage.errorArg, isNull);
     });
   });
 }

@@ -964,6 +964,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateErrStorage => '存储空间不足，无法完成更新。';
 
   @override
+  String get updateErrDigestMismatch => '下载的更新包未通过 SHA-256 完整性校验，已被删除。请重新下载。';
+
+  @override
+  String get updateErrDigestMissing => '更新包缺少发布方完整性摘要（digest），本次更新已拒绝。请稍后重试。';
+
+  @override
   String get updateRetry => '重试';
 
   @override
@@ -1030,6 +1036,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsAiAutoExecuteSubtitle => '允许 AI 智能体无需逐次确认即可运行解析出的命令';
+
+  @override
+  String get settingsAiAutoConnectTitle => 'AI 自动连接服务器';
+
+  @override
+  String get settingsAiAutoConnectSubtitle =>
+      '允许 AI 助手对未连接的已配置服务器自动发起连接并执行命令（将使用已保存的凭据）';
 
   @override
   String get settingsAiMaxAutoLoopsTitle => '最大自动循环次数';
@@ -1184,12 +1197,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String aiContextLines(int lines) {
     return '来自终端的 $lines 行';
   }
-
-  @override
-  String get aiAgentAutoModeOn => '自动模式：开';
-
-  @override
-  String get aiAgentAutoModeOff => '自动模式：关';
 
   @override
   String get aiAgentStop => '停止自动模式';
@@ -1546,9 +1553,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get serverActionDisconnect => '断开连接';
 
   @override
-  String get aiAgentAutoModeDisabledHint => '自动执行已在设置中关闭';
-
-  @override
   String get exportChatAction => '导出为 Markdown';
 
   @override
@@ -1685,4 +1689,178 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get terminalTabCloseTooltip => '关闭标签';
+
+  @override
+  String get hostKeyConfirmTitle => '信任此主机？';
+
+  @override
+  String get hostKeyConfirmMessage => '这是首次连接该服务器。请先核对指纹再决定是否信任 — 以防中间人攻击。';
+
+  @override
+  String get hostKeyEndpointLabel => '服务器';
+
+  @override
+  String get hostKeyFingerprintLabel => 'SHA-256 指纹';
+
+  @override
+  String get hostKeySecurityNote => '请与您从服务器管理员处（带外渠道）获得的指纹比对。信任错误的指纹会暴露您的凭据。';
+
+  @override
+  String get hostKeyTrustAndConnect => '信任并连接';
+
+  @override
+  String get hostKeyReject => '拒绝';
+
+  @override
+  String hostKeyAutoRejectCountdown(int seconds) {
+    return '$seconds 秒后自动拒绝 — 仅在您确认后才会记录信任。';
+  }
+
+  @override
+  String get hostKeyMismatchTitle => '主机密钥已变更';
+
+  @override
+  String hostKeyMismatchMessage(String host, int port) {
+    return '$host:$port 出示的密钥与您此前信任的不一致，连接已被拦截 — 这可能是中间人攻击，或服务器已重装。若您已核实新密钥，请在服务器编辑页重置主机信任后重新连接。';
+  }
+
+  @override
+  String get hostKeyRejectedMessage => '连接已取消 — 主机密钥未被信任。可重新连接以再次核对指纹。';
+
+  @override
+  String get serverResetTrustAction => '重置主机信任';
+
+  @override
+  String get serverResetTrustDesc => '清除该服务器已存储的指纹，下次连接将再次请求确认。';
+
+  @override
+  String get serverResetTrustConfirmTitle => '重置主机信任？';
+
+  @override
+  String serverResetTrustConfirmMessage(String identity, int port) {
+    return '将移除 $identity:$port 已存储的指纹，下次连接会要求您重新核对主机密钥。';
+  }
+
+  @override
+  String get serverResetTrustConfirmAction => '重置';
+
+  @override
+  String get serverResetTrustDone => '主机信任已重置 — 重新连接以再次核对指纹。';
+
+  @override
+  String get agentErrorNoTargetServer => '没有可用的目标服务器';
+
+  @override
+  String get agentErrorExecFailed => '命令执行失败';
+
+  @override
+  String get agentErrorConnectFailed => '自动连接服务器失败';
+
+  @override
+  String get agentErrorConnectAuthRequired => '缺少已保存的凭据，无法自动连接该服务器';
+
+  @override
+  String agentErrorDangerSkipped(String command) {
+    return '已跳过危险命令：$command';
+  }
+
+  @override
+  String get agentErrorUnexpected => '发生意外错误';
+
+  @override
+  String get exportDocChatTitle => 'Shell-Mind 对话导出';
+
+  @override
+  String exportDocExportedAt(String time) {
+    return '导出时间：$time';
+  }
+
+  @override
+  String exportDocMessageCount(int count) {
+    return '消息数：$count';
+  }
+
+  @override
+  String get exportDocUserSection => '用户';
+
+  @override
+  String get exportDocAssistantSection => '助手';
+
+  @override
+  String get exportDocToolSection => '工具执行';
+
+  @override
+  String get exportDocNoContent => '_(无内容)_';
+
+  @override
+  String get exportDocUnknownServer => '未知服务器';
+
+  @override
+  String exportDocExitCode(int code) {
+    return '退出码 $code';
+  }
+
+  @override
+  String get exportDocCommand => '命令';
+
+  @override
+  String get exportDocOutput => '输出';
+
+  @override
+  String get exportDocErrorOutput => '错误输出';
+
+  @override
+  String get exportDocDiagTitle => 'Shell-Mind 诊断报告';
+
+  @override
+  String exportDocDiagCrashCount(int count) {
+    return '捕获错误：$count 条';
+  }
+
+  @override
+  String get exportDocDiagCrashesSection => '捕获的错误';
+
+  @override
+  String get exportDocDiagNone => '（无）';
+
+  @override
+  String exportDocDiagErrorMessage(String message) {
+    return '错误摘要：$message';
+  }
+
+  @override
+  String exportDocDiagAppVersion(String version) {
+    return 'App 版本：$version';
+  }
+
+  @override
+  String exportDocDiagPlatform(String platform) {
+    return '平台：$platform';
+  }
+
+  @override
+  String exportDocDiagLocale(String locale) {
+    return '语言：$locale';
+  }
+
+  @override
+  String exportDocDiagStorage(String value) {
+    return '本地数据占用：$value';
+  }
+
+  @override
+  String exportDocDiagAuditSection(int limit) {
+    return 'AI 命令审计（最近 $limit 条摘要）';
+  }
+
+  @override
+  String get exportDocDiagSuccess => '成功';
+
+  @override
+  String get exportDocDiagFailed => '失败';
+
+  @override
+  String exportDocDiagExitCodeOf(int code) {
+    return '退出码 $code';
+  }
 }

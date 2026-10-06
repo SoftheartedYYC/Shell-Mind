@@ -48,6 +48,7 @@ class _DiagnosticPageState extends ConsumerState<DiagnosticPage> {
         platform: crash.currentPlatform,
         localeTag: crash.currentLocale,
         storageBytes: formatBytes(storage.hiveBytes),
+        l10n: l10n,
       );
 
       final DateTime now = DateTime.now();

@@ -6,8 +6,8 @@ abstract final class AppConstants {
   // ─── Identity ───────────────────────────────────────────────────────────
   static const String appName = 'ShellMind';
   static const String appTagline = 'SSH · AI · Command';
-  static const String appVersion = '1.5.2';
-  static const int appBuildNumber = 11;
+  static const String appVersion = '1.6.0';
+  static const int appBuildNumber = 12;
 
   /// Emitted at the top of exported terminal transcripts.
   static const String userAgent = '$appName/$appVersion';
@@ -26,6 +26,22 @@ abstract final class AppConstants {
   static const int defaultSshPort = 22;
   static const Duration sshConnectTimeout = Duration(seconds: 15);
   static const Duration sshKeepAliveInterval = Duration(seconds: 30);
+
+  /// dartssh2 handshake budget used when the first-connect trust dialog may
+  /// block the handshake. `SSHClient` starts this timer at construction and
+  /// only cancels it once the transport is ready — the host-key callback
+  /// fires *before* that, inside key exchange, so the dialog's await is
+  /// covered by this budget. It must exceed [hostKeyApprovalTimeout] plus
+  /// normal protocol time; otherwise the dialog could resolve after the
+  /// transport already failed. TCP dialing stays bounded by
+  /// [sshConnectTimeout] via `SSHSocket.connect`.
+  static const Duration sshHandshakeTimeoutWithApproval =
+      Duration(seconds: 90);
+
+  /// Auto-reject countdown of the first-connect host-key dialog: expiry
+  /// resolves the dialog as "reject" so trust is never recorded unattended.
+  /// Must stay strictly below [sshHandshakeTimeoutWithApproval].
+  static const Duration hostKeyApprovalTimeout = Duration(seconds: 60);
 
   /// Terminal scrollback (lines) held in memory per session.
   static const int terminalScrollback = 5000;
@@ -121,6 +137,10 @@ abstract final class AppConstants {
   /// Upper bound on automatic command-execution loops per assistant response.
   static const String prefKeyAiMaxAutoLoops = 'pref.ai_max_auto_loops';
 
+  /// When true, the AI agent may dial (connect) an offline but configured
+  /// server on demand before executing a command block targeting it.
+  static const String prefKeyAiAutoConnect = 'pref.ai_auto_connect';
+
   /// Per-provider remembered model: `pref.ai_model_<providerId>`.
   static String aiModelKey(String providerId) => 'pref.ai_model_$providerId';
 
@@ -182,6 +202,9 @@ abstract final class AppConstants {
   // ─── AI agent auto-execution defaults ───────────────────────────────────
   /// Auto-execute is opt-in and therefore defaults to off.
   static const bool defaultAiAutoExecute = false;
+
+  /// AI-initiated auto-connect is opt-in (uses saved credentials) — off.
+  static const bool defaultAiAutoConnect = false;
 
   /// Default cap on automatic command-execution loops.
   static const int kDefaultMaxAutoLoops = 10;

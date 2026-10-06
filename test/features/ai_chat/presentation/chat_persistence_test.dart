@@ -243,6 +243,60 @@ void main() {
       expect(persisted.last.isStreaming, isFalse);
     });
 
+    test('stopStreaming with no tokens drops the empty placeholder', () async {
+      final ChatNotifier notifier =
+          container.read(chatMessagesProvider.notifier);
+      await notifier.sendMessage('answer me');
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+
+      // Stop before the first token arrives — the assistant placeholder has
+      // empty content and must not survive as a blank bubble.
+      notifier.stopStreaming();
+
+      final ChatState state = container.read(chatMessagesProvider);
+      expect(state.isStreaming, isFalse);
+      expect(state.messages, hasLength(1));
+      expect(state.messages.single.isUser, isTrue,
+          reason: 'a 0-token assistant placeholder must be dropped on stop');
+
+      await waitPersisted();
+      final List<ChatMessage> persisted = await store.load();
+      expect(persisted, hasLength(1));
+      expect(persisted.single.isUser, isTrue);
+    });
+
+    test('restoreFromHistory drops legacy empty assistant frames', () async {
+      // A transcript written by an older build can contain a finished
+      // assistant frame with no content (stopped before the first token).
+      // It must be cleaned up on load instead of rendering a blank bubble.
+      final DateTime base = DateTime(2024, 1, 1, 12);
+      await store.flush(<ChatMessage>[
+        ChatMessage.user(
+            id: 'u-1', content: 'question', timestamp: base),
+        ChatMessage(
+          id: 'a-dirty',
+          role: MessageRole.assistant,
+          content: '',
+          timestamp: base.add(const Duration(seconds: 1)),
+        ),
+        ChatMessage.assistantStreaming(
+                id: 'a-1',
+                content: 'answer',
+                timestamp: base.add(const Duration(seconds: 2)))
+            .finish(),
+      ]);
+
+      await container
+          .read(chatMessagesProvider.notifier)
+          .restoreFromHistory(store);
+
+      final List<ChatMessage> restored =
+          container.read(chatMessagesProvider).messages;
+      expect(restored, hasLength(2));
+      expect(restored[0].content, 'question');
+      expect(restored[1].content, 'answer');
+    });
+
     test('sendToolResult persists the tool turn', () async {
       final ChatNotifier notifier =
           container.read(chatMessagesProvider.notifier);

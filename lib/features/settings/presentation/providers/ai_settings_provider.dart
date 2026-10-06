@@ -17,6 +17,7 @@ class AiSettingsState {
     this.maskedKey,
     this.temperature = AppConstants.defaultAiTemperature,
     this.aiAutoExecute = AppConstants.defaultAiAutoExecute,
+    this.aiAutoConnect = AppConstants.defaultAiAutoConnect,
     this.aiMaxAutoLoops = AppConstants.kDefaultMaxAutoLoops,
     this.configuredProviderIds = const <String>{},
     this.isLoading = true,
@@ -34,6 +35,10 @@ class AiSettingsState {
 
   /// Whether the AI agent may run parsed commands autonomously.
   final bool aiAutoExecute;
+
+  /// Whether the AI agent may dial offline-but-configured servers on demand
+  /// (using saved credentials) before executing a command block.
+  final bool aiAutoConnect;
 
   /// Cap on automatic command-execution loops per assistant response.
   final int aiMaxAutoLoops;
@@ -54,6 +59,7 @@ class AiSettingsState {
     bool clearKey = false,
     double? temperature,
     bool? aiAutoExecute,
+    bool? aiAutoConnect,
     int? aiMaxAutoLoops,
     Set<String>? configuredProviderIds,
     bool? isLoading,
@@ -65,6 +71,7 @@ class AiSettingsState {
         maskedKey: clearKey ? null : (maskedKey ?? this.maskedKey),
         temperature: temperature ?? this.temperature,
         aiAutoExecute: aiAutoExecute ?? this.aiAutoExecute,
+        aiAutoConnect: aiAutoConnect ?? this.aiAutoConnect,
         aiMaxAutoLoops: aiMaxAutoLoops ?? this.aiMaxAutoLoops,
         configuredProviderIds: configuredProviderIds ?? this.configuredProviderIds,
         isLoading: isLoading ?? this.isLoading,
@@ -109,6 +116,7 @@ class AiSettingsController extends Notifier<AiSettingsState> {
       maskedKey: key == null ? null : maskApiKey(key),
       temperature: _prefs.aiTemperature,
       aiAutoExecute: _prefs.aiAutoExecute,
+      aiAutoConnect: _prefs.aiAutoConnect,
       aiMaxAutoLoops: _prefs.aiMaxAutoLoops,
       configuredProviderIds: configured,
       isLoading: false,
@@ -278,6 +286,13 @@ class AiSettingsController extends Notifier<AiSettingsState> {
   Future<void> setAiAutoExecute(bool value) async {
     await _prefs.setAiAutoExecute(value);
     state = state.copyWith(aiAutoExecute: value);
+  }
+
+  /// Toggles AI-initiated auto-connect (dialing offline configured servers
+  /// with saved credentials before running a targeted command block).
+  Future<void> setAiAutoConnect(bool value) async {
+    await _prefs.setAiAutoConnect(value);
+    state = state.copyWith(aiAutoConnect: value);
   }
 
   /// Sets the cap on automatic command-execution loops (clamped to the

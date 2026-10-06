@@ -3,13 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/command_audit_log.dart';
 import '../../../core/services/crash_report_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/app_localizations_en.dart';
 
 /// Pure text assembler for the diagnostic report file.
 ///
 /// Combines device metadata, the crash ring buffer and a capped summary of
-/// the AI command audit trail into a single standalone `.txt` document. No
-/// I/O and no Flutter dependencies — trivially unit-testable; file writing
-/// lives in the diagnostics page (same split as `ChatExporter`).
+/// the AI command audit trail into a single standalone `.txt` document.
+/// All natural-language labels come from [AppLocalizations] so the report
+/// follows the app language; [l10n] is optional — callers without a context
+/// (pure data / tests) may omit it and the report falls back to the English
+/// wordings. No I/O and no Flutter dependency lookups — trivially
+/// unit-testable; file writing lives in the diagnostics page.
 class DiagnosticExporter {
   const DiagnosticExporter._();
 
@@ -30,23 +35,25 @@ class DiagnosticExporter {
     String? localeTag,
     String storageBytes = '',
     DateTime? exportedAt,
+    AppLocalizations? l10n,
   }) {
+    final AppLocalizations doc = l10n ?? AppLocalizationsEn();
     final DateTime at = exportedAt ?? DateTime.now();
     final StringBuffer buffer = StringBuffer()
-      ..writeln('# Shell-Mind 诊断报告')
+      ..writeln('# ${doc.exportDocDiagTitle}')
       ..writeln()
-      ..writeln('- 导出时间：${_formatTimestamp(at)}')
-      ..writeln('- App 版本：${appVersion ?? AppConstants.appVersion}')
-      ..writeln('- 平台：${platform ?? 'unknown'}')
-      ..writeln('- 语言：${localeTag ?? 'unknown'}')
-      ..writeln('- 本地数据占用：${storageBytes.isEmpty ? '—' : storageBytes}')
-      ..writeln('- 捕获错误：${crashes.length} 条')
+      ..writeln('- ${doc.exportDocExportedAt(_formatTimestamp(at))}')
+      ..writeln('- ${doc.exportDocDiagAppVersion(appVersion ?? AppConstants.appVersion)}')
+      ..writeln('- ${doc.exportDocDiagPlatform(platform ?? 'unknown')}')
+      ..writeln('- ${doc.exportDocDiagLocale(localeTag ?? 'unknown')}')
+      ..writeln('- ${doc.exportDocDiagStorage(storageBytes.isEmpty ? '—' : storageBytes)}')
+      ..writeln('- ${doc.exportDocDiagCrashCount(crashes.length)}')
       ..writeln()
       ..writeln(_separator)
       ..writeln();
 
-    _writeCrashes(buffer, crashes);
-    _writeAudit(buffer, auditEntries);
+    _writeCrashes(buffer, crashes, doc);
+    _writeAudit(buffer, auditEntries, doc);
     return buffer.toString();
   }
 
@@ -68,13 +75,14 @@ class DiagnosticExporter {
   static void _writeCrashes(
     StringBuffer buffer,
     List<CrashReportEntry> crashes,
+    AppLocalizations doc,
   ) {
     buffer
-      ..writeln('## 捕获的错误')
+      ..writeln('## ${doc.exportDocDiagCrashesSection}')
       ..writeln();
     if (crashes.isEmpty) {
       buffer
-        ..writeln('（无）')
+        ..writeln(doc.exportDocDiagNone)
         ..writeln();
       return;
     }
@@ -82,10 +90,10 @@ class DiagnosticExporter {
       buffer
         ..writeln('### ${_formatTimestamp(e.occurredAt.toLocal())} · ${e.source}')
         ..writeln()
-        ..writeln('- 错误摘要：${e.message}')
-        ..writeln('- App 版本：${e.appVersion}')
-        ..writeln('- 平台：${e.platform}')
-        ..writeln('- 语言：${e.locale.isEmpty ? '—' : e.locale}')
+        ..writeln('- ${doc.exportDocDiagErrorMessage(e.message)}')
+        ..writeln('- ${doc.exportDocDiagAppVersion(e.appVersion)}')
+        ..writeln('- ${doc.exportDocDiagPlatform(e.platform)}')
+        ..writeln('- ${doc.exportDocDiagLocale(e.locale.isEmpty ? '—' : e.locale)}')
         ..writeln();
       if (e.stackTrace.isNotEmpty) {
         buffer
@@ -100,13 +108,14 @@ class DiagnosticExporter {
   static void _writeAudit(
     StringBuffer buffer,
     List<CommandAuditEntry> auditEntries,
+    AppLocalizations doc,
   ) {
     buffer
-      ..writeln('## AI 命令审计（最近 $auditSummaryLimit 条摘要）')
+      ..writeln('## ${doc.exportDocDiagAuditSection(auditSummaryLimit)}')
       ..writeln();
     if (auditEntries.isEmpty) {
       buffer
-        ..writeln('（无）')
+        ..writeln(doc.exportDocDiagNone)
         ..writeln();
       return;
     }
@@ -116,8 +125,8 @@ class DiagnosticExporter {
       buffer.writeln(
         '- ${_formatTimestamp(e.executedAt.toLocal())} · '
         '$server · '
-        '${e.success ? '成功' : '失败'} · '
-        '退出码 ${e.exitCode} · `${e.command}`',
+        '${e.success ? doc.exportDocDiagSuccess : doc.exportDocDiagFailed} · '
+        '${doc.exportDocDiagExitCodeOf(e.exitCode)} · `${e.command}`',
       );
     }
     buffer.writeln();

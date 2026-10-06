@@ -498,6 +498,8 @@
   "updateErrAuth": "GitHub rejected the update request.",
   "updateErrPermission": "The update request was denied.",
   "updateErrStorage": "Not enough storage space to complete the update.",
+  "updateErrDigestMismatch": "The downloaded update failed the SHA-256 integrity check and was deleted. Please retry the download.",
+  "updateErrDigestMissing": "The update package has no published integrity digest, so the update was refused. Please retry later.",
   "updateRetry": "Retry",
   "updateDismiss": "Dismiss",
   "updateReleaseNotes": "Release {tag}",
@@ -531,6 +533,8 @@
 
   "settingsAiAutoExecuteTitle": "Auto-execute commands",
   "settingsAiAutoExecuteSubtitle": "Allow the AI agent to run parsed commands without asking each time",
+  "settingsAiAutoConnectTitle": "AI Auto-Connect Servers",
+  "settingsAiAutoConnectSubtitle": "Allow the AI assistant to automatically connect to configured-but-offline servers and run commands on them (saved credentials will be used)",
   "settingsAiMaxAutoLoopsTitle": "Max auto-loop iterations",
   "settingsAiMaxAutoLoopsSub": "Cap the number of automatic command executions per response",
   "settingsAiMaxAutoLoopsTileDesc": "Max command rounds the AI may run per task",
@@ -616,8 +620,6 @@
     }
   },
 
-  "aiAgentAutoModeOn": "Auto mode: on",
-  "aiAgentAutoModeOff": "Auto mode: off",
   "aiAgentStop": "Stop auto mode",
   "aiAgentExecuting": "Executing…",
   "aiAgentDefaultServer": "server",
@@ -844,8 +846,6 @@
 
   "serverActionDisconnect": "Disconnect",
 
-  "aiAgentAutoModeDisabledHint": "Auto-execute is disabled in Settings",
-
   "exportChatAction": "Export as Markdown",
   "exportChatEmpty": "Nothing to export yet",
   "exportChatSuccess": "Conversation exported to {path}",
@@ -921,5 +921,137 @@
   "terminalTabPickerSubtitle": "Pick a server to open as a terminal tab — online servers join instantly, offline ones dial first",
   "terminalTabPickerEmpty": "No servers configured yet",
   "terminalTabNewTooltip": "New terminal tab",
-  "terminalTabCloseTooltip": "Close tab"
+  "terminalTabCloseTooltip": "Close tab",
+
+  "hostKeyConfirmTitle": "Trust this host?",
+  "hostKeyConfirmMessage": "This is the first connection to this server. Verify its fingerprint before trusting it — this protects against man-in-the-middle attacks.",
+  "hostKeyEndpointLabel": "SERVER",
+  "hostKeyFingerprintLabel": "SHA-256 FINGERPRINT",
+  "hostKeySecurityNote": "Compare the fingerprint against a value you obtained from the server operator out-of-band. Trusting a wrong fingerprint exposes your credentials.",
+  "hostKeyTrustAndConnect": "Trust and connect",
+  "hostKeyReject": "Reject",
+
+  "hostKeyAutoRejectCountdown": "Auto-rejects in {seconds}s — trust is only recorded when you confirm.",
+  "@hostKeyAutoRejectCountdown": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+
+  "hostKeyMismatchTitle": "Host key changed",
+  "hostKeyMismatchMessage": "The key presented by {host}:{port} differs from the one you previously trusted. The connection was blocked — this may be a man-in-the-middle attack, or the server was reinstalled. If you verified the new key, reset host trust on the server edit page and reconnect.",
+  "@hostKeyMismatchMessage": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "hostKeyRejectedMessage": "Connection cancelled — the host key was not trusted. You can connect again to review the fingerprint.",
+
+  "serverResetTrustAction": "Reset host trust",
+  "serverResetTrustDesc": "Forget this server's stored fingerprint so the next connection asks for confirmation again.",
+  "serverResetTrustConfirmTitle": "Reset host trust?",
+  "serverResetTrustConfirmMessage": "The stored fingerprint for {identity}:{port} will be removed. The next connection will ask you to verify the host key again.",
+  "@serverResetTrustConfirmMessage": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverResetTrustConfirmAction": "Reset",
+  "serverResetTrustDone": "Host trust reset — reconnect to verify the fingerprint again.",
+
+  "agentErrorNoTargetServer": "No target server available",
+  "agentErrorExecFailed": "Command execution failed",
+  "agentErrorConnectFailed": "Failed to connect to the server automatically",
+  "agentErrorConnectAuthRequired": "No saved credentials for this server — auto-connect is not possible",
+  "agentErrorDangerSkipped": "Skipped dangerous command: {command}",
+  "@agentErrorDangerSkipped": {
+    "placeholders": {
+      "command": { "type": "String" }
+    }
+  },
+  "agentErrorUnexpected": "Unexpected error",
+
+  "exportDocChatTitle": "Shell-Mind Chat Export",
+  "exportDocExportedAt": "Exported at: {time}",
+  "@exportDocExportedAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "exportDocMessageCount": "Messages: {count}",
+  "@exportDocMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocUserSection": "User",
+  "exportDocAssistantSection": "Assistant",
+  "exportDocToolSection": "Tool execution",
+  "exportDocNoContent": "_(no content)_",
+  "exportDocUnknownServer": "Unknown server",
+  "exportDocExitCode": "Exit code {code}",
+  "@exportDocExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "exportDocCommand": "Command",
+  "exportDocOutput": "Output",
+  "exportDocErrorOutput": "Error output",
+
+  "exportDocDiagTitle": "Shell-Mind Diagnostic Report",
+  "exportDocDiagCrashCount": "Captured errors: {count}",
+  "@exportDocDiagCrashCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocDiagCrashesSection": "Captured errors",
+  "exportDocDiagNone": "(none)",
+  "exportDocDiagErrorMessage": "Error summary: {message}",
+  "@exportDocDiagErrorMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "exportDocDiagAppVersion": "App version: {version}",
+  "@exportDocDiagAppVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "exportDocDiagPlatform": "Platform: {platform}",
+  "@exportDocDiagPlatform": {
+    "placeholders": {
+      "platform": { "type": "String" }
+    }
+  },
+  "exportDocDiagLocale": "Language: {locale}",
+  "@exportDocDiagLocale": {
+    "placeholders": {
+      "locale": { "type": "String" }
+    }
+  },
+  "exportDocDiagStorage": "Local data usage: {value}",
+  "@exportDocDiagStorage": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "exportDocDiagAuditSection": "AI command audit (last {limit} summaries)",
+  "@exportDocDiagAuditSection": {
+    "placeholders": {
+      "limit": { "type": "int" }
+    }
+  },
+  "exportDocDiagSuccess": "success",
+  "exportDocDiagFailed": "failed",
+  "exportDocDiagExitCodeOf": "exit code {code}",
+  "@exportDocDiagExitCodeOf": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  }
 }

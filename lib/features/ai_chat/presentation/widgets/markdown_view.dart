@@ -11,7 +11,7 @@ import '../../../../l10n/app_localizations.dart';
 /// italic, headings, and ordered/unordered lists. Parsing is intentionally
 /// forgiving — an unterminated code fence (common mid-stream) is rendered as
 /// a live code block rather than breaking the layout.
-class MarkdownView extends StatelessWidget {
+class MarkdownView extends StatefulWidget {
   const MarkdownView({
     super.key,
     required this.text,
@@ -33,8 +33,31 @@ class MarkdownView extends StatelessWidget {
   final void Function(String code, String language)? onExecuteCode;
 
   @override
+  State<MarkdownView> createState() => _MarkdownViewState();
+}
+
+class _MarkdownViewState extends State<MarkdownView> {
+  String? _lastText;
+  List<_Block> _blocks = const <_Block>[];
+
+  /// Parses [text] once and reuses the result while the string reference is
+  /// unchanged.
+  ///
+  /// This is what keeps streaming cheap: the notifier patches only the
+  /// streaming message, so every completed message keeps the same `content`
+  /// String across the token-by-token rebuilds of the transcript. The
+  /// `identical` check short-circuits in O(1) and only the growing streaming
+  /// message is re-parsed per token.
+  List<_Block> _parsed(String text) {
+    final String? last = _lastText;
+    if (last != null && identical(last, text)) return _blocks;
+    _lastText = text;
+    return _blocks = _parse(text);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<_Block> blocks = _parse(text);
+    final List<_Block> blocks = _parsed(widget.text);
     if (blocks.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -55,24 +78,25 @@ class MarkdownView extends StatelessWidget {
         _CodeBlockView(
           language: lang,
           code: content,
-          textScale: textScale,
-          onExecute: onExecuteCode != null && _isExecutableLanguage(lang)
-              ? () => onExecuteCode!(content, lang)
-              : null,
+          textScale: widget.textScale,
+          onExecute:
+              widget.onExecuteCode != null && _isExecutableLanguage(lang)
+                  ? () => widget.onExecuteCode!(content, lang)
+                  : null,
         ),
       _Heading(:final int level, :final String content) =>
-        _HeadingView(level: level, content: content, textScale: textScale),
+        _HeadingView(level: level, content: content, textScale: widget.textScale),
       _ListBlock(:final List<String> items, :final bool ordered) =>
         _ListView(
           items: items,
           ordered: ordered,
-          selectable: selectable,
-          textScale: textScale,
+          selectable: widget.selectable,
+          textScale: widget.textScale,
         ),
       _Paragraph(:final String content) => _ParagraphView(
           content: content,
-          selectable: selectable,
-          textScale: textScale,
+          selectable: widget.selectable,
+          textScale: widget.textScale,
         ),
     };
   }

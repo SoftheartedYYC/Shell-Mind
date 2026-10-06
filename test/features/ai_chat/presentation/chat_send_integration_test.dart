@@ -7,11 +7,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shell_mind/core/network/dio_client.dart';
 import 'package:shell_mind/core/storage/preferences_service.dart';
 import 'package:shell_mind/core/utils/result.dart';
 import 'package:shell_mind/features/ai_chat/data/ai_service.dart';
+import 'package:shell_mind/features/ai_chat/data/chat_history_store.dart';
 import 'package:shell_mind/features/ai_chat/domain/entities/ai_provider.dart';
 import 'package:shell_mind/features/ai_chat/domain/entities/chat_message.dart';
 import 'package:shell_mind/features/ai_chat/presentation/providers/chat_providers.dart';
@@ -46,6 +48,8 @@ ResponseBody _sseBody(String sse) => ResponseBody(
         Headers.contentTypeHeader: <String>['text/event-stream'],
       },
     );
+
+class MockChatHistoryStore extends Mock implements ChatHistoryStore {}
 
 /// Decodes the outgoing request body regardless of whether Dio's transformer
 /// already serialised it to a String/bytes.
@@ -93,11 +97,19 @@ void main() {
   /// Builds a container whose Dio uses [adapter] as its transport.
   ProviderContainer buildContainer(HttpClientAdapter adapter) {
     final Dio dio = Dio()..httpClientAdapter = adapter;
+    // Same rationale as chat_providers_test.dart: these tests exercise the
+    // network path, not persistence, so a silent no-op store keeps the real
+    // Hive-backed singleton out of the (uninitialised) storage layer.
+    final MockChatHistoryStore chatStore = MockChatHistoryStore();
+    when(() => chatStore.flush(any())).thenAnswer((_) async {});
+    when(() => chatStore.clear()).thenAnswer((_) async {});
+    when(() => chatStore.load()).thenAnswer((_) async => <ChatMessage>[]);
     return ProviderContainer(
       overrides: <Override>[
         dioProvider.overrideWithValue(dio),
         selectedProviderProvider.overrideWithValue(testProvider),
         apiKeyProvider.overrideWith((Ref ref) async => 'test-key'),
+        chatHistoryStoreProvider.overrideWithValue(chatStore),
       ],
     );
   }

@@ -258,6 +258,40 @@ class _AiAgentSection extends ConsumerWidget {
             ],
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.lan_rounded, size: 20, color: colors.onSurfaceVariant),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      l10n.settingsAiAutoConnectTitle,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: colors.onSurface,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                    Text(
+                      l10n.settingsAiAutoConnectSubtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Switch(
+                value: s.aiAutoConnect,
+                onChanged: controller.setAiAutoConnect,
+              ),
+            ],
+          ),
+        ),
         InkWell(
           onTap: () => _showMaxLoopsSheet(context, ref, s.aiMaxAutoLoops),
           child: Padding(

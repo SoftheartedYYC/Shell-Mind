@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/utils/result.dart';
 import '../domain/entities/chat_message.dart';
@@ -8,16 +9,42 @@ import '../domain/repositories/chat_repository.dart';
 import 'ai_service.dart';
 import 'chat_context_compactor.dart';
 
+/// One entry of the server roster injected into the agent system prompt.
+///
+/// Lists every configured server (not just online ones) so the model can
+/// address any of them with a `# server:` tag; the execution layer decides
+/// whether an offline target is auto-connected before the command runs.
+@immutable
+class ServerRosterEntry {
+  const ServerRosterEntry({
+    required this.name,
+    required this.user,
+    required this.host,
+    required this.port,
+    required this.isOnline,
+  });
+
+  final String name;
+  final String user;
+  final String host;
+  final int port;
+  final bool isOnline;
+
+  @override
+  String toString() =>
+      '$name ($user@$host:$port) [${isOnline ? 'connected' : 'not connected'}]';
+}
+
 /// Agent-protocol system prompt injected as the leading `system` message.
 ///
 /// Defines Shell-Mind AI as an autonomous agent capable of executing commands
-/// on connected servers, orchestrating multi-server operations, and following
+/// on configured servers, orchestrating multi-server operations, and following
 /// a structured execution protocol for tool-use loops.
 const String kShellMindSystemPrompt = '''
 You are Shell-Mind AI, an expert Linux/Unix system administrator agent with direct SSH access to remote servers.
 
 ## Capabilities
-- Execute shell commands on connected servers via SSH
+- Execute shell commands on configured servers via SSH
 - Analyze command output and diagnose issues
 - Orchestrate operations across multiple servers
 - Provide security and performance recommendations
@@ -29,6 +56,12 @@ When you need to run commands on a server:
 3. If no server tag is specified, the command runs on the default/only active server
 4. After receiving [tool-output], analyze the results and decide the next action
 5. When the task is complete, respond WITHOUT any code block and summarize what was done
+
+## Server Availability
+- The server roster below lists ALL configured servers with their online status
+- You may target ANY configured server with "# server: <name>", including ones marked [not connected]
+- The system will automatically connect to a [not connected] server before executing the command, using the user's saved credentials — but ONLY when the user has enabled auto-connect
+- When auto-connect is disabled, only servers marked [connected] can execute commands
 
 ## Multi-Server Operations
 - You can orchestrate across multiple servers (deploy, sync, verify connectivity)
@@ -59,22 +92,24 @@ const int kMaxHistoryMessages = kDefaultKeepRecentMessages;
 /// Default [ChatRepository] backed by [AiService].
 ///
 /// Owns prompt assembly: prepends the system persona (dynamically enriched
-/// with the list of currently connected servers), trims history to the most
-/// recent [kMaxHistoryMessages] turns, and appends the live user message.
+/// with the roster of configured servers and their online status), trims
+/// history to the most recent [kMaxHistoryMessages] turns, and appends the
+/// live user message.
 class ChatRepositoryImpl implements ChatRepository {
-  ChatRepositoryImpl(this._service, {this._activeServersGetter});
+  ChatRepositoryImpl(this._service, {this._rosterGetter});
 
   final AiService _service;
 
-  /// Callback that returns descriptions of currently online servers.
+  /// Callback that returns every configured server with online status.
   /// Injected from the provider layer to avoid coupling to Riverpod here.
-  final List<String> Function()? _activeServersGetter;
+  final List<ServerRosterEntry> Function()? _rosterGetter;
 
   /// Converts domain messages into the `[{role, content}]` wire format,
   /// dropping empty/system-noise and compacting long histories.
   ///
-  /// [activeServers] is resolved dynamically via [_activeServersGetter] and
-  /// appended to the system prompt so the model knows which servers are online.
+  /// [ServerRosterEntry]s are resolved dynamically via [_rosterGetter] and
+  /// appended to the system prompt so the model knows every configured
+  /// server and which ones are online.
   ///
   /// History longer than [kMaxHistoryMessages] turns is compacted: older turns
   /// are folded into a single user-role summary message inserted right after
@@ -121,17 +156,21 @@ class ChatRepositoryImpl implements ChatRepository {
   /// Assembles the full system prompt by appending the live server roster.
   String _buildSystemPrompt() {
     final StringBuffer sb = StringBuffer(kShellMindSystemPrompt.trim());
-    final List<String>? servers = _activeServersGetter?.call();
+    final List<ServerRosterEntry>? servers = _rosterGetter?.call();
     if (servers != null && servers.isNotEmpty) {
-      sb.write('\n\n## Currently Connected Servers\n');
-      for (final String server in servers) {
+      sb.write('\n\n## Configured Servers\n');
+      for (final ServerRosterEntry server in servers) {
         sb.write('- $server\n');
       }
-      sb.write('\nUse "# server: <name>" in code blocks to target a specific server.');
+      sb.write(
+        '\nUse "# server: <name>" in code blocks to target a specific '
+        'server, including ones marked [not connected] — the system will '
+        'connect them automatically when the user has enabled auto-connect.',
+      );
     } else {
-      sb.write('\n\n## Currently Connected Servers\n');
-      sb.write('No servers connected. Commands cannot be executed until '
-          'the user connects to a server via the Terminal page.');
+      sb.write('\n\n## Configured Servers\n');
+      sb.write('No servers are configured yet. The user can add servers in '
+          'the Servers page of the app.');
     }
     return sb.toString();
   }

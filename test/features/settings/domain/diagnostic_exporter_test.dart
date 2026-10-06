@@ -2,6 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shell_mind/core/services/command_audit_log.dart';
 import 'package:shell_mind/core/services/crash_report_service.dart';
 import 'package:shell_mind/features/settings/domain/diagnostic_exporter.dart';
+import 'package:shell_mind/l10n/app_localizations.dart';
+import 'package:shell_mind/l10n/app_localizations_en.dart';
+import 'package:shell_mind/l10n/app_localizations_zh.dart';
 
 CrashReportEntry _crash({
   String id = 'c1',
@@ -42,6 +45,30 @@ CommandAuditEntry _audit({
     );
 
 void main() {
+  // Export through the Chinese report wordings so assertions keep matching
+  // the (byte-identical) pre-l10n hardcoded strings.
+  final AppLocalizations zh = AppLocalizationsZh();
+
+  String exportReport({
+    List<CrashReportEntry> crashes = const <CrashReportEntry>[],
+    List<CommandAuditEntry> auditEntries = const <CommandAuditEntry>[],
+    String? appVersion,
+    String? platform,
+    String? localeTag,
+    String storageBytes = '',
+    DateTime? exportedAt,
+  }) =>
+      DiagnosticExporter.export(
+        crashes: crashes,
+        auditEntries: auditEntries,
+        appVersion: appVersion,
+        platform: platform,
+        localeTag: localeTag,
+        storageBytes: storageBytes,
+        exportedAt: exportedAt,
+        l10n: zh,
+      );
+
   group('DiagnosticExporter.fileStamp', () {
     test('formats yyyyMMdd-HHmmss with zero padding', () {
       final String stamp = DiagnosticExporter.fileStamp(
@@ -52,7 +79,7 @@ void main() {
 
   group('DiagnosticExporter.export', () {
     test('empty inputs still produce a valid header', () {
-      final String report = DiagnosticExporter.export(
+      final String report = exportReport(
         crashes: const <CrashReportEntry>[],
         auditEntries: const <CommandAuditEntry>[],
         appVersion: '1.4.1',
@@ -71,7 +98,7 @@ void main() {
     });
 
     test('renders crash entries with timestamps and stack fences', () {
-      final String report = DiagnosticExporter.export(
+      final String report = exportReport(
         crashes: <CrashReportEntry>[
           _crash(id: 'c1', source: 'platform'),
           _crash(id: 'c2', stack: ''),
@@ -92,7 +119,7 @@ void main() {
         for (int i = 0; i < 30; i++)
           _audit(id: 'a$i', command: 'cmd-$i', when: DateTime(2026, 10, i + 1)),
       ];
-      final String report = DiagnosticExporter.export(
+      final String report = exportReport(
         crashes: const <CrashReportEntry>[],
         auditEntries: entries,
       );
@@ -112,7 +139,7 @@ void main() {
         stack: CrashReportEntry.redact(
             '-----BEGIN PRIVATE KEY-----\nMIIEvQ\n-----END PRIVATE KEY-----'),
       );
-      final String report = DiagnosticExporter.export(
+      final String report = exportReport(
         crashes: <CrashReportEntry>[entry],
         auditEntries: const <CommandAuditEntry>[],
       );
@@ -123,7 +150,7 @@ void main() {
     });
 
     test('audit lines include server name, outcome and exit code', () {
-      final String report = DiagnosticExporter.export(
+      final String report = exportReport(
         crashes: const <CrashReportEntry>[],
         auditEntries: <CommandAuditEntry>[_audit(exitCode: 2)],
       );
@@ -131,6 +158,37 @@ void main() {
       expect(report, contains('df -h /'));
       expect(report, contains('web-1'));
       expect(report, contains('2'));
+    });
+
+    test('English l10n renders English report labels', () {
+      final String report = DiagnosticExporter.export(
+        crashes: const <CrashReportEntry>[],
+        auditEntries: <CommandAuditEntry>[_audit(exitCode: 2)],
+        appVersion: '1.4.1',
+        platform: 'android',
+        localeTag: 'zh_CN',
+        exportedAt: DateTime(2026, 10, 4, 12, 30, 5),
+        l10n: AppLocalizationsEn(),
+      );
+      expect(report, startsWith('# Shell-Mind Diagnostic Report'));
+      expect(report, contains('- Exported at: 2026-10-04 12:30:05'));
+      expect(report, contains('- App version: 1.4.1'));
+      expect(report, contains('- Captured errors: 0'));
+      expect(report, contains('## AI command audit'));
+      expect(report, contains('exit code 2'));
+      expect(report, isNot(contains('诊断报告')));
+      expect(report, isNot(contains('导出时间')));
+      expect(report, isNot(contains('命令审计')));
+    });
+
+    test('omitting l10n falls back to the English wordings', () {
+      final String report = DiagnosticExporter.export(
+        crashes: const <CrashReportEntry>[],
+        auditEntries: const <CommandAuditEntry>[],
+      );
+      expect(report, startsWith('# Shell-Mind Diagnostic Report'));
+      expect(report, isNot(contains('本地数据占用')));
+      expect(report, contains('- Local data usage: —'));
     });
   });
 }

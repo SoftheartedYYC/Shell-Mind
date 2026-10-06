@@ -13,6 +13,7 @@ import '../features/settings/presentation/pages/settings_page.dart';
 import '../features/settings/presentation/widgets/update_prompt_dialog.dart';
 import '../features/ssh_terminal/presentation/pages/terminal_page.dart';
 import '../l10n/app_localizations.dart';
+import 'global_keys.dart';
 
 // ─── Route name registry ──────────────────────────────────────────────────
 abstract final class RouteNames {
@@ -44,8 +45,9 @@ abstract final class RoutePaths {
 
 /// The application router.
 final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
-  final GlobalKey<NavigatorState> rootKey =
-      GlobalKey<NavigatorState>(debugLabel: 'root');
+  // Shared global key — the host-key trust prompt and other root-level
+  // overlays resolve their navigator through it (see global_keys.dart).
+  final GlobalKey<NavigatorState> rootKey = rootNavigatorKey;
   final GlobalKey<StatefulNavigationShellState> shellKey =
       GlobalKey<StatefulNavigationShellState>(debugLabel: 'shell');
 

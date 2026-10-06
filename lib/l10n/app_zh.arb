@@ -311,6 +311,8 @@
   "updateErrAuth": "GitHub 拒绝了本次更新请求。",
   "updateErrPermission": "更新请求被拒绝。",
   "updateErrStorage": "存储空间不足，无法完成更新。",
+  "updateErrDigestMismatch": "下载的更新包未通过 SHA-256 完整性校验，已被删除。请重新下载。",
+  "updateErrDigestMissing": "更新包缺少发布方完整性摘要（digest），本次更新已拒绝。请稍后重试。",
   "updateRetry": "重试",
   "updateDismiss": "忽略",
   "updateReleaseNotes": "版本 {tag}",
@@ -334,6 +336,8 @@
 
   "settingsAiAutoExecuteTitle": "自动执行命令",
   "settingsAiAutoExecuteSubtitle": "允许 AI 智能体无需逐次确认即可运行解析出的命令",
+  "settingsAiAutoConnectTitle": "AI 自动连接服务器",
+  "settingsAiAutoConnectSubtitle": "允许 AI 助手对未连接的已配置服务器自动发起连接并执行命令（将使用已保存的凭据）",
   "settingsAiMaxAutoLoopsTitle": "最大自动循环次数",
   "settingsAiMaxAutoLoopsSub": "限制每次响应后的自动命令执行次数上限",
   "settingsAiMaxAutoLoopsTileDesc": "AI 每次任务可自动执行命令的最大轮数",
@@ -393,8 +397,6 @@
   "aiContextBadge": "上下文",
   "aiContextLines": "来自终端的 {lines} 行",
 
-  "aiAgentAutoModeOn": "自动模式：开",
-  "aiAgentAutoModeOff": "自动模式：关",
   "aiAgentStop": "停止自动模式",
   "aiAgentExecuting": "执行中…",
   "aiAgentDefaultServer": "服务器",
@@ -621,8 +623,6 @@
 
   "serverActionDisconnect": "断开连接",
 
-  "aiAgentAutoModeDisabledHint": "自动执行已在设置中关闭",
-
   "exportChatAction": "导出为 Markdown",
   "exportChatEmpty": "暂无可导出的对话",
   "exportChatSuccess": "对话已导出到 {path}",
@@ -698,5 +698,137 @@
   "terminalTabPickerSubtitle": "选择一个服务器打开为终端标签 — 在线的立即接入，离线的先拨号",
   "terminalTabPickerEmpty": "尚未配置任何服务器",
   "terminalTabNewTooltip": "新建终端标签",
-  "terminalTabCloseTooltip": "关闭标签"
+  "terminalTabCloseTooltip": "关闭标签",
+
+  "hostKeyConfirmTitle": "信任此主机？",
+  "hostKeyConfirmMessage": "这是首次连接该服务器。请先核对指纹再决定是否信任 — 以防中间人攻击。",
+  "hostKeyEndpointLabel": "服务器",
+  "hostKeyFingerprintLabel": "SHA-256 指纹",
+  "hostKeySecurityNote": "请与您从服务器管理员处（带外渠道）获得的指纹比对。信任错误的指纹会暴露您的凭据。",
+  "hostKeyTrustAndConnect": "信任并连接",
+  "hostKeyReject": "拒绝",
+
+  "hostKeyAutoRejectCountdown": "{seconds} 秒后自动拒绝 — 仅在您确认后才会记录信任。",
+  "@hostKeyAutoRejectCountdown": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+
+  "hostKeyMismatchTitle": "主机密钥已变更",
+  "hostKeyMismatchMessage": "{host}:{port} 出示的密钥与您此前信任的不一致，连接已被拦截 — 这可能是中间人攻击，或服务器已重装。若您已核实新密钥，请在服务器编辑页重置主机信任后重新连接。",
+  "@hostKeyMismatchMessage": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "hostKeyRejectedMessage": "连接已取消 — 主机密钥未被信任。可重新连接以再次核对指纹。",
+
+  "serverResetTrustAction": "重置主机信任",
+  "serverResetTrustDesc": "清除该服务器已存储的指纹，下次连接将再次请求确认。",
+  "serverResetTrustConfirmTitle": "重置主机信任？",
+  "serverResetTrustConfirmMessage": "将移除 {identity}:{port} 已存储的指纹，下次连接会要求您重新核对主机密钥。",
+  "@serverResetTrustConfirmMessage": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverResetTrustConfirmAction": "重置",
+  "serverResetTrustDone": "主机信任已重置 — 重新连接以再次核对指纹。",
+
+  "agentErrorNoTargetServer": "没有可用的目标服务器",
+  "agentErrorExecFailed": "命令执行失败",
+  "agentErrorConnectFailed": "自动连接服务器失败",
+  "agentErrorConnectAuthRequired": "缺少已保存的凭据，无法自动连接该服务器",
+  "agentErrorDangerSkipped": "已跳过危险命令：{command}",
+  "@agentErrorDangerSkipped": {
+    "placeholders": {
+      "command": { "type": "String" }
+    }
+  },
+  "agentErrorUnexpected": "发生意外错误",
+
+  "exportDocChatTitle": "Shell-Mind 对话导出",
+  "exportDocExportedAt": "导出时间：{time}",
+  "@exportDocExportedAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "exportDocMessageCount": "消息数：{count}",
+  "@exportDocMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocUserSection": "用户",
+  "exportDocAssistantSection": "助手",
+  "exportDocToolSection": "工具执行",
+  "exportDocNoContent": "_(无内容)_",
+  "exportDocUnknownServer": "未知服务器",
+  "exportDocExitCode": "退出码 {code}",
+  "@exportDocExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "exportDocCommand": "命令",
+  "exportDocOutput": "输出",
+  "exportDocErrorOutput": "错误输出",
+
+  "exportDocDiagTitle": "Shell-Mind 诊断报告",
+  "exportDocDiagCrashCount": "捕获错误：{count} 条",
+  "@exportDocDiagCrashCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocDiagCrashesSection": "捕获的错误",
+  "exportDocDiagNone": "（无）",
+  "exportDocDiagErrorMessage": "错误摘要：{message}",
+  "@exportDocDiagErrorMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "exportDocDiagAppVersion": "App 版本：{version}",
+  "@exportDocDiagAppVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "exportDocDiagPlatform": "平台：{platform}",
+  "@exportDocDiagPlatform": {
+    "placeholders": {
+      "platform": { "type": "String" }
+    }
+  },
+  "exportDocDiagLocale": "语言：{locale}",
+  "@exportDocDiagLocale": {
+    "placeholders": {
+      "locale": { "type": "String" }
+    }
+  },
+  "exportDocDiagStorage": "本地数据占用：{value}",
+  "@exportDocDiagStorage": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "exportDocDiagAuditSection": "AI 命令审计（最近 {limit} 条摘要）",
+  "@exportDocDiagAuditSection": {
+    "placeholders": {
+      "limit": { "type": "int" }
+    }
+  },
+  "exportDocDiagSuccess": "成功",
+  "exportDocDiagFailed": "失败",
+  "exportDocDiagExitCodeOf": "退出码 {code}",
+  "@exportDocDiagExitCodeOf": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  }
 }
