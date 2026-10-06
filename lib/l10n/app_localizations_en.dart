@@ -1913,4 +1913,222 @@ class AppLocalizationsEn extends AppLocalizations {
   String exportDocDiagExitCodeOf(int code) {
     return 'exit code $code';
   }
+
+  @override
+  String get settingsTerminalScheme => 'Terminal color scheme';
+
+  @override
+  String get settingsTerminalSchemeDesc =>
+      'Choose the ANSI color palette for SSH terminals.';
+
+  @override
+  String get settingsSectionDataTransfer => 'Import & Export';
+
+  @override
+  String get transferSnippetsTitle => 'Command snippets';
+
+  @override
+  String get transferServersTitle => 'Server configurations';
+
+  @override
+  String get transferExport => 'Export';
+
+  @override
+  String get transferImport => 'Import';
+
+  @override
+  String get transferExportImport => 'Export / Import';
+
+  @override
+  String get transferExportTitle => 'Export';
+
+  @override
+  String get transferCopyJson => 'Copy JSON';
+
+  @override
+  String get transferCopied => 'Copied to clipboard';
+
+  @override
+  String get transferImportHint => 'Paste the exported JSON here…';
+
+  @override
+  String get transferSnippetsEmpty => 'No command snippets to export.';
+
+  @override
+  String get transferServersEmpty => 'No servers to export.';
+
+  @override
+  String get transferImportNothing => 'No valid items found in the import.';
+
+  @override
+  String transferSnippetsImported(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Imported $count snippets',
+      one: 'Imported 1 snippet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transferServersImported(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Imported $count servers',
+      one: 'Imported 1 server',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transferImportFailed(String message) {
+    return 'Import failed: $message';
+  }
+
+  @override
+  String transferExportFailed(String message) {
+    return 'Export failed: $message';
+  }
+
+  @override
+  String get sessionsTitle => 'Conversations';
+
+  @override
+  String get sessionsNew => 'New conversation';
+
+  @override
+  String get sessionsSearch => 'Search conversations…';
+
+  @override
+  String get sessionsEmpty => 'No conversations yet';
+
+  @override
+  String sessionsNoMatch(String query) {
+    return 'No match: \"$query\"';
+  }
+
+  @override
+  String get sessionsRename => 'Rename';
+
+  @override
+  String get sessionsRenameHint => 'Conversation title';
+
+  @override
+  String get sessionsDelete => 'Delete';
+
+  @override
+  String sessionsDeleteConfirm(String title) {
+    return 'Delete \"$title\"? This cannot be undone.';
+  }
+
+  @override
+  String sessionsMessageCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count messages',
+      one: '1 message',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsSectionNotifications => 'Notifications';
+
+  @override
+  String get settingsNotificationsTitle => 'Background alerts';
+
+  @override
+  String get settingsNotificationsDesc =>
+      'Notify when an SSH session drops or an AI task finishes while the app is in the background.';
+
+  @override
+  String get sftpTitle => 'Files';
+
+  @override
+  String get sftpNotConnected => 'Not connected to this server.';
+
+  @override
+  String get sftpLoading => 'Loading files…';
+
+  @override
+  String get sftpEmpty => 'This folder is empty.';
+
+  @override
+  String get sftpDownload => 'Download';
+
+  @override
+  String sftpDownloaded(String path, int size) {
+    return 'Downloaded $path ($size bytes)';
+  }
+
+  @override
+  String get sftpDownloadFailed => 'Download failed';
+
+  @override
+  String get sftpPreviewError => 'Preview failed';
+
+  @override
+  String get sftpNewFolderName => 'New folder';
+
+  @override
+  String get sftpRefresh => 'Refresh';
+
+  @override
+  String get sftpDelete => 'Delete';
+
+  @override
+  String sftpDeleteConfirm(String name) {
+    return 'Delete \"$name\"?';
+  }
+
+  @override
+  String get sftpRename => 'Rename';
+
+  @override
+  String get sftpTooltip => 'Browse files (SFTP)';
+
+  @override
+  String get terminalMoreTooltip => 'More';
+
+  @override
+  String get tunnelsTitle => 'Port forwarding';
+
+  @override
+  String get tunnelsEmpty => 'No active tunnels.';
+
+  @override
+  String get tunnelsAddLocal => 'Local forward';
+
+  @override
+  String get tunnelsAddRemote => 'Remote forward';
+
+  @override
+  String get tunnelsLocalPort => 'Local port';
+
+  @override
+  String get tunnelsRemoteHost => 'Remote host';
+
+  @override
+  String get tunnelsRemotePort => 'Remote port';
+
+  @override
+  String get tunnelsAdd => 'Add';
+
+  @override
+  String get tunnelsClose => 'Close';
+
+  @override
+  String get tunnelsTooltip => 'Port forwarding (SSH tunnel)';
+
+  @override
+  String get tunnelsError => 'Tunnel failed';
+
+  @override
+  String get tunnelsInvalidPort => 'Port must be between 1 and 65535.';
+
+  @override
+  String get settingsLanguageTitle => 'Language';
 }

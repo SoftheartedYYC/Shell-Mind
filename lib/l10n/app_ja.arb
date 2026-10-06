@@ -1,0 +1,1170 @@
+{
+  "@@locale": "ja",
+
+  "appTitle": "ShellMind",
+
+  "navServers": "サーバー",
+  "navAiChat": "AI チャット",
+  "navSettings": "設定",
+
+  "pageNotFound": "ページが見つかりません",
+  "backToServers": "サーバーに戻る",
+
+  "serversTitle": "サーバー",
+  "serversHostCount": "{count} 台のホスト",
+  "@serversHostCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "serversSearch": "サーバーを検索…",
+  "serversAdd": "サーバーを追加",
+  "serversEmpty": "サーバーがまだありません",
+  "serversEmptyHint": "最初の SSH サーバーを追加して開始しましょう。",
+  "serversDeleteConfirmTitle": "サーバーを削除",
+  "serversDeleteConfirmMessage": "\"{name}\" を削除しますか？\n\n{identity}:{port} と保存された認証情報は完全に削除されます。",
+  "@serversDeleteConfirmMessage": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serversDeleted": "{identity} を削除しました",
+  "@serversDeleted": {
+    "placeholders": {
+      "identity": { "type": "String" }
+    }
+  },
+  "serversDeleteFailed": "削除に失敗しました: {message}",
+  "@serversDeleteFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "serversLoading": "サーバーを読み込み中",
+  "serversUngrouped": "未分類",
+  "serversSortName": "a–z",
+  "serversSortRecent": "最近",
+  "serversQuickStart": "クイックスタート",
+  "serversQuickStep1Title": "ホストを追加",
+  "serversQuickStep1Desc": "パスワードまたは鍵認証で SSH エンドポイントを登録します。",
+  "serversQuickStep2Title": "接続をテスト",
+  "serversQuickStep2Desc": "登録前にポートを確認します。入力ミスをすばやく検出できます。",
+  "serversQuickStep3Title": "接続",
+  "serversQuickStep3Desc": "ターミナルセッションを開きます — 完全な PTY、配色、vim に対応。",
+  "serversNoMatch": "一致なし: \"{query}\"",
+  "@serversNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "serversClearFilter": "フィルターをクリア",
+  "serversReadError": "サーバー一覧を読み込めませんでした。",
+
+  "serverEditTitle": "サーバーを追加",
+  "serverEditTitleEdit": "サーバーを編集",
+  "serverNotFound": "サーバーが見つかりません",
+  "serverValidationNameRequired": "名前が必要です",
+  "serverValidationHostRequired": "ホストが必要です",
+  "serverValidationNoSpaces": "スペースは使用できません",
+  "serverValidationRequired": "必須",
+  "serverValidationNumeric": "数値",
+  "serverValidationPortRange": "1–65535",
+  "serverValidationUsernameRequired": "ユーザー名が必要です",
+  "serverValidationPasswordRequired": "パスワードが必要です",
+  "serverValidationPrivateKeyRequired": "秘密鍵が必要です",
+  "serverAdded": "サーバーを追加しました: {identity}:{port}",
+  "@serverAdded": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverSaved": "保存しました: {identity}:{port}",
+  "@serverSaved": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverSaveFailed": "保存に失敗しました: {message}",
+  "@serverSaveFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "serverTestEnterHost": "最初にホストアドレスを入力してください",
+  "serverTestProbing": "{host}:{port} を確認しています…",
+  "@serverTestProbing": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestReachable": "{host}:{port} — 到達可能",
+  "@serverTestReachable": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestTimedOut": "{host}:{port} — タイムアウト",
+  "@serverTestTimedOut": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestRefused": "{host}:{port} — 拒否 / 到達不可",
+  "@serverTestRefused": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestProbeFailed": "{host}:{port} — 確認に失敗しました",
+  "@serverTestProbeFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestHandshakeFailed": "{host}:{port} SSH ハンドシェイクに失敗しました",
+  "@serverTestHandshakeFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestAuthFailed": "{host}:{port} 認証に失敗しました - ユーザー名と認証情報を確認してください",
+  "@serverTestAuthFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverLoading": "読み込み中",
+  "serverSaveChanges": "変更を保存",
+  "serverSectionIdentity": "識別情報",
+  "serverSectionConnection": "接続",
+  "serverSectionAuthentication": "認証",
+  "serverFieldLabel": "ラベル",
+  "serverFieldLabelHint": "prod-web-01",
+  "serverFieldGroup": "グループ (任意)",
+  "serverFieldGroupHint": "production",
+  "serverFieldHost": "ホスト",
+  "serverFieldHostHint": "10.0.0.5",
+  "serverFieldPort": "ポート",
+  "serverFieldUsername": "ユーザー名",
+  "serverFieldUsernameHint": "root",
+  "serverFieldPassword": "パスワード",
+  "serverFieldPasswordStored": "保存済み — 変更しない場合は空のまま",
+  "serverFieldPrivateKey": "秘密鍵 (PEM)",
+  "serverFieldPassphrase": "鍵のパスフレーズ (任意)",
+  "serverAuthPassword": "パスワード",
+  "serverAuthPrivateKey": "秘密鍵",
+  "serverTestIdle": "\"テスト\" をタップして接続を確認",
+  "serverSecurityNote": "認証情報は端末のキーストアで暗号化されます。Hive メタデータストアには保存されず、この端末の外に出ることもありません。",
+  "serverTesting": "テスト中…",
+  "serverTest": "テスト",
+  "serverSaving": "保存中…",
+
+  "serverCopiedAddress": "{address} をコピーしました",
+  "@serverCopiedAddress": {
+    "placeholders": {
+      "address": { "type": "String" }
+    }
+  },
+  "serverActions": "サーバー操作",
+  "serverActionConnect": "接続",
+  "serverActionEdit": "編集",
+  "serverActionEditDetails": "詳細を編集",
+  "serverActionCopySsh": "SSH コマンドをコピー",
+  "serverActionDelete": "削除",
+  "serverActionDeleteServer": "サーバーを削除",
+  "serverOnline": "オンライン",
+  "serverNeverConnected": "未接続",
+  "serverJustNow": "たった今",
+  "serverMinutesAgo": "{minutes} 分前",
+  "@serverMinutesAgo": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "serverHoursAgo": "{hours} 時間前",
+  "@serverHoursAgo": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "serverDaysAgo": "{days} 日前",
+  "@serverDaysAgo": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "terminalHostNotFound": "ホストが見つかりません",
+  "terminalHostNotFoundMessage": "ID \"{id}\" に一致する保存済みサーバーがありません。削除された可能性があります。",
+  "@terminalHostNotFoundMessage": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "terminalBackToServers": "サーバーに戻る",
+  "terminalConnectionFailed": "接続に失敗しました。",
+  "terminalSessionClosed": "セッションが終了しました",
+  "terminalSessionClosedMessage": "{name} への接続が切断されました。",
+  "@terminalSessionClosedMessage": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "terminalReconnect": "再接続",
+  "terminalAuthenticating": "認証中",
+  "terminalConnecting": "接続中",
+  "terminalResolvingHost": "ホストを解決しています…",
+  "terminalTooltipDisconnectBack": "切断して戻る",
+  "terminalTooltipSmallerText": "文字を小さく",
+  "terminalTooltipLargerText": "文字を大きく",
+  "terminalTooltipDisconnect": "切断",
+  "terminalRetryAvailable": "再試行可能",
+  "terminalStatusConnected": "接続済み",
+  "terminalStatusOffline": "オフライン",
+  "terminalStatusError": "エラー",
+
+  "aiChatTitle": "AI アシスタント",
+  "aiChatStatusSetup": "セットアップ",
+  "aiChatStatusStreaming": "ストリーミング",
+  "aiChatStatusReady": "準備完了",
+  "aiChatClearConversation": "会話をクリア",
+  "aiChatSuggestion1": "ls -la の出力の意味を説明して",
+  "aiChatSuggestion2": "どのプロセスがポートを使用しているか調べる方法は？",
+  "aiChatSuggestion3": "ログを tail してエラーを grep する方法を教えて",
+  "aiChatSuggestion4": "CSV の列を合計する awk ワンライナーを書いて",
+  "aiChatTryAsking": "質問してみる",
+  "aiChatIntroTitle": "あなたのターミナルの相棒",
+  "aiChatIntroBody": "コマンド、エラー、またはログ出力の一部を貼り付けてください。ShellMind が何が起きたかを説明し、次の手を提案し、コマンドを書いてくれます。",
+  "aiChatNoKeyTitle": "API キーが設定されていません",
+  "aiChatNoKeyMessage": "{provider} の API キーを追加してアシスタントを起動してください。キーはこの端末に暗号化されて保存され、モデルを呼び出す以外に端末の外に出ることはありません。",
+  "@aiChatNoKeyMessage": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiChatOpenSettings": "AI 設定を開く",
+  "aiChatCheckingCredentials": "認証情報を確認中",
+  "aiChatInputHint": "何でも質問してください…",
+  "aiChatInputDisabled": "開始するには API キーを設定してください",
+  "aiChatError": "エラー",
+  "aiChatAssistantName": "ShellMind",
+  "aiChatCopied": "コピーしました",
+  "aiChatCopy": "コピー",
+  "aiChatThinking": "考え中…",
+
+  "settingsTitle": "設定",
+  "settingsSearchTooltip": "設定を検索",
+  "settingsStable": "安定版",
+  "settingsSectionAppearance": "外観と言語",
+  "settingsThemeSystem": "システム",
+  "settingsThemeLight": "ライト",
+  "settingsThemeDark": "ダーク",
+  "settingsSectionLanguage": "言語",
+  "settingsLanguageSystem": "システム",
+  "settingsLanguageZh": "中文",
+  "settingsLanguageEn": "English",
+  "settingsSectionAiProvider": "AI プロバイダー",
+  "settingsSectionAiAgent": "AI エージェント",
+  "settingsSectionSsh": "SSH",
+  "settingsSectionServers": "サーバー",
+  "settingsSectionAboutUpdate": "このアプリとアップデート",
+  "settingsSectionStoragePrivacy": "ストレージとプライバシー",
+  "settingsSectionResources": "リソース",
+  "settingsTileSecrets": "機密情報",
+  "settingsTileEncrypted": "暗号化",
+  "settingsTileLocalCache": "ローカルキャッシュ",
+  "settingsTileClearData": "すべてのデータを消去",
+  "settingsTileLicenses": "オープンソースライセンス",
+  "settingsTileReportIssue": "問題を報告",
+  "settingsFooter": "モダンなワークフローのための SSH + AI アシスタント",
+
+  "settingsSecretsDialogTitle": "機密情報と暗号化",
+  "settingsSecretsDialogBody": "認証情報 (サーバーのパスワード、秘密鍵、AI API キー) は、プラットフォームのキーストア (Android Keystore / iOS Keychain) を使用して常に暗号化されて保存されます。この保護は設計上のものであり、無効にすることはできません。認証情報を変更するには、サーバー編集ページまたは AI 設定で編集または削除してください。",
+  "settingsDialogOk": "OK",
+  "settingsDialogClose": "閉じる",
+  "settingsCacheDialogTitle": "ローカルキャッシュ",
+  "settingsCacheHiveData": "アプリデータ",
+  "settingsCacheDownloads": "ダウンロード済みアップデート",
+  "settingsCacheTotal": "合計",
+  "settingsCacheDialogHint": "ダウンロードキャッシュをクリアすると、ダウンロード済みのアップデートパッケージ (APK) が削除されます。サーバー、キー、チャット履歴は保持されます。",
+  "settingsCacheClearDownloads": "ダウンロードキャッシュをクリア",
+  "settingsCacheCleared": "{freed} を解放しました",
+  "@settingsCacheCleared": {
+    "placeholders": {
+      "freed": { "type": "String" }
+    }
+  },
+  "settingsClearDataTitle": "すべてのデータを消去しますか？",
+  "settingsClearDataMessage": "この端末上のすべてのサーバー、保存済み認証情報、AI キー、チャット履歴、設定が完全に削除されます。この操作は取り消せません。",
+  "settingsClearDataConfirm": "すべて消去",
+  "settingsDataCleared": "すべてのデータを消去しました",
+  "settingsClearDataFailed": "データを消去できませんでした: {message}",
+  "@settingsClearDataFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "settingsIssueLinkCopied": "問題のリンクをクリップボードにコピーしました。",
+  "settingsAboutGithub": "GitHub リポジトリ",
+
+  "settingsHideIp": "IP アドレスを隠す",
+  "settingsHideIpDesc": "サーバー一覧と AI ページで IP アドレスをマスクします",
+  "serverMaskedAddress": "アドレスは非表示",
+
+  "aiSettingsApiKeyTitle": "{provider} API キー",
+  "@aiSettingsApiKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsKeySet": "設定済み",
+  "aiSettingsKeyNotConfigured": "未設定",
+  "aiSettingsGetApiKey": "API キーを取得",
+  "aiSettingsTemperature": "温度",
+  "aiSettingsRemoveKey": "キーを削除",
+  "aiSettingsKeySaved": "{provider} API キーを安全に保存しました。",
+  "@aiSettingsKeySaved": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsRemoveKeyTitle": "{provider} キーを削除しますか？",
+  "@aiSettingsRemoveKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsRemoveKeyMessage": "新しいキーを追加するまで、このプロバイダーのアシスタントは動作しなくなります。",
+  "aiSettingsRemoveKeyConfirm": "削除",
+  "aiSettingsGetKeyTitle": "{provider} キーを取得",
+  "@aiSettingsGetKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsGetKeyMessage": "ブラウザーでプロバイダーのコンソールを開いて API キーを作成し、ここに貼り付けてください。",
+  "aiSettingsClose": "閉じる",
+  "aiSettingsLinkCopied": "リンクをクリップボードにコピーしました。",
+  "aiSettingsCopyLink": "リンクをコピー",
+  "aiSettingsKeyConfigured": "キー設定済み",
+  "aiSettingsNotConfigured": "未設定",
+  "aiSettingsUpdateKeyTitle": "{provider} キーを更新",
+  "@aiSettingsUpdateKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsAddKeyTitle": "{provider} キーを追加",
+  "@aiSettingsAddKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsKeyStorageNote": "この端末に暗号化されて保存されます。AI プロバイダーを呼び出すためにのみ使用されます。",
+  "aiSettingsApiKeyHint": "API キー…",
+  "aiSettingsSave": "保存",
+
+  "modelDescFastAffordable": "高速で低コスト",
+  "modelDescMostCapable": "最高性能",
+  "modelDescLegacyFast": "従来の高速",
+  "modelDescGeneralConversation": "一般的な会話",
+  "modelDescAdvancedReasoning": "高度な推論",
+  "modelDescFastResponse": "高速応答",
+  "modelDescBalanced": "バランス",
+  "modelDescFreeFast": "無料で高速",
+  "modelDescEnhanced": "強化版",
+  "modelDescStandard": "標準",
+  "modelDescLightweight": "軽量",
+  "modelDescRlEnhanced": "RL 強化",
+
+   "aiModelsTitle": "モデル",
+   "aiModelsRefresh": "モデル一覧を更新",
+   "aiModelsAddCustom": "カスタムモデルを追加",
+   "aiModelsAddCustomHint": "モデル ID (例: deepseek-chat)",
+   "aiModelsAdd": "追加",
+   "aiModelsCustomBadge": "カスタム",
+   "aiModelsFetchFailed": "モデルを取得できませんでした — 内蔵の一覧を表示しています。",
+   "aiModelsRemoveCustom": "カスタムモデルを削除",
+   "aiModelsEmpty": "モデルがありません",
+   "aiModelsInvalidId": "モデル ID を入力してください。",
+   "aiModelsDuplicate": "このモデルは既に一覧にあります。",
+  "aiModelsPickerTitle": "モデルを選択",
+  "aiModelsSearchHint": "モデルを検索",
+  "aiModelsSearchEmpty": "検索に一致するモデルはありません。",
+
+  "aiProvidersAddTile": "カスタムプロバイダーを追加",
+  "aiProvidersAddTitle": "カスタムプロバイダーを追加",
+  "aiProvidersFieldName": "名前",
+  "aiProvidersFieldNameHint": "例: SiliconFlow",
+  "aiProvidersFieldBaseUrl": "ベース URL",
+  "aiProvidersFieldBaseUrlHint": "https://api.example.com/v1",
+  "aiProvidersFieldModel": "デフォルトモデル (任意)",
+  "aiProvidersFieldModelHint": "モデル ID (例: deepseek-chat)",
+  "aiProvidersAddConfirm": "追加",
+  "aiProvidersInvalidInput": "名前とベース URL を入力してください。",
+  "aiProvidersInvalidUrl": "ベース URL は http:// または https:// で始まる必要があります",
+  "aiProvidersDuplicateName": "この名前のプロバイダーは既に存在します。",
+  "aiProvidersAdded": "カスタムプロバイダーを追加しました。",
+  "aiProvidersAddFailed": "プロバイダーを追加できませんでした — 入力を確認してください。",
+  "aiProvidersDeleteTile": "カスタムプロバイダーを削除",
+  "aiProvidersDeleteTitle": "{provider} を削除しますか？",
+  "@aiProvidersDeleteTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiProvidersDeleteMessage": "保存された API キー、記憶されたモデル、カスタムモデルも削除されます。内蔵プロバイダーは削除できません。",
+  "aiProvidersDeleteConfirm": "削除",
+  "aiProvidersPickerTitle": "プロバイダーを選択",
+
+  "updateVersion": "バージョン",
+  "updateSoftwareUpdate": "ソフトウェアアップデート",
+  "updateChecking": "確認中",
+  "updateUpToDate": "最新",
+  "updateCheckAgain": "もう一度確認",
+  "updateReady": "準備完了",
+  "updateNew": "新規",
+  "updateCheck": "確認",
+  "updateAwaitingResponse": "応答待ち",
+  "updateAlreadyLatest": "既に最新のビルドです",
+  "updateCurrentVersionLatest": "v{version} は GitHub で公開されている最新リリースです。",
+  "@updateCurrentVersionLatest": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "updateRunningVersion": "実行中 v{current} — リモートの最新は v{latest} です。",
+  "@updateRunningVersion": {
+    "placeholders": {
+      "current": { "type": "String" },
+      "latest": { "type": "String" }
+    }
+  },
+  "updateCheckedAgo": "{timeAgo} に確認済み",
+  "@updateCheckedAgo": {
+    "placeholders": {
+      "timeAgo": { "type": "String" }
+    }
+  },
+  "updateAvailable": "アップデートがあります",
+  "updatePre": "プレ",
+  "updateDownloadInstall": "ダウンロードとインストール",
+  "updateLater": "後で",
+  "updateApkHint": "APK のインストールは Android でのみサポートされています。ここではファイルをダウンロードできます。",
+  "updateDownloading": "{tag} をダウンロード中",
+  "@updateDownloading": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateSize": "サイズ",
+  "updateRate": "速度",
+  "updateEta": "残り時間",
+  "updateElapsed": "経過時間",
+  "updateCancel": "キャンセル",
+  "updateKeepForeground": "アプリを前面に維持",
+  "updateDownloadComplete": "ダウンロード完了",
+  "updateInstallHint": "Android が確認を求めます。インストーラーの実行中は ShellMind が終了しますが、サーバーと履歴は保持されます。",
+  "updateLaunching": "起動中...",
+  "updateInstallNow": "今すぐインストール",
+  "updateDelete": "削除",
+  "updateInstallTitle": "{tag} をインストールしますか？",
+  "@updateInstallTitle": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateInstallMessage": "システムのパッケージインストーラーが開きます。インストール中は ShellMind が終了し、新しいバージョンで再度開きます。",
+  "updateNotNow": "今はしない",
+  "updateInstall": "インストール",
+  "updateCheckFailed": "アップデート確認に失敗しました。",
+  "updateErrorTitleNoReleases": "リリースなし",
+  "updateErrorTitleGeneric": "アップデート確認に失敗しました",
+  "updateErrNoReleases": "ShellMind のリリースはまだ公開されていません。",
+  "updateErrRateLimit": "GitHub の API レート制限に達しました。しばらくしてから再試行してください。",
+  "updateErrTimeout": "GitHub へのリクエストがタイムアウトしました。接続を確認して再試行してください。",
+  "updateErrNetwork": "GitHub に接続できませんでした。ネットワーク接続を確認してください。",
+  "updateErrAuth": "GitHub がアップデートリクエストを拒否しました。",
+  "updateErrPermission": "アップデートリクエストが拒否されました。",
+  "updateErrStorage": "アップデートを完了するためのストレージ容量が不足しています。",
+  "updateErrDigestMismatch": "ダウンロードしたアップデートが SHA-256 整合性チェックに失敗したため削除されました。ダウンロードを再試行してください。",
+  "updateErrDigestMissing": "アップデートパッケージに公開された整合性ダイジェストがないため、アップデートは拒否されました。後でもう一度お試しください。",
+  "updateRetry": "再試行",
+  "updateDismiss": "閉じる",
+  "updateReleaseNotes": "リリース {tag}",
+  "@updateReleaseNotes": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateNotesLabel": "ノート",
+  "updateNewVersionAvailable": "新しいバージョンがあります",
+  "updateRemindLater": "後で通知",
+  "updateCancelDownload": "ダウンロードをキャンセル",
+  "updateInstallTag": "{tag} をインストール",
+  "@updateInstallTag": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateInstallLaterFromSettings": "後で設定からインストール",
+  "updateCouldNotComplete": "アップデートを完了できませんでした。",
+  "updateClose": "閉じる",
+  "updatePromptInstallHint": "インストーラーの実行中は Android が ShellMind を終了します。サーバー、キー、チャット履歴は保持されます。",
+
+  "commonCancel": "キャンセル",
+  "commonDelete": "削除",
+  "commonRetry": "再試行",
+  "commonLoading": "読み込み中...",
+  "commonNoData": "データがありません",
+  "commonNothingToShow": "ここにはまだ表示するものがありません。",
+  "commonOk": "OK",
+
+  "settingsAiAutoExecuteTitle": "コマンドの自動実行",
+  "settingsAiAutoExecuteSubtitle": "解析されたコマンドを毎回確認せずに AI エージェントが実行することを許可",
+  "settingsAiAutoConnectTitle": "AI サーバー自動接続",
+  "settingsAiAutoConnectSubtitle": "設定済みだがオフラインのサーバーに AI アシスタントが自動接続してコマンドを実行することを許可します (保存済みの認証情報が使用されます)",
+  "settingsAiMaxAutoLoopsTitle": "自動ループの最大反復回数",
+  "settingsAiMaxAutoLoopsSub": "応答ごとの自動コマンド実行回数の上限",
+  "settingsAiMaxAutoLoopsTileDesc": "AI がタスクごとに実行できるコマンドラウンドの上限",
+  "settingsAiMaxAutoLoopsHint": "これは AI タスクごとの実行ラウンドの上限です。SSH 再接続の試行回数ではありません (それは SSH の下にあります)。",
+
+  "terminalAskAi": "AI に質問",
+  "terminalAskAiSubtitle": "選択したテキストを AI アシスタントに送信",
+  "terminalTooltipAskAi": "AI に質問",
+
+  "aiChatNoConnection": "まずサーバーターミナルに接続してください",
+  "aiChatAnalyzePrompt": "上記のコマンド出力を分析し、結果の意味を説明し、必要に応じてフォローアップの提案をしてください。",
+
+  "aiExecuteButton": "サーバーで実行",
+  "aiExecuteTitle": "コマンド実行の確認",
+  "aiExecuteConfirmButton": "実行",
+  "aiExecuteConfirmAnyway": "それでも実行",
+  "aiExecuteDangerWarning": "⚠ 危険なコマンド",
+  "aiExecuteDangerText": "このコマンドは破壊的であり、データ損失やシステム障害を引き起こす可能性があります。",
+  "aiExecuteCommandLabel": "実行するコマンド:",
+  "aiExecuteTargetServer": "対象サーバー:",
+  "aiExecuteSelectServer": "対象サーバーを選択",
+  "aiExecuteNoServer": "まずサーバーに接続してください",
+  "aiExecuteAtLeastOne": "少なくとも 1 つのサーバーを選択してください",
+  "aiExecuteSelectHint": "このコマンドを実行するサーバーを選択してください",
+  "aiExecuteRunCount": "実行 ({count})",
+  "@aiExecuteRunCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiExecuteSelectAll": "すべて選択",
+  "aiExecuteClearSelection": "クリア",
+  "aiExecuteUptime": "オンライン {hours} 時間 {minutes} 分",
+  "@aiExecuteUptime": {
+    "placeholders": {
+      "hours": { "type": "int" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "aiExecuteSuccess": "コマンドを正常に実行しました",
+  "aiExecuteFailed": "コマンドの実行に失敗しました",
+
+  "aiServerManageTitle": "サーバー",
+  "aiServerManageSubtitle": "AI アシスタントが操作するサーバーを接続",
+  "aiServerOnlineCount": "{count} 台オンライン",
+  "@aiServerOnlineCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiServerDone": "完了",
+  "aiServerConnecting": "接続中…",
+  "aiServerOffline": "オフライン",
+  "aiServerNoCredential": "保存済みの認証情報がありません — 最初にサーバーページでパスワードまたはキーを保存してください",
+  "aiServerConnectFailed": "接続に失敗しました",
+
+  "aiToolResultCommand": "コマンド",
+  "aiToolResultOutput": "コマンド出力",
+  "aiToolResultExitCode": "終了コード: {code}",
+  "@aiToolResultExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "aiToolResultElapsed": "経過時間",
+  "aiToolResultAnalyzeButton": "AI に出力を分析させる",
+  "aiToolResultCollapsedShow": "さらに {total} 行",
+  "@aiToolResultCollapsedShow": {
+    "placeholders": {
+      "total": { "type": "int" }
+    }
+  },
+  "aiToolResultExpandedHide": "出力を隠す",
+  "aiToolResultStderrLabel": "エラー出力:",
+
+  "aiContextToggleAttach": "ターミナルコンテキストを添付",
+  "aiContextToggleDetach": "ターミナルコンテキスト添付済み",
+  "aiContextBadge": "コンテキスト",
+  "aiContextLines": "ターミナルから {lines} 行",
+  "@aiContextLines": {
+    "placeholders": {
+      "lines": { "type": "int" }
+    }
+  },
+
+  "aiAgentStop": "自動モードを停止",
+  "aiAgentExecuting": "実行中…",
+  "aiAgentDefaultServer": "サーバー",
+
+  "aiTimelineTitle": "実行タイムライン",
+  "aiTimelineOpen": "実行タイムライン",
+  "aiTimelineEmpty": "まだコマンドは実行されていません",
+  "aiTimelineEmptyHint": "チャットまたは自動モードでコマンドを実行すると、一連の流れがここに表示されます。",
+  "aiTimelineStatRounds": "{count} ラウンド",
+  "@aiTimelineStatRounds": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatCommands": "{count} コマンド",
+  "@aiTimelineStatCommands": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatSuccess": "{count} 件成功",
+  "@aiTimelineStatSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatFailed": "{count} 件失敗",
+  "@aiTimelineStatFailed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStarted": "開始 {time}",
+  "@aiTimelineStarted": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineEnded": "終了 {time}",
+  "@aiTimelineEnded": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineExitCode": "終了コード: {code}",
+  "@aiTimelineExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "aiTimelineNoExitCode": "終了コードなし",
+  "aiTimelineOutput": "出力",
+  "aiTimelineOutputEmpty": "出力なし",
+  "aiTimelineErrorOutput": "エラー出力",
+  "aiTimelineRunning": "実行中…",
+  "aiTimelineClose": "閉じる",
+
+  "sshReconnectToggle": "切断時に自動再接続",
+  "sshReconnectToggleDesc": "指数バックオフで切断された SSH セッションを再試行します",
+  "sshReconnectMaxAttempts": "再接続の最大試行回数",
+  "sshReconnectMaxAttemptsDesc": "切断後の自動再接続の最大試行回数 — 0 は成功するまで再試行することを意味します",
+  "sshReconnectMaxAttemptsValue": "{count}",
+  "@sshReconnectMaxAttemptsValue": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sshReconnectMaxAttemptsUnlimited": "無制限",
+  "sshReconnectStatusReconnecting": "再接続中 (試行 {attempt})",
+  "@sshReconnectStatusReconnecting": {
+    "placeholders": {
+      "attempt": { "type": "int" }
+    }
+  },
+  "sshReconnectStatusReconnectingOf": "再接続中 (試行 {attempt} / {max})",
+  "@sshReconnectStatusReconnectingOf": {
+    "placeholders": {
+      "attempt": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUp": "自動再接続を断念しました",
+  "sshReconnectGaveUpMessage": "{max} 回試行しても {name} に到達できませんでした。",
+  "@sshReconnectGaveUpMessage": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUpMessageUnlimited": "{name} に到達できませんでした。",
+  "@sshReconnectGaveUpMessageUnlimited": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sshReconnectRetryNow": "今すぐ再試行",
+  "sshReconnectStopAuto": "停止",
+  "sshReconnectReconnectedSnack": "{name} に再接続しました",
+  "@sshReconnectReconnectedSnack": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "snippetsTitle": "コマンドスニペット",
+  "snippetsSubtitle": "すぐに再利用できるようコマンドを保存",
+  "snippetsAddTooltip": "スニペットを追加",
+  "snippetsAddTitle": "新しいスニペット",
+  "snippetsSave": "保存",
+  "snippetsCommandLabel": "コマンド",
+  "snippetsCommandHint": "例: docker ps -a",
+  "snippetsNameLabel": "名前 (任意)",
+  "snippetsNameHint": "例: すべてのコンテナを一覧表示",
+  "snippetsCommandRequired": "コマンドテキストが必要です",
+  "snippetsDeleteTooltip": "スニペットを削除",
+  "snippetsEmptyTitle": "スニペットがまだありません",
+  "snippetsEmptyMessage": "よく使うコマンドを保存して、ワンタップで挿入または実行できます。",
+  "snippetsLoadFailed": "スニペットを読み込めませんでした",
+
+  "healthTitle": "フリートのヘルス",
+  "healthOnlineRatio": "{online}/{total} オンライン",
+  "@healthOnlineRatio": {
+    "placeholders": {
+      "online": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "healthProbing": "確認中…",
+  "healthProbeTooltip": "ヘルスチェックを実行",
+  "healthProbedAt": "{time} に確認",
+  "@healthProbedAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "healthMoodAllOnline": "すべてのシステム正常",
+  "healthMoodDegraded": "一部のサーバーに到達できません",
+  "healthMoodAllOffline": "すべてのサーバーに到達できません",
+  "healthOfflineServers": "オフライン: {names}",
+  "@healthOfflineServers": {
+    "placeholders": {
+      "names": { "type": "String" }
+    }
+  },
+  "healthNoData": "更新をタップしてすべてのサーバーを確認",
+  "healthUptime": "稼働 {brief}",
+  "@healthUptime": {
+    "placeholders": {
+      "brief": { "type": "String" }
+    }
+  },
+  "healthLoad": "負荷 {value}",
+  "@healthLoad": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "healthDiagIntro": "こちらが私のフリートのヘルスレポートです:",
+  "healthDiagStats": "{total} 台中 {online} 台のサーバーがオンラインです。",
+  "@healthDiagStats": {
+    "placeholders": {
+      "online": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "healthDiagOfflineItem": "- {name}: オフライン",
+  "@healthDiagOfflineItem": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "healthDiagOnlineItem": "- {name}: オンライン ({details})",
+  "@healthDiagOnlineItem": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "details": { "type": "String" }
+    }
+  },
+  "healthDiagOutro": "ヘルスデータを分析し、異常な点 (高負荷、最近の再起動) があれば指摘し、次に確認すべきことを提案してください。",
+  "healthDiagnose": "AI 診断",
+  "healthStaleNote": "最後の確認以降に一部のサーバーがオフラインになりました。",
+
+  "auditTitle": "コマンド監査ログ",
+  "auditTileDesc": "AI エージェントが実行したコマンド",
+  "auditEmptyTitle": "監査エントリはまだありません",
+  "auditEmptyMessage": "AI エージェントが実行したコマンドがここに記録されます。",
+  "auditFilteredEmpty": "現在のフィルターに一致するエントリはありません",
+  "auditFilterAllServers": "すべてのサーバー",
+  "auditFilterAllModes": "すべてのモード",
+  "auditFilterAllResults": "すべての結果",
+  "auditFilterConfirmed": "確認済み",
+  "auditFilterAuto": "自動",
+  "auditFilterSuccess": "成功",
+  "auditFilterFailed": "失敗",
+  "auditModeConfirmed": "確認済み",
+  "auditModeAuto": "自動",
+  "auditStatusSuccess": "成功",
+  "auditStatusFailed": "失敗",
+  "auditDangerousBadge": "危険",
+  "auditExitCode": "終了コード {code}",
+  "@auditExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "auditOutputSummary": "出力の概要",
+  "auditNoOutput": "出力なし",
+  "auditClearTooltip": "監査ログをクリア",
+  "auditClearConfirmTitle": "監査ログをクリア",
+  "auditClearConfirmMessage": "{count} 件の監査エントリがすべて完全に削除されます。",
+  "@auditClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "auditClearAction": "クリア",
+  "auditCleared": "監査ログをクリアしました",
+  "auditEntriesCount": "{count} 件のエントリ",
+  "@auditEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "serverActionDisconnect": "切断",
+
+  "exportChatAction": "Markdown としてエクスポート",
+  "exportChatEmpty": "まだエクスポートするものはありません",
+  "exportChatSuccess": "会話を {path} にエクスポートしました",
+  "@exportChatSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "exportChatFailed": "エクスポートに失敗しました: {error}",
+  "@exportChatFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "diagTitle": "診断",
+  "diagTileDesc": "アプリのエラーと診断エクスポート",
+  "diagEmptyTitle": "エラーは記録されていません",
+  "diagEmptyMessage": "未処理の例外がここに記録され、問題報告に役立ちます。",
+  "diagEntriesCount": "{count} 件のエラー",
+  "@diagEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagSourceFlutter": "UI エラー",
+  "diagSourcePlatform": "ランタイムエラー",
+  "diagSourceZone": "非同期タスク",
+  "diagStackTrace": "スタックトレース",
+  "diagNoStackTrace": "スタックトレースなし",
+  "diagExportAction": "診断レポートをエクスポート",
+  "diagExportEmpty": "報告するものはありません — 基本情報をエクスポートします",
+  "diagExportSuccess": "診断レポートを {path} にエクスポートしました",
+  "@diagExportSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "diagExportFailed": "エクスポートに失敗しました: {error}",
+  "@diagExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "diagPrivacyNote": "診断コンテンツは編集済みです — パスワード、秘密鍵、API キーは含まれません。",
+  "diagClearTooltip": "エラー記録をクリア",
+  "diagClearConfirmTitle": "エラー記録をクリア",
+  "diagClearConfirmMessage": "{count} 件のエラー記録がすべて完全に削除されます。",
+  "@diagClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagClearAction": "クリア",
+  "diagCleared": "エラー記録をクリアしました",
+  "diagAppInfoTitle": "アプリ情報",
+  "diagAppInfoVersion": "バージョン",
+  "diagAppInfoPlatform": "プラットフォーム",
+  "diagAppInfoLocale": "言語",
+  "diagAppInfoStorage": "ローカルデータサイズ",
+
+  "authLockToggleTitle": "生体認証ロック",
+  "authLockToggleDesc": "アプリを開くときに指紋または顔認証を要求",
+  "authLockEnableFailed": "認証に失敗しました — ロックはオフのままです",
+  "authLockUnavailableDesc": "この端末には生体認証が登録されていません",
+  "authLockScreenTitle": "ShellMind はロックされています",
+  "authLockScreenSubtitle": "続行するには認証してください",
+  "authLockUnlockAction": "ロック解除",
+
+  "authLockUnlockFailed": "認証に失敗しました — もう一度お試しください",
+
+  "terminalTabPickerTitle": "ターミナルを切り替え",
+  "terminalTabPickerSubtitle": "ターミナルタブとして開くサーバーを選択してください — オンラインのサーバーは即座に参加し、オフラインのサーバーは先に接続します",
+  "terminalTabPickerEmpty": "まだサーバーが設定されていません",
+  "terminalTabNewTooltip": "新しいターミナルタブ",
+  "terminalTabCloseTooltip": "タブを閉じる",
+
+  "hostKeyConfirmTitle": "このホストを信頼しますか？",
+  "hostKeyConfirmMessage": "これはこのサーバーへの最初の接続です。信頼する前にフィンガープリントを確認してください。これにより中間者攻撃から保護されます。",
+  "hostKeyEndpointLabel": "サーバー",
+  "hostKeyFingerprintLabel": "SHA-256 フィンガープリント",
+  "hostKeySecurityNote": "サーバー運営者から帯域外で取得した値とフィンガープリントを比較してください。誤ったフィンガープリントを信頼すると認証情報が漏えいします。",
+  "hostKeyTrustAndConnect": "信頼して接続",
+  "hostKeyReject": "拒否",
+
+  "hostKeyAutoRejectCountdown": "{seconds} 秒後に自動拒否します — 信頼は確認した場合にのみ記録されます。",
+  "@hostKeyAutoRejectCountdown": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+
+  "hostKeyMismatchTitle": "ホストキーが変更されました",
+  "hostKeyMismatchMessage": "{host}:{port} が提示したキーは、以前信頼したキーと異なります。接続はブロックされました。これは中間者攻撃か、サーバーが再インストールされた可能性があります。新しいキーを確認した場合は、サーバー編集ページでホスト信頼をリセットして再接続してください。",
+  "@hostKeyMismatchMessage": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "hostKeyRejectedMessage": "接続をキャンセルしました — ホストキーは信頼されませんでした。もう一度接続してフィンガープリントを確認できます。",
+
+  "serverResetTrustAction": "ホスト信頼をリセット",
+  "serverResetTrustDesc": "このサーバーの保存済みフィンガープリントを忘れ、次回の接続で再確認を求めます。",
+  "serverResetTrustConfirmTitle": "ホスト信頼をリセットしますか？",
+  "serverResetTrustConfirmMessage": "{identity}:{port} の保存済みフィンガープリントが削除されます。次回の接続でホストキーの確認が再び求められます。",
+  "@serverResetTrustConfirmMessage": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverResetTrustConfirmAction": "リセット",
+  "serverResetTrustDone": "ホスト信頼をリセットしました — 再接続してフィンガープリントを再度確認してください。",
+
+  "agentErrorNoTargetServer": "対象サーバーがありません",
+  "agentErrorExecFailed": "コマンドの実行に失敗しました",
+  "agentErrorConnectFailed": "サーバーへの自動接続に失敗しました",
+  "agentErrorConnectAuthRequired": "このサーバーの保存済み認証情報がありません — 自動接続はできません",
+  "agentErrorDangerSkipped": "危険なコマンドをスキップしました: {command}",
+  "@agentErrorDangerSkipped": {
+    "placeholders": {
+      "command": { "type": "String" }
+    }
+  },
+  "agentErrorUnexpected": "予期しないエラー",
+
+  "exportDocChatTitle": "Shell-Mind チャットエクスポート",
+  "exportDocExportedAt": "エクスポート日時: {time}",
+  "@exportDocExportedAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "exportDocMessageCount": "メッセージ: {count}",
+  "@exportDocMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocUserSection": "ユーザー",
+  "exportDocAssistantSection": "アシスタント",
+  "exportDocToolSection": "ツール実行",
+  "exportDocNoContent": "_(コンテンツなし)_",
+  "exportDocUnknownServer": "不明なサーバー",
+  "exportDocExitCode": "終了コード {code}",
+  "@exportDocExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "exportDocCommand": "コマンド",
+  "exportDocOutput": "出力",
+  "exportDocErrorOutput": "エラー出力",
+
+  "exportDocDiagTitle": "Shell-Mind 診断レポート",
+  "exportDocDiagCrashCount": "記録されたエラー: {count}",
+  "@exportDocDiagCrashCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocDiagCrashesSection": "記録されたエラー",
+  "exportDocDiagNone": "(なし)",
+  "exportDocDiagErrorMessage": "エラー概要: {message}",
+  "@exportDocDiagErrorMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "exportDocDiagAppVersion": "アプリバージョン: {version}",
+  "@exportDocDiagAppVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "exportDocDiagPlatform": "プラットフォーム: {platform}",
+  "@exportDocDiagPlatform": {
+    "placeholders": {
+      "platform": { "type": "String" }
+    }
+  },
+  "exportDocDiagLocale": "言語: {locale}",
+  "@exportDocDiagLocale": {
+    "placeholders": {
+      "locale": { "type": "String" }
+    }
+  },
+  "exportDocDiagStorage": "ローカルデータ使用量: {value}",
+  "@exportDocDiagStorage": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "exportDocDiagAuditSection": "AI コマンド監査 (最新 {limit} 件の概要)",
+  "@exportDocDiagAuditSection": {
+    "placeholders": {
+      "limit": { "type": "int" }
+    }
+  },
+  "exportDocDiagSuccess": "成功",
+  "exportDocDiagFailed": "失敗",
+  "exportDocDiagExitCodeOf": "終了コード {code}",
+  "@exportDocDiagExitCodeOf": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+
+  "settingsTerminalScheme": "ターミナル配色",
+  "settingsTerminalSchemeDesc": "SSH ターミナルの ANSI カラーパレットを選択します。",
+
+  "settingsSectionDataTransfer": "インポートとエクスポート",
+  "transferSnippetsTitle": "コマンドスニペット",
+  "transferServersTitle": "サーバー設定",
+  "transferExport": "エクスポート",
+  "transferImport": "インポート",
+  "transferExportImport": "エクスポート / インポート",
+  "transferExportTitle": "エクスポート",
+  "transferCopyJson": "JSON をコピー",
+  "transferCopied": "クリップボードにコピーしました",
+  "transferImportHint": "エクスポートした JSON をここに貼り付けてください…",
+  "transferSnippetsEmpty": "エクスポートするコマンドスニペットはありません。",
+  "transferServersEmpty": "エクスポートするサーバーはありません。",
+  "transferImportNothing": "インポートに有効な項目が見つかりませんでした。",
+  "transferSnippetsImported": "{count} 件のコマンドスニペットをインポートしました",
+  "@transferSnippetsImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferServersImported": "{count} 件のサーバーをインポートしました",
+  "@transferServersImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferImportFailed": "インポートに失敗しました: {message}",
+  "@transferImportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "transferExportFailed": "エクスポートに失敗しました: {message}",
+  "@transferExportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "sessionsTitle": "会話",
+  "sessionsNew": "新しい会話",
+  "sessionsSearch": "会話を検索…",
+  "sessionsEmpty": "会話がまだありません",
+  "sessionsNoMatch": "一致なし: \"{query}\"",
+  "@sessionsNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "sessionsRename": "名前を変更",
+  "sessionsRenameHint": "会話タイトル",
+  "sessionsDelete": "削除",
+  "sessionsDeleteConfirm": "\"{title}\" を削除しますか？ この操作は取り消せません。",
+  "@sessionsDeleteConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "sessionsMessageCount": "{count} 件のメッセージ",
+  "@sessionsMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "settingsSectionNotifications": "通知",
+  "settingsNotificationsTitle": "バックグラウンド通知",
+  "settingsNotificationsDesc": "アプリがバックグラウンドにあるときに SSH セッションの切断や AI タスクの完了を通知します。",
+
+  "sftpTitle": "ファイル",
+  "sftpNotConnected": "このサーバーに接続されていません。",
+  "sftpLoading": "ファイルを読み込み中…",
+  "sftpEmpty": "このフォルダーは空です。",
+  "sftpDownload": "ダウンロード",
+  "sftpDownloaded": "{path} をダウンロードしました ({size} バイト)",
+  "@sftpDownloaded": {
+    "placeholders": {
+      "path": { "type": "String" },
+      "size": { "type": "int" }
+    }
+  },
+  "sftpDownloadFailed": "ダウンロードに失敗しました",
+  "sftpPreviewError": "プレビューに失敗しました",
+  "sftpNewFolderName": "新しいフォルダー",
+  "sftpRefresh": "更新",
+  "sftpDelete": "削除",
+  "sftpDeleteConfirm": "\"{name}\" を削除しますか？",
+  "@sftpDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sftpRename": "名前を変更",
+  "sftpTooltip": "ファイルを閲覧 (SFTP)",
+
+  "terminalMoreTooltip": "その他",
+  "tunnelsTitle": "ポート転送",
+  "tunnelsEmpty": "アクティブなトンネルはありません。",
+  "tunnelsAddLocal": "ローカル転送",
+  "tunnelsAddRemote": "リモート転送",
+  "tunnelsLocalPort": "ローカルポート",
+  "tunnelsRemoteHost": "リモートホスト",
+  "tunnelsRemotePort": "リモートポート",
+  "tunnelsAdd": "追加",
+  "tunnelsClose": "閉じる",
+  "tunnelsTooltip": "ポート転送 (SSH トンネル)",
+  "tunnelsError": "トンネルに失敗しました",
+  "tunnelsInvalidPort": "ポートは 1 〜 65535 の範囲で指定してください。",
+
+  "settingsLanguageTitle": "言語"
+}

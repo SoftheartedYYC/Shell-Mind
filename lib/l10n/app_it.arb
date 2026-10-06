@@ -1,0 +1,1170 @@
+{
+  "@@locale": "it",
+
+  "appTitle": "ShellMind",
+
+  "navServers": "Server",
+  "navAiChat": "Chat AI",
+  "navSettings": "Impostazioni",
+
+  "pageNotFound": "Pagina non trovata",
+  "backToServers": "Torni ai Server",
+
+  "serversTitle": "Server",
+  "serversHostCount": "{count, plural, one{1 host} other{{count} host}}",
+  "@serversHostCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "serversSearch": "Cerchi server…",
+  "serversAdd": "Aggiunga server",
+  "serversEmpty": "Nessun server ancora",
+  "serversEmptyHint": "Aggiunga il Suo primo server SSH per iniziare.",
+  "serversDeleteConfirmTitle": "Elimini server",
+  "serversDeleteConfirmMessage": "Eliminare \"{name}\"?\n\n{identity}:{port} e le credenziali salvate associate verranno rimossi definitivamente.",
+  "@serversDeleteConfirmMessage": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serversDeleted": "Rimosso {identity}",
+  "@serversDeleted": {
+    "placeholders": {
+      "identity": { "type": "String" }
+    }
+  },
+  "serversDeleteFailed": "Eliminazione non riuscita: {message}",
+  "@serversDeleteFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "serversLoading": "Caricamento server",
+  "serversUngrouped": "Senza gruppo",
+  "serversSortName": "a–z",
+  "serversSortRecent": "recenti",
+  "serversQuickStart": "Avvio rapido",
+  "serversQuickStep1Title": "Aggiunga un host",
+  "serversQuickStep1Desc": "Registri un endpoint SSH con autenticazione tramite password o chiave.",
+  "serversQuickStep2Title": "Verifichi la connessione",
+  "serversQuickStep2Desc": "Verifichi la porta prima di confermare: rileva subito gli errori di digitazione.",
+  "serversQuickStep3Title": "Si connetta",
+  "serversQuickStep3Desc": "Apra una sessione di terminale: PTY completo, colori e vim.",
+  "serversNoMatch": "Nessuna corrispondenza: \"{query}\"",
+  "@serversNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "serversClearFilter": "Azzeri il filtro",
+  "serversReadError": "Impossibile leggere l'elenco dei server.",
+
+  "serverEditTitle": "Aggiunga server",
+  "serverEditTitleEdit": "Modifichi server",
+  "serverNotFound": "Server non trovato",
+  "serverValidationNameRequired": "Nome obbligatorio",
+  "serverValidationHostRequired": "Host obbligatorio",
+  "serverValidationNoSpaces": "Nessuno spazio consentito",
+  "serverValidationRequired": "Obbligatorio",
+  "serverValidationNumeric": "Numerico",
+  "serverValidationPortRange": "1–65535",
+  "serverValidationUsernameRequired": "Nome utente obbligatorio",
+  "serverValidationPasswordRequired": "Password obbligatoria",
+  "serverValidationPrivateKeyRequired": "Chiave privata obbligatoria",
+  "serverAdded": "Server aggiunto: {identity}:{port}",
+  "@serverAdded": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverSaved": "Salvato: {identity}:{port}",
+  "@serverSaved": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverSaveFailed": "Salvataggio non riuscito: {message}",
+  "@serverSaveFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "serverTestEnterHost": "Inserisca prima un indirizzo host",
+  "serverTestProbing": "Verifica di {host}:{port} in corso…",
+  "@serverTestProbing": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestReachable": "{host}:{port} — raggiungibile",
+  "@serverTestReachable": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestTimedOut": "{host}:{port} — timeout",
+  "@serverTestTimedOut": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestRefused": "{host}:{port} — rifiutato / non raggiungibile",
+  "@serverTestRefused": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestProbeFailed": "{host}:{port} — verifica non riuscita",
+  "@serverTestProbeFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestHandshakeFailed": "{host}:{port} handshake SSH non riuscito",
+  "@serverTestHandshakeFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestAuthFailed": "{host}:{port} autenticazione non riuscita - controlli nome utente e credenziali",
+  "@serverTestAuthFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverLoading": "Caricamento",
+  "serverSaveChanges": "Salvi le modifiche",
+  "serverSectionIdentity": "Identità",
+  "serverSectionConnection": "Connessione",
+  "serverSectionAuthentication": "Autenticazione",
+  "serverFieldLabel": "Etichetta",
+  "serverFieldLabelHint": "prod-web-01",
+  "serverFieldGroup": "Gruppo (facoltativo)",
+  "serverFieldGroupHint": "produzione",
+  "serverFieldHost": "Host",
+  "serverFieldHostHint": "10.0.0.5",
+  "serverFieldPort": "Porta",
+  "serverFieldUsername": "Nome utente",
+  "serverFieldUsernameHint": "root",
+  "serverFieldPassword": "Password",
+  "serverFieldPasswordStored": "Salvata — lasci vuoto per mantenerla",
+  "serverFieldPrivateKey": "Chiave privata (PEM)",
+  "serverFieldPassphrase": "Passphrase della chiave (facoltativa)",
+  "serverAuthPassword": "Password",
+  "serverAuthPrivateKey": "Chiave privata",
+  "serverTestIdle": "Tocchi \"Test\" per verificare la connessione",
+  "serverSecurityNote": "Le credenziali sono cifrate nel keystore del dispositivo: non vengono mai salvate nell'archivio dei metadati Hive né lasciano questo dispositivo.",
+  "serverTesting": "Test in corso…",
+  "serverTest": "Test",
+  "serverSaving": "Salvataggio…",
+
+  "serverCopiedAddress": "Copiato {address}",
+  "@serverCopiedAddress": {
+    "placeholders": {
+      "address": { "type": "String" }
+    }
+  },
+  "serverActions": "Azioni server",
+  "serverActionConnect": "Si connetta",
+  "serverActionEdit": "Modifichi",
+  "serverActionEditDetails": "Modifichi i dettagli",
+  "serverActionCopySsh": "Copi comando SSH",
+  "serverActionDelete": "Elimini",
+  "serverActionDeleteServer": "Elimini server",
+  "serverOnline": "Online",
+  "serverNeverConnected": "Mai connesso",
+  "serverJustNow": "Adesso",
+  "serverMinutesAgo": "{minutes} min fa",
+  "@serverMinutesAgo": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "serverHoursAgo": "{hours} h fa",
+  "@serverHoursAgo": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "serverDaysAgo": "{days} g fa",
+  "@serverDaysAgo": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "terminalHostNotFound": "Host non trovato",
+  "terminalHostNotFoundMessage": "Nessun server salvato corrisponde all'id \"{id}\". Potrebbe essere stato eliminato.",
+  "@terminalHostNotFoundMessage": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "terminalBackToServers": "Torni ai server",
+  "terminalConnectionFailed": "Connessione non riuscita.",
+  "terminalSessionClosed": "Sessione chiusa",
+  "terminalSessionClosedMessage": "La connessione a {name} è stata interrotta.",
+  "@terminalSessionClosedMessage": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "terminalReconnect": "Si riconnetta",
+  "terminalAuthenticating": "Autenticazione in corso",
+  "terminalConnecting": "Connessione in corso",
+  "terminalResolvingHost": "Risoluzione dell'host…",
+  "terminalTooltipDisconnectBack": "Si disconnetta e torni indietro",
+  "terminalTooltipSmallerText": "Testo più piccolo",
+  "terminalTooltipLargerText": "Testo più grande",
+  "terminalTooltipDisconnect": "Si disconnetta",
+  "terminalRetryAvailable": "Riprova disponibile",
+  "terminalStatusConnected": "CONNESSO",
+  "terminalStatusOffline": "OFFLINE",
+  "terminalStatusError": "ERRORE",
+
+  "aiChatTitle": "Assistente AI",
+  "aiChatStatusSetup": "CONFIGURAZIONE",
+  "aiChatStatusStreaming": "STREAMING",
+  "aiChatStatusReady": "PRONTO",
+  "aiChatClearConversation": "Azzeri la conversazione",
+  "aiChatSuggestion1": "Spieghi cosa significa l'output di ls -la",
+  "aiChatSuggestion2": "Come faccio a trovare quale processo sta usando una porta?",
+  "aiChatSuggestion3": "Mi mostri come fare tail dei log e cercare errori con grep",
+  "aiChatSuggestion4": "Scriva un one-liner awk per sommare una colonna CSV",
+  "aiChatTryAsking": "Provi a chiedere",
+  "aiChatIntroTitle": "Il Suo compagno di terminale",
+  "aiChatIntroBody": "Incolli un comando, un errore o una porzione di output di log. ShellMind spiega cosa è successo, suggerisce la mossa successiva e scrive i comandi al posto Suo.",
+  "aiChatNoKeyTitle": "Nessuna chiave API configurata",
+  "aiChatNoKeyMessage": "Aggiunga la Sua chiave API {provider} per attivare l'assistente. Viene salvata cifrata su questo dispositivo e non lo lascia mai, se non per chiamare il modello.",
+  "@aiChatNoKeyMessage": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiChatOpenSettings": "Apra le impostazioni AI",
+  "aiChatCheckingCredentials": "Verifica delle credenziali",
+  "aiChatInputHint": "Chieda qualsiasi cosa…",
+  "aiChatInputDisabled": "Imposti una chiave API per iniziare",
+  "aiChatError": "Errore",
+  "aiChatAssistantName": "ShellMind",
+  "aiChatCopied": "Copiato",
+  "aiChatCopy": "Copi",
+  "aiChatThinking": "Riflessione…",
+
+  "settingsTitle": "Impostazioni",
+  "settingsSearchTooltip": "Cerchi nelle impostazioni",
+  "settingsStable": "STABILE",
+  "settingsSectionAppearance": "Aspetto e lingua",
+  "settingsThemeSystem": "Sistema",
+  "settingsThemeLight": "Chiaro",
+  "settingsThemeDark": "Scuro",
+  "settingsSectionLanguage": "Lingua",
+  "settingsLanguageSystem": "Sistema",
+  "settingsLanguageZh": "中文",
+  "settingsLanguageEn": "English",
+  "settingsSectionAiProvider": "Provider AI",
+  "settingsSectionAiAgent": "Agente AI",
+  "settingsSectionSsh": "SSH",
+  "settingsSectionServers": "Server",
+  "settingsSectionAboutUpdate": "Informazioni e aggiornamenti",
+  "settingsSectionStoragePrivacy": "Archiviazione e privacy",
+  "settingsSectionResources": "Risorse",
+  "settingsTileSecrets": "Segreti",
+  "settingsTileEncrypted": "Cifrato",
+  "settingsTileLocalCache": "Cache locale",
+  "settingsTileClearData": "Cancella tutti i dati",
+  "settingsTileLicenses": "Licenze open source",
+  "settingsTileReportIssue": "Segnali un problema",
+  "settingsFooter": "SSH + Assistente AI per flussi di lavoro moderni",
+
+  "settingsSecretsDialogTitle": "Segreti e cifratura",
+  "settingsSecretsDialogBody": "Le credenziali — password dei server, chiavi private e chiavi API AI — sono sempre cifrate a riposo tramite il keystore della piattaforma (Android Keystore / iOS Keychain). Questa protezione è prevista per impostazione e non può essere disattivata. Per modificare una credenziale, la modifichi o la rimuova nella pagina di modifica del server o nelle impostazioni AI.",
+  "settingsDialogOk": "OK",
+  "settingsDialogClose": "Chiuda",
+  "settingsCacheDialogTitle": "Cache locale",
+  "settingsCacheHiveData": "Dati dell'app",
+  "settingsCacheDownloads": "Aggiornamenti scaricati",
+  "settingsCacheTotal": "Totale",
+  "settingsCacheDialogHint": "Cancellando la cache dei download vengono rimossi i pacchetti di aggiornamento scaricati (APK). I Suoi server, le chiavi e la cronologia delle chat vengono conservati.",
+  "settingsCacheClearDownloads": "Svuoti la cache dei download",
+  "settingsCacheCleared": "Liberati {freed}",
+  "@settingsCacheCleared": {
+    "placeholders": {
+      "freed": { "type": "String" }
+    }
+  },
+  "settingsClearDataTitle": "Cancellare tutti i dati?",
+  "settingsClearDataMessage": "Questa operazione elimina definitivamente ogni server, credenziale salvata, chiave AI, cronologia delle chat e preferenza su questo dispositivo. L'operazione non può essere annullata.",
+  "settingsClearDataConfirm": "Cancelli tutto",
+  "settingsDataCleared": "Tutti i dati cancellati",
+  "settingsClearDataFailed": "Impossibile cancellare i dati: {message}",
+  "@settingsClearDataFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "settingsIssueLinkCopied": "Link del problema copiato negli appunti.",
+  "settingsAboutGithub": "Repository GitHub",
+
+  "settingsHideIp": "Nasconda gli indirizzi IP",
+  "settingsHideIpDesc": "Mascheri gli indirizzi IP nell'elenco dei server e nelle pagine AI",
+  "serverMaskedAddress": "Indirizzo nascosto",
+
+  "aiSettingsApiKeyTitle": "Chiave API {provider}",
+  "@aiSettingsApiKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsKeySet": "impostata",
+  "aiSettingsKeyNotConfigured": "non configurata",
+  "aiSettingsGetApiKey": "Ottenga una chiave API",
+  "aiSettingsTemperature": "Temperatura",
+  "aiSettingsRemoveKey": "Rimuova la chiave",
+  "aiSettingsKeySaved": "Chiave API {provider} salvata in modo sicuro.",
+  "@aiSettingsKeySaved": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsRemoveKeyTitle": "Rimuovere la chiave {provider}?",
+  "@aiSettingsRemoveKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsRemoveKeyMessage": "L'assistente smetterà di funzionare per questo provider finché non verrà aggiunta una nuova chiave.",
+  "aiSettingsRemoveKeyConfirm": "Rimuova",
+  "aiSettingsGetKeyTitle": "Ottenga una chiave {provider}",
+  "@aiSettingsGetKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsGetKeyMessage": "Apra la console del provider nel Suo browser per creare una chiave API, quindi la incolli di nuovo qui.",
+  "aiSettingsClose": "Chiuda",
+  "aiSettingsLinkCopied": "Link copiato negli appunti.",
+  "aiSettingsCopyLink": "Copi link",
+  "aiSettingsKeyConfigured": "Chiave configurata",
+  "aiSettingsNotConfigured": "Non configurata",
+  "aiSettingsUpdateKeyTitle": "Aggiorni la chiave {provider}",
+  "@aiSettingsUpdateKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsAddKeyTitle": "Aggiunga la chiave {provider}",
+  "@aiSettingsAddKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsKeyStorageNote": "Salvata cifrata su questo dispositivo. Utilizzata solo per chiamare il provider AI.",
+  "aiSettingsApiKeyHint": "Chiave API…",
+  "aiSettingsSave": "Salvi",
+
+  "modelDescFastAffordable": "Veloce ed economico",
+  "modelDescMostCapable": "Il più capace",
+  "modelDescLegacyFast": "Veloce (legacy)",
+  "modelDescGeneralConversation": "Conversazione generale",
+  "modelDescAdvancedReasoning": "Ragionamento avanzato",
+  "modelDescFastResponse": "Risposta rapida",
+  "modelDescBalanced": "Bilanciato",
+  "modelDescFreeFast": "Gratuito e veloce",
+  "modelDescEnhanced": "Potenziato",
+  "modelDescStandard": "Standard",
+  "modelDescLightweight": "Leggero",
+  "modelDescRlEnhanced": "Potenziato con RL",
+
+   "aiModelsTitle": "Modello",
+   "aiModelsRefresh": "Aggiorni l'elenco dei modelli",
+   "aiModelsAddCustom": "Aggiunga modello personalizzato",
+   "aiModelsAddCustomHint": "ID modello, ad es. deepseek-chat",
+   "aiModelsAdd": "Aggiunga",
+   "aiModelsCustomBadge": "Personalizzato",
+   "aiModelsFetchFailed": "Impossibile recuperare i modelli: viene mostrato l'elenco integrato.",
+   "aiModelsRemoveCustom": "Rimuova modello personalizzato",
+   "aiModelsEmpty": "Nessun modello",
+   "aiModelsInvalidId": "Inserisca un ID modello.",
+   "aiModelsDuplicate": "Questo modello è già presente nell'elenco.",
+  "aiModelsPickerTitle": "Scelga il modello",
+  "aiModelsSearchHint": "Cerchi modelli",
+  "aiModelsSearchEmpty": "Nessun modello corrisponde alla Sua ricerca.",
+
+  "aiProvidersAddTile": "Aggiunga provider personalizzato",
+  "aiProvidersAddTitle": "Aggiunga provider personalizzato",
+  "aiProvidersFieldName": "Nome",
+  "aiProvidersFieldNameHint": "ad es. SiliconFlow",
+  "aiProvidersFieldBaseUrl": "URL di base",
+  "aiProvidersFieldBaseUrlHint": "https://api.example.com/v1",
+  "aiProvidersFieldModel": "Modello predefinito (facoltativo)",
+  "aiProvidersFieldModelHint": "ID modello, ad es. deepseek-chat",
+  "aiProvidersAddConfirm": "Aggiunga",
+  "aiProvidersInvalidInput": "Inserisca un nome e un URL di base.",
+  "aiProvidersInvalidUrl": "L'URL di base deve iniziare con http:// o https://",
+  "aiProvidersDuplicateName": "Esiste già un provider con questo nome.",
+  "aiProvidersAdded": "Provider personalizzato aggiunto.",
+  "aiProvidersAddFailed": "Impossibile aggiungere il provider: controlli i dati inseriti.",
+  "aiProvidersDeleteTile": "Rimuova provider personalizzato",
+  "aiProvidersDeleteTitle": "Rimuovere {provider}?",
+  "@aiProvidersDeleteTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiProvidersDeleteMessage": "Verranno rimossi anche la chiave API salvata, il modello memorizzato e i modelli personalizzati. I provider integrati non possono essere eliminati.",
+  "aiProvidersDeleteConfirm": "Rimuova",
+  "aiProvidersPickerTitle": "Scelga il provider",
+
+  "updateVersion": "Versione",
+  "updateSoftwareUpdate": "Aggiornamento software",
+  "updateChecking": "VERIFICA",
+  "updateUpToDate": "AGGIORNATO",
+  "updateCheckAgain": "Verifichi di nuovo",
+  "updateReady": "PRONTO",
+  "updateNew": "NUOVO",
+  "updateCheck": "VERIFICA",
+  "updateAwaitingResponse": "In attesa di risposta",
+  "updateAlreadyLatest": "Già sulla build più recente",
+  "updateCurrentVersionLatest": "v{version} è l'ultima release pubblicata su GitHub.",
+  "@updateCurrentVersionLatest": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "updateRunningVersion": "In esecuzione: v{current} — la versione remota più recente è v{latest}.",
+  "@updateRunningVersion": {
+    "placeholders": {
+      "current": { "type": "String" },
+      "latest": { "type": "String" }
+    }
+  },
+  "updateCheckedAgo": "Verificato {timeAgo}",
+  "@updateCheckedAgo": {
+    "placeholders": {
+      "timeAgo": { "type": "String" }
+    }
+  },
+  "updateAvailable": "Aggiornamento disponibile",
+  "updatePre": "PRE",
+  "updateDownloadInstall": "Scarica e installa",
+  "updateLater": "Più tardi",
+  "updateApkHint": "L'installazione di APK è supportata solo su Android. Il file può comunque essere scaricato qui.",
+  "updateDownloading": "Scaricamento di {tag}",
+  "@updateDownloading": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateSize": "dimensione",
+  "updateRate": "velocità",
+  "updateEta": "ETA",
+  "updateElapsed": "trascorso",
+  "updateCancel": "Annulli",
+  "updateKeepForeground": "Mantenga l'app in primo piano",
+  "updateDownloadComplete": "Download completato",
+  "updateInstallHint": "Android Le chiederà di confermare. ShellMind si chiude mentre l'installer è in esecuzione; i Suoi server e la cronologia vengono conservati.",
+  "updateLaunching": "Avvio...",
+  "updateInstallNow": "Installi ora",
+  "updateDelete": "Elimini",
+  "updateInstallTitle": "Installare {tag}?",
+  "@updateInstallTitle": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateInstallMessage": "Si aprirà l'installer dei pacchetti di sistema. ShellMind si chiude durante l'installazione e si riapre sulla nuova versione.",
+  "updateNotNow": "Non ora",
+  "updateInstall": "Installi",
+  "updateCheckFailed": "Verifica degli aggiornamenti non riuscita.",
+  "updateErrorTitleNoReleases": "Nessuna release",
+  "updateErrorTitleGeneric": "Verifica aggiornamenti non riuscita",
+  "updateErrNoReleases": "Non è ancora stata pubblicata alcuna release per ShellMind.",
+  "updateErrRateLimit": "È stato raggiunto il limite di richieste dell'API di GitHub. Riprovi più tardi.",
+  "updateErrTimeout": "La richiesta a GitHub è scaduta. Controlli la connessione e riprovi.",
+  "updateErrNetwork": "Impossibile raggiungere GitHub. Controlli la connessione di rete.",
+  "updateErrAuth": "GitHub ha rifiutato la richiesta di aggiornamento.",
+  "updateErrPermission": "La richiesta di aggiornamento è stata negata.",
+  "updateErrStorage": "Spazio di archiviazione insufficiente per completare l'aggiornamento.",
+  "updateErrDigestMismatch": "L'aggiornamento scaricato non ha superato il controllo di integrità SHA-256 ed è stato eliminato. Riprovi il download.",
+  "updateErrDigestMissing": "Il pacchetto di aggiornamento non ha un digest di integrità pubblicato, pertanto l'aggiornamento è stato rifiutato. Riprovi più tardi.",
+  "updateRetry": "Riprovi",
+  "updateDismiss": "Ignori",
+  "updateReleaseNotes": "Release {tag}",
+  "@updateReleaseNotes": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateNotesLabel": "note",
+  "updateNewVersionAvailable": "Nuova versione disponibile",
+  "updateRemindLater": "Me lo ricordi più tardi",
+  "updateCancelDownload": "Annulli il download",
+  "updateInstallTag": "Installi {tag}",
+  "@updateInstallTag": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateInstallLaterFromSettings": "Installi più tardi dalle impostazioni",
+  "updateCouldNotComplete": "Impossibile completare l'aggiornamento.",
+  "updateClose": "Chiuda",
+  "updatePromptInstallHint": "Android chiude ShellMind mentre l'installer è in esecuzione. Server, chiavi e cronologia delle chat vengono conservati.",
+
+  "commonCancel": "Annulli",
+  "commonDelete": "Elimini",
+  "commonRetry": "Riprovi",
+  "commonLoading": "Caricamento...",
+  "commonNoData": "Nessun dato",
+  "commonNothingToShow": "Non c'è ancora nulla da mostrare qui.",
+  "commonOk": "OK",
+
+  "settingsAiAutoExecuteTitle": "Esecuzione automatica dei comandi",
+  "settingsAiAutoExecuteSubtitle": "Consenta all'agente AI di eseguire i comandi analizzati senza chiedere conferma ogni volta",
+  "settingsAiAutoConnectTitle": "Connessione automatica AI ai server",
+  "settingsAiAutoConnectSubtitle": "Consenta all'assistente AI di connettersi automaticamente ai server configurati ma offline e di eseguire comandi su di essi (verranno usate le credenziali salvate)",
+  "settingsAiMaxAutoLoopsTitle": "Iterazioni massime del ciclo automatico",
+  "settingsAiMaxAutoLoopsSub": "Limita il numero di esecuzioni automatiche di comandi per risposta",
+  "settingsAiMaxAutoLoopsTileDesc": "Numero massimo di round di comandi che l'AI può eseguire per attività",
+  "settingsAiMaxAutoLoopsHint": "Questo è il limite superiore dei round di esecuzione per attività AI, non il numero di tentativi di riconnessione SSH (quello si trova nella sezione SSH).",
+
+  "terminalAskAi": "Chieda all'AI",
+  "terminalAskAiSubtitle": "Invia il testo selezionato all'assistente AI",
+  "terminalTooltipAskAi": "Chieda all'AI",
+
+  "aiChatNoConnection": "Si connetta prima a un terminale server",
+  "aiChatAnalyzePrompt": "Analizzi l'output del comando qui sopra, spieghi cosa significa il risultato e fornisca suggerimenti di follow-up dove necessario.",
+
+  "aiExecuteButton": "Esegua sul server",
+  "aiExecuteTitle": "Conferma esecuzione comando",
+  "aiExecuteConfirmButton": "Esegua",
+  "aiExecuteConfirmAnyway": "Esegua comunque",
+  "aiExecuteDangerWarning": "⚠ Comando pericoloso",
+  "aiExecuteDangerText": "Questo comando potrebbe essere distruttivo e causare perdita di dati o danni al sistema.",
+  "aiExecuteCommandLabel": "Comando da eseguire:",
+  "aiExecuteTargetServer": "Server di destinazione:",
+  "aiExecuteSelectServer": "Selezioni i server di destinazione",
+  "aiExecuteNoServer": "Si connetta prima a un server",
+  "aiExecuteAtLeastOne": "Selezioni almeno un server",
+  "aiExecuteSelectHint": "Scelga i server su cui eseguire questo comando",
+  "aiExecuteRunCount": "Esegua ({count})",
+  "@aiExecuteRunCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiExecuteSelectAll": "Selezioni tutto",
+  "aiExecuteClearSelection": "Azzeri",
+  "aiExecuteUptime": "{hours} h {minutes} min online",
+  "@aiExecuteUptime": {
+    "placeholders": {
+      "hours": { "type": "int" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "aiExecuteSuccess": "Comando eseguito correttamente",
+  "aiExecuteFailed": "Esecuzione del comando non riuscita",
+
+  "aiServerManageTitle": "Server",
+  "aiServerManageSubtitle": "Connetta i server per consentire all'assistente AI di operare",
+  "aiServerOnlineCount": "{count} online",
+  "@aiServerOnlineCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiServerDone": "Fatto",
+  "aiServerConnecting": "Connessione in corso…",
+  "aiServerOffline": "Offline",
+  "aiServerNoCredential": "Nessuna credenziale salvata: salvi prima la password o la chiave nella pagina del server",
+  "aiServerConnectFailed": "Connessione non riuscita",
+
+  "aiToolResultCommand": "Comando",
+  "aiToolResultOutput": "Output del comando",
+  "aiToolResultExitCode": "Codice di uscita: {code}",
+  "@aiToolResultExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "aiToolResultElapsed": "Tempo trascorso",
+  "aiToolResultAnalyzeButton": "Lasci che l'AI analizzi l'output",
+  "aiToolResultCollapsedShow": "{total} righe in più",
+  "@aiToolResultCollapsedShow": {
+    "placeholders": {
+      "total": { "type": "int" }
+    }
+  },
+  "aiToolResultExpandedHide": "Nasconda output",
+  "aiToolResultStderrLabel": "Output di errore:",
+
+  "aiContextToggleAttach": "Alleghi il contesto del terminale",
+  "aiContextToggleDetach": "Contesto del terminale collegato",
+  "aiContextBadge": "Contesto",
+  "aiContextLines": "{lines} righe dal terminale",
+  "@aiContextLines": {
+    "placeholders": {
+      "lines": { "type": "int" }
+    }
+  },
+
+  "aiAgentStop": "Interrompa la modalità automatica",
+  "aiAgentExecuting": "Esecuzione in corso…",
+  "aiAgentDefaultServer": "server",
+
+  "aiTimelineTitle": "Cronologia di esecuzione",
+  "aiTimelineOpen": "Cronologia di esecuzione",
+  "aiTimelineEmpty": "Nessun comando eseguito finora",
+  "aiTimelineEmptyHint": "Esegua i comandi tramite chat o modalità automatica e la sequenza completa apparirà qui.",
+  "aiTimelineStatRounds": "{count, plural, one{1 round} other{{count} round}}",
+  "@aiTimelineStatRounds": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatCommands": "{count, plural, one{1 comando} other{{count} comandi}}",
+  "@aiTimelineStatCommands": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatSuccess": "{count, plural, one{1 riuscito} other{{count} riusciti}}",
+  "@aiTimelineStatSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatFailed": "{count, plural, one{1 non riuscito} other{{count} non riusciti}}",
+  "@aiTimelineStatFailed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStarted": "Avviato {time}",
+  "@aiTimelineStarted": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineEnded": "Terminato {time}",
+  "@aiTimelineEnded": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineExitCode": "Codice di uscita: {code}",
+  "@aiTimelineExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "aiTimelineNoExitCode": "Nessun codice di uscita",
+  "aiTimelineOutput": "Output",
+  "aiTimelineOutputEmpty": "Nessun output",
+  "aiTimelineErrorOutput": "Output di errore",
+  "aiTimelineRunning": "In esecuzione…",
+  "aiTimelineClose": "Chiuda",
+
+  "sshReconnectToggle": "Riconnessione automatica alla disconnessione",
+  "sshReconnectToggleDesc": "Riprova le sessioni SSH interrotte con backoff esponenziale",
+  "sshReconnectMaxAttempts": "Tentativi massimi di riconnessione",
+  "sshReconnectMaxAttemptsDesc": "Tentativi massimi di riconnessione automatica dopo una disconnessione: 0 significa riprovare finché non riesce",
+  "sshReconnectMaxAttemptsValue": "{count}",
+  "@sshReconnectMaxAttemptsValue": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sshReconnectMaxAttemptsUnlimited": "Illimitato",
+  "sshReconnectStatusReconnecting": "Riconnessione in corso (tentativo {attempt})",
+  "@sshReconnectStatusReconnecting": {
+    "placeholders": {
+      "attempt": { "type": "int" }
+    }
+  },
+  "sshReconnectStatusReconnectingOf": "Riconnessione in corso (tentativo {attempt} di {max})",
+  "@sshReconnectStatusReconnectingOf": {
+    "placeholders": {
+      "attempt": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUp": "Riconnessione automatica interrotta",
+  "sshReconnectGaveUpMessage": "Impossibile raggiungere {name} dopo {max} tentativi.",
+  "@sshReconnectGaveUpMessage": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUpMessageUnlimited": "Impossibile raggiungere {name}.",
+  "@sshReconnectGaveUpMessageUnlimited": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sshReconnectRetryNow": "Riprovi ora",
+  "sshReconnectStopAuto": "Fermi",
+  "sshReconnectReconnectedSnack": "Riconnesso a {name}",
+  "@sshReconnectReconnectedSnack": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "snippetsTitle": "Frammenti di comando",
+  "snippetsSubtitle": "Salvi i comandi per riutilizzarli rapidamente",
+  "snippetsAddTooltip": "Aggiunga frammento",
+  "snippetsAddTitle": "Nuovo frammento",
+  "snippetsSave": "Salvi",
+  "snippetsCommandLabel": "Comando",
+  "snippetsCommandHint": "ad es. docker ps -a",
+  "snippetsNameLabel": "Nome (facoltativo)",
+  "snippetsNameHint": "ad es. Elenca tutti i container",
+  "snippetsCommandRequired": "Il testo del comando è obbligatorio",
+  "snippetsDeleteTooltip": "Elimini frammento",
+  "snippetsEmptyTitle": "Nessun frammento ancora",
+  "snippetsEmptyMessage": "Salvi i comandi usati di frequente e li inserisca o li esegua con un solo tocco.",
+  "snippetsLoadFailed": "Impossibile caricare i frammenti",
+
+  "healthTitle": "Stato della flotta",
+  "healthOnlineRatio": "{online}/{total} online",
+  "@healthOnlineRatio": {
+    "placeholders": {
+      "online": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "healthProbing": "Verifica in corso…",
+  "healthProbeTooltip": "Esegua il controllo dello stato",
+  "healthProbedAt": "Verificato alle {time}",
+  "@healthProbedAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "healthMoodAllOnline": "Tutti i sistemi nominali",
+  "healthMoodDegraded": "Alcuni server non sono raggiungibili",
+  "healthMoodAllOffline": "Tutti i server non raggiungibili",
+  "healthOfflineServers": "Offline: {names}",
+  "@healthOfflineServers": {
+    "placeholders": {
+      "names": { "type": "String" }
+    }
+  },
+  "healthNoData": "Tocchi Aggiorna per verificare ogni server",
+  "healthUptime": "attivo {brief}",
+  "@healthUptime": {
+    "placeholders": {
+      "brief": { "type": "String" }
+    }
+  },
+  "healthLoad": "carico {value}",
+  "@healthLoad": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "healthDiagIntro": "Ecco il rapporto sullo stato della mia flotta:",
+  "healthDiagStats": "{online} di {total} server online.",
+  "@healthDiagStats": {
+    "placeholders": {
+      "online": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "healthDiagOfflineItem": "- {name}: offline",
+  "@healthDiagOfflineItem": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "healthDiagOnlineItem": "- {name}: online ({details})",
+  "@healthDiagOnlineItem": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "details": { "type": "String" }
+    }
+  },
+  "healthDiagOutro": "Analizzi i dati sullo stato, segnali qualsiasi anomalia (carico elevato, riavvii recenti) e suggerisca cosa controllare in seguito.",
+  "healthDiagnose": "Diagnostica AI",
+  "healthStaleNote": "Alcuni server sono andati offline dall'ultima verifica.",
+
+  "auditTitle": "Registro di controllo dei comandi",
+  "auditTileDesc": "Comandi eseguiti dall'agente AI",
+  "auditEmptyTitle": "Nessuna voce di controllo ancora",
+  "auditEmptyMessage": "I comandi eseguiti dall'agente AI verranno registrati qui.",
+  "auditFilteredEmpty": "Nessuna voce corrisponde al filtro corrente",
+  "auditFilterAllServers": "Tutti i server",
+  "auditFilterAllModes": "Tutte le modalità",
+  "auditFilterAllResults": "Tutti i risultati",
+  "auditFilterConfirmed": "Confermato",
+  "auditFilterAuto": "Auto",
+  "auditFilterSuccess": "Riuscito",
+  "auditFilterFailed": "Non riuscito",
+  "auditModeConfirmed": "Confermato",
+  "auditModeAuto": "Auto",
+  "auditStatusSuccess": "Riuscito",
+  "auditStatusFailed": "Non riuscito",
+  "auditDangerousBadge": "Pericoloso",
+  "auditExitCode": "Codice di uscita {code}",
+  "@auditExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "auditOutputSummary": "Riepilogo dell'output",
+  "auditNoOutput": "Nessun output",
+  "auditClearTooltip": "Azzeri il registro di controllo",
+  "auditClearConfirmTitle": "Azzera il registro di controllo",
+  "auditClearConfirmMessage": "Tutte le {count} voci di controllo verranno rimosse definitivamente.",
+  "@auditClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "auditClearAction": "Azzera",
+  "auditCleared": "Registro di controllo azzerato",
+  "auditEntriesCount": "{count} voci",
+  "@auditEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "serverActionDisconnect": "Si disconnetta",
+
+  "exportChatAction": "Esporti come Markdown",
+  "exportChatEmpty": "Nulla da esportare ancora",
+  "exportChatSuccess": "Conversazione esportata in {path}",
+  "@exportChatSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "exportChatFailed": "Esportazione non riuscita: {error}",
+  "@exportChatFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "diagTitle": "Diagnostica",
+  "diagTileDesc": "Errori dell'app ed esportazione della diagnostica",
+  "diagEmptyTitle": "Nessun errore acquisito",
+  "diagEmptyMessage": "Le eccezioni non gestite vengono registrate qui per facilitare le segnalazioni di problemi.",
+  "diagEntriesCount": "{count} errori",
+  "@diagEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagSourceFlutter": "Errore UI",
+  "diagSourcePlatform": "Errore di runtime",
+  "diagSourceZone": "Attività asincrona",
+  "diagStackTrace": "Stack trace",
+  "diagNoStackTrace": "Nessuno stack trace",
+  "diagExportAction": "Esporti il rapporto di diagnostica",
+  "diagExportEmpty": "Nulla da segnalare: si esportano le informazioni di base",
+  "diagExportSuccess": "Rapporto di diagnostica esportato in {path}",
+  "@diagExportSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "diagExportFailed": "Esportazione non riuscita: {error}",
+  "@diagExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "diagPrivacyNote": "Il contenuto della diagnostica è oscurato: non vengono incluse password, chiavi private o chiavi API.",
+  "diagClearTooltip": "Azzeri i record degli errori",
+  "diagClearConfirmTitle": "Azzera i record degli errori",
+  "diagClearConfirmMessage": "Tutti i {count} record degli errori verranno rimossi definitivamente.",
+  "@diagClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagClearAction": "Azzera",
+  "diagCleared": "Record degli errori azzerati",
+  "diagAppInfoTitle": "Informazioni sull'app",
+  "diagAppInfoVersion": "Versione",
+  "diagAppInfoPlatform": "Piattaforma",
+  "diagAppInfoLocale": "Lingua",
+  "diagAppInfoStorage": "Dimensione dei dati locali",
+
+  "authLockToggleTitle": "Blocco biometrico",
+  "authLockToggleDesc": "Richieda lo sblocco con impronta digitale o volto all'apertura dell'app",
+  "authLockEnableFailed": "Verifica non riuscita: il blocco resta disattivato",
+  "authLockUnavailableDesc": "Nessun dato biometrico registrato su questo dispositivo",
+  "authLockScreenTitle": "ShellMind è bloccato",
+  "authLockScreenSubtitle": "Verifichi per continuare",
+  "authLockUnlockAction": "Sblocchi",
+
+  "authLockUnlockFailed": "Verifica non riuscita: riprovi",
+
+  "terminalTabPickerTitle": "Cambi terminale",
+  "terminalTabPickerSubtitle": "Scelga un server da aprire come scheda del terminale: i server online si collegano subito, quelli offline compongono prima la connessione",
+  "terminalTabPickerEmpty": "Nessun server configurato ancora",
+  "terminalTabNewTooltip": "Nuova scheda del terminale",
+  "terminalTabCloseTooltip": "Chiuda la scheda",
+
+  "hostKeyConfirmTitle": "Considerare attendibile questo host?",
+  "hostKeyConfirmMessage": "Questa è la prima connessione a questo server. Verifichi la sua impronta prima di considerarlo attendibile: questo protegge dagli attacchi man-in-the-middle.",
+  "hostKeyEndpointLabel": "SERVER",
+  "hostKeyFingerprintLabel": "IMPRONTA SHA-256",
+  "hostKeySecurityNote": "Confronti l'impronta con un valore ottenuto dall'operatore del server tramite un canale sicuro. Considerare attendibile un'impronta errata espone le Sue credenziali.",
+  "hostKeyTrustAndConnect": "Si fidi e si connetta",
+  "hostKeyReject": "Rifiuti",
+
+  "hostKeyAutoRejectCountdown": "Rifiuto automatico tra {seconds}s: la fiducia viene registrata solo quando Lei conferma.",
+  "@hostKeyAutoRejectCountdown": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+
+  "hostKeyMismatchTitle": "Chiave host modificata",
+  "hostKeyMismatchMessage": "La chiave presentata da {host}:{port} differisce da quella che Lei aveva considerato attendibile in precedenza. La connessione è stata bloccata: potrebbe trattarsi di un attacco man-in-the-middle oppure il server è stato reinstallato. Se ha verificato la nuova chiave, reimposti la fiducia dell'host nella pagina di modifica del server e si riconnetta.",
+  "@hostKeyMismatchMessage": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "hostKeyRejectedMessage": "Connessione annullata: la chiave host non è stata considerata attendibile. Può connettersi di nuovo per esaminare l'impronta.",
+
+  "serverResetTrustAction": "Reimposti la fiducia dell'host",
+  "serverResetTrustDesc": "Rimuova l'impronta salvata di questo server affinché la prossima connessione richieda di nuovo la conferma.",
+  "serverResetTrustConfirmTitle": "Reimpostare la fiducia dell'host?",
+  "serverResetTrustConfirmMessage": "L'impronta salvata per {identity}:{port} verrà rimossa. La prossima connessione Le chiederà di verificare di nuovo la chiave host.",
+  "@serverResetTrustConfirmMessage": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverResetTrustConfirmAction": "Reimposti",
+  "serverResetTrustDone": "Fiducia dell'host reimpostata: si riconnetta per verificare di nuovo l'impronta.",
+
+  "agentErrorNoTargetServer": "Nessun server di destinazione disponibile",
+  "agentErrorExecFailed": "Esecuzione del comando non riuscita",
+  "agentErrorConnectFailed": "Connessione automatica al server non riuscita",
+  "agentErrorConnectAuthRequired": "Nessuna credenziale salvata per questo server: la connessione automatica non è possibile",
+  "agentErrorDangerSkipped": "Comando pericoloso ignorato: {command}",
+  "@agentErrorDangerSkipped": {
+    "placeholders": {
+      "command": { "type": "String" }
+    }
+  },
+  "agentErrorUnexpected": "Errore imprevisto",
+
+  "exportDocChatTitle": "Esportazione chat Shell-Mind",
+  "exportDocExportedAt": "Esportato il: {time}",
+  "@exportDocExportedAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "exportDocMessageCount": "Messaggi: {count}",
+  "@exportDocMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocUserSection": "Utente",
+  "exportDocAssistantSection": "Assistente",
+  "exportDocToolSection": "Esecuzione strumento",
+  "exportDocNoContent": "_(nessun contenuto)_",
+  "exportDocUnknownServer": "Server sconosciuto",
+  "exportDocExitCode": "Codice di uscita {code}",
+  "@exportDocExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "exportDocCommand": "Comando",
+  "exportDocOutput": "Output",
+  "exportDocErrorOutput": "Output di errore",
+
+  "exportDocDiagTitle": "Rapporto di diagnostica Shell-Mind",
+  "exportDocDiagCrashCount": "Errori acquisiti: {count}",
+  "@exportDocDiagCrashCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocDiagCrashesSection": "Errori acquisiti",
+  "exportDocDiagNone": "(nessuno)",
+  "exportDocDiagErrorMessage": "Riepilogo errore: {message}",
+  "@exportDocDiagErrorMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "exportDocDiagAppVersion": "Versione app: {version}",
+  "@exportDocDiagAppVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "exportDocDiagPlatform": "Piattaforma: {platform}",
+  "@exportDocDiagPlatform": {
+    "placeholders": {
+      "platform": { "type": "String" }
+    }
+  },
+  "exportDocDiagLocale": "Lingua: {locale}",
+  "@exportDocDiagLocale": {
+    "placeholders": {
+      "locale": { "type": "String" }
+    }
+  },
+  "exportDocDiagStorage": "Utilizzo dei dati locali: {value}",
+  "@exportDocDiagStorage": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "exportDocDiagAuditSection": "Controllo dei comandi AI (ultimi {limit} riepiloghi)",
+  "@exportDocDiagAuditSection": {
+    "placeholders": {
+      "limit": { "type": "int" }
+    }
+  },
+  "exportDocDiagSuccess": "riuscito",
+  "exportDocDiagFailed": "non riuscito",
+  "exportDocDiagExitCodeOf": "codice di uscita {code}",
+  "@exportDocDiagExitCodeOf": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+
+  "settingsTerminalScheme": "Schema di colori del terminale",
+  "settingsTerminalSchemeDesc": "Scelga la palette di colori ANSI per i terminali SSH.",
+
+  "settingsSectionDataTransfer": "Importazione ed esportazione",
+  "transferSnippetsTitle": "Frammenti di comando",
+  "transferServersTitle": "Configurazioni dei server",
+  "transferExport": "Esporti",
+  "transferImport": "Importi",
+  "transferExportImport": "Esportazione / Importazione",
+  "transferExportTitle": "Esportazione",
+  "transferCopyJson": "Copi JSON",
+  "transferCopied": "Copiato negli appunti",
+  "transferImportHint": "Incolli qui il JSON esportato…",
+  "transferSnippetsEmpty": "Nessun frammento di comando da esportare.",
+  "transferServersEmpty": "Nessun server da esportare.",
+  "transferImportNothing": "Nessun elemento valido trovato nell'importazione.",
+  "transferSnippetsImported": "{count, plural, one{Importato 1 frammento} other{Importati {count} frammenti}}",
+  "@transferSnippetsImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferServersImported": "{count, plural, one{Importato 1 server} other{Importati {count} server}}",
+  "@transferServersImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferImportFailed": "Importazione non riuscita: {message}",
+  "@transferImportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "transferExportFailed": "Esportazione non riuscita: {message}",
+  "@transferExportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "sessionsTitle": "Conversazioni",
+  "sessionsNew": "Nuova conversazione",
+  "sessionsSearch": "Cerchi conversazioni…",
+  "sessionsEmpty": "Nessuna conversazione ancora",
+  "sessionsNoMatch": "Nessuna corrispondenza: \"{query}\"",
+  "@sessionsNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "sessionsRename": "Rinomini",
+  "sessionsRenameHint": "Titolo della conversazione",
+  "sessionsDelete": "Elimini",
+  "sessionsDeleteConfirm": "Eliminare \"{title}\"? L'operazione non può essere annullata.",
+  "@sessionsDeleteConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "sessionsMessageCount": "{count, plural, one{1 messaggio} other{{count} messaggi}}",
+  "@sessionsMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "settingsSectionNotifications": "Notifiche",
+  "settingsNotificationsTitle": "Avvisi in background",
+  "settingsNotificationsDesc": "Avvisi quando una sessione SSH si interrompe o un'attività AI termina mentre l'app è in background.",
+
+  "sftpTitle": "File",
+  "sftpNotConnected": "Non connesso a questo server.",
+  "sftpLoading": "Caricamento file…",
+  "sftpEmpty": "Questa cartella è vuota.",
+  "sftpDownload": "Scarica",
+  "sftpDownloaded": "Scaricato {path} ({size} byte)",
+  "@sftpDownloaded": {
+    "placeholders": {
+      "path": { "type": "String" },
+      "size": { "type": "int" }
+    }
+  },
+  "sftpDownloadFailed": "Download non riuscito",
+  "sftpPreviewError": "Anteprima non riuscita",
+  "sftpNewFolderName": "Nuova cartella",
+  "sftpRefresh": "Aggiorni",
+  "sftpDelete": "Elimini",
+  "sftpDeleteConfirm": "Eliminare \"{name}\"?",
+  "@sftpDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sftpRename": "Rinomini",
+  "sftpTooltip": "Sfoglia file (SFTP)",
+
+  "terminalMoreTooltip": "Altro",
+  "tunnelsTitle": "Port forwarding",
+  "tunnelsEmpty": "Nessun tunnel attivo.",
+  "tunnelsAddLocal": "Inoltro locale",
+  "tunnelsAddRemote": "Inoltro remoto",
+  "tunnelsLocalPort": "Porta locale",
+  "tunnelsRemoteHost": "Host remoto",
+  "tunnelsRemotePort": "Porta remota",
+  "tunnelsAdd": "Aggiunga",
+  "tunnelsClose": "Chiuda",
+  "tunnelsTooltip": "Port forwarding (tunnel SSH)",
+  "tunnelsError": "Tunnel non riuscito",
+  "tunnelsInvalidPort": "La porta deve essere compresa tra 1 e 65535.",
+
+  "settingsLanguageTitle": "Lingua"
+}

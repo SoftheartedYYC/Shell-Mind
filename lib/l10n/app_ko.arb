@@ -1,0 +1,1170 @@
+{
+  "@@locale": "ko",
+
+  "appTitle": "ShellMind",
+
+  "navServers": "서버",
+  "navAiChat": "AI 채팅",
+  "navSettings": "설정",
+
+  "pageNotFound": "페이지를 찾을 수 없습니다",
+  "backToServers": "서버로 돌아가기",
+
+  "serversTitle": "서버",
+  "serversHostCount": "호스트 {count}개",
+  "@serversHostCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "serversSearch": "서버 검색…",
+  "serversAdd": "서버 추가",
+  "serversEmpty": "아직 서버가 없습니다",
+  "serversEmptyHint": "첫 번째 SSH 서버를 추가하여 시작하세요.",
+  "serversDeleteConfirmTitle": "서버 삭제",
+  "serversDeleteConfirmMessage": "\"{name}\"을(를) 삭제하시겠습니까?\n\n{identity}:{port} 및 저장된 자격 증명이 영구적으로 제거됩니다.",
+  "@serversDeleteConfirmMessage": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serversDeleted": "{identity} 제거됨",
+  "@serversDeleted": {
+    "placeholders": {
+      "identity": { "type": "String" }
+    }
+  },
+  "serversDeleteFailed": "삭제 실패: {message}",
+  "@serversDeleteFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "serversLoading": "서버 불러오는 중",
+  "serversUngrouped": "그룹 없음",
+  "serversSortName": "a–z",
+  "serversSortRecent": "최근",
+  "serversQuickStart": "빠른 시작",
+  "serversQuickStep1Title": "호스트 추가",
+  "serversQuickStep1Desc": "비밀번호 또는 키 인증으로 SSH 엔드포인트를 등록하세요.",
+  "serversQuickStep2Title": "연결 테스트",
+  "serversQuickStep2Desc": "저장하기 전에 포트를 확인하여 오타를 빠르게 잡아냅니다.",
+  "serversQuickStep3Title": "연결",
+  "serversQuickStep3Desc": "터미널 세션을 엽니다 — 전체 PTY, 색상, vim을 지원합니다.",
+  "serversNoMatch": "일치하는 항목 없음: \"{query}\"",
+  "@serversNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "serversClearFilter": "필터 지우기",
+  "serversReadError": "서버 목록을 읽을 수 없습니다.",
+
+  "serverEditTitle": "서버 추가",
+  "serverEditTitleEdit": "서버 편집",
+  "serverNotFound": "서버를 찾을 수 없습니다",
+  "serverValidationNameRequired": "이름이 필요합니다",
+  "serverValidationHostRequired": "호스트가 필요합니다",
+  "serverValidationNoSpaces": "공백은 허용되지 않습니다",
+  "serverValidationRequired": "필수 항목",
+  "serverValidationNumeric": "숫자",
+  "serverValidationPortRange": "1–65535",
+  "serverValidationUsernameRequired": "사용자 이름이 필요합니다",
+  "serverValidationPasswordRequired": "비밀번호가 필요합니다",
+  "serverValidationPrivateKeyRequired": "개인 키가 필요합니다",
+  "serverAdded": "서버 추가됨: {identity}:{port}",
+  "@serverAdded": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverSaved": "저장됨: {identity}:{port}",
+  "@serverSaved": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverSaveFailed": "저장 실패: {message}",
+  "@serverSaveFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "serverTestEnterHost": "먼저 호스트 주소를 입력하세요",
+  "serverTestProbing": "{host}:{port} 확인 중…",
+  "@serverTestProbing": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestReachable": "{host}:{port} — 연결 가능",
+  "@serverTestReachable": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestTimedOut": "{host}:{port} — 시간 초과",
+  "@serverTestTimedOut": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestRefused": "{host}:{port} — 거부됨 / 연결 불가",
+  "@serverTestRefused": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestProbeFailed": "{host}:{port} — 확인 실패",
+  "@serverTestProbeFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestHandshakeFailed": "{host}:{port} SSH 핸드셰이크 실패",
+  "@serverTestHandshakeFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestAuthFailed": "{host}:{port} 인증 실패 - 사용자 이름과 자격 증명을 확인하세요",
+  "@serverTestAuthFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverLoading": "불러오는 중",
+  "serverSaveChanges": "변경 사항 저장",
+  "serverSectionIdentity": "신원",
+  "serverSectionConnection": "연결",
+  "serverSectionAuthentication": "인증",
+  "serverFieldLabel": "라벨",
+  "serverFieldLabelHint": "prod-web-01",
+  "serverFieldGroup": "그룹 (선택 사항)",
+  "serverFieldGroupHint": "production",
+  "serverFieldHost": "호스트",
+  "serverFieldHostHint": "10.0.0.5",
+  "serverFieldPort": "포트",
+  "serverFieldUsername": "사용자 이름",
+  "serverFieldUsernameHint": "root",
+  "serverFieldPassword": "비밀번호",
+  "serverFieldPasswordStored": "저장됨 — 유지하려면 비워 두세요",
+  "serverFieldPrivateKey": "개인 키 (PEM)",
+  "serverFieldPassphrase": "키 암호 (선택 사항)",
+  "serverAuthPassword": "비밀번호",
+  "serverAuthPrivateKey": "개인 키",
+  "serverTestIdle": "\"테스트\"를 눌러 연결을 확인하세요",
+  "serverSecurityNote": "자격 증명은 기기 키스토어에 암호화되어 저장되며 Hive 메타데이터 저장소에 접근하거나 이 기기를 벗어나지 않습니다.",
+  "serverTesting": "테스트 중…",
+  "serverTest": "테스트",
+  "serverSaving": "저장 중…",
+
+  "serverCopiedAddress": "{address} 복사됨",
+  "@serverCopiedAddress": {
+    "placeholders": {
+      "address": { "type": "String" }
+    }
+  },
+  "serverActions": "서버 작업",
+  "serverActionConnect": "연결",
+  "serverActionEdit": "편집",
+  "serverActionEditDetails": "세부 정보 편집",
+  "serverActionCopySsh": "SSH 명령 복사",
+  "serverActionDelete": "삭제",
+  "serverActionDeleteServer": "서버 삭제",
+  "serverOnline": "온라인",
+  "serverNeverConnected": "연결된 적 없음",
+  "serverJustNow": "방금 전",
+  "serverMinutesAgo": "{minutes}분 전",
+  "@serverMinutesAgo": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "serverHoursAgo": "{hours}시간 전",
+  "@serverHoursAgo": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "serverDaysAgo": "{days}일 전",
+  "@serverDaysAgo": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "terminalHostNotFound": "호스트를 찾을 수 없습니다",
+  "terminalHostNotFoundMessage": "id \"{id}\"에 해당하는 저장된 서버가 없습니다. 삭제되었을 수 있습니다.",
+  "@terminalHostNotFoundMessage": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "terminalBackToServers": "서버로 돌아가기",
+  "terminalConnectionFailed": "연결에 실패했습니다.",
+  "terminalSessionClosed": "세션 종료됨",
+  "terminalSessionClosedMessage": "{name} 연결이 종료되었습니다.",
+  "@terminalSessionClosedMessage": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "terminalReconnect": "다시 연결",
+  "terminalAuthenticating": "인증 중",
+  "terminalConnecting": "연결 중",
+  "terminalResolvingHost": "호스트 확인 중…",
+  "terminalTooltipDisconnectBack": "연결 해제 및 뒤로",
+  "terminalTooltipSmallerText": "텍스트 축소",
+  "terminalTooltipLargerText": "텍스트 확대",
+  "terminalTooltipDisconnect": "연결 해제",
+  "terminalRetryAvailable": "재시도 가능",
+  "terminalStatusConnected": "연결됨",
+  "terminalStatusOffline": "오프라인",
+  "terminalStatusError": "오류",
+
+  "aiChatTitle": "AI 어시스턴트",
+  "aiChatStatusSetup": "설정",
+  "aiChatStatusStreaming": "스트리밍 중",
+  "aiChatStatusReady": "준비됨",
+  "aiChatClearConversation": "대화 지우기",
+  "aiChatSuggestion1": "ls -la 출력의 의미를 설명해 줘",
+  "aiChatSuggestion2": "어떤 프로세스가 포트를 사용 중인지 어떻게 확인하나요?",
+  "aiChatSuggestion3": "로그를 tail 하고 오류를 grep 하는 방법을 알려줘",
+  "aiChatSuggestion4": "CSV 열을 합산하는 awk 한 줄 명령을 작성해 줘",
+  "aiChatTryAsking": "물어보세요",
+  "aiChatIntroTitle": "당신의 터미널 동반자",
+  "aiChatIntroBody": "명령, 오류 또는 로그 출력 일부를 붙여넣으세요. ShellMind가 무슨 일이 있었는지 설명하고, 다음 단계를 제안하며, 직접 명령을 작성해 줍니다.",
+  "aiChatNoKeyTitle": "API 키가 구성되지 않았습니다",
+  "aiChatNoKeyMessage": "어시스턴트를 사용하려면 {provider} API 키를 추가하세요. 키는 이 기기에 암호화되어 저장되며, 모델 호출 외에는 기기를 벗어나지 않습니다.",
+  "@aiChatNoKeyMessage": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiChatOpenSettings": "AI 설정 열기",
+  "aiChatCheckingCredentials": "자격 증명 확인 중",
+  "aiChatInputHint": "무엇이든 물어보세요…",
+  "aiChatInputDisabled": "시작하려면 API 키를 설정하세요",
+  "aiChatError": "오류",
+  "aiChatAssistantName": "ShellMind",
+  "aiChatCopied": "복사됨",
+  "aiChatCopy": "복사",
+  "aiChatThinking": "생각 중…",
+
+  "settingsTitle": "설정",
+  "settingsSearchTooltip": "설정 검색",
+  "settingsStable": "안정",
+  "settingsSectionAppearance": "모양 및 언어",
+  "settingsThemeSystem": "시스템",
+  "settingsThemeLight": "라이트",
+  "settingsThemeDark": "다크",
+  "settingsSectionLanguage": "언어",
+  "settingsLanguageSystem": "시스템",
+  "settingsLanguageZh": "中文",
+  "settingsLanguageEn": "English",
+  "settingsSectionAiProvider": "AI 제공자",
+  "settingsSectionAiAgent": "AI 에이전트",
+  "settingsSectionSsh": "SSH",
+  "settingsSectionServers": "서버",
+  "settingsSectionAboutUpdate": "정보 및 업데이트",
+  "settingsSectionStoragePrivacy": "저장소 및 개인정보",
+  "settingsSectionResources": "리소스",
+  "settingsTileSecrets": "비밀 정보",
+  "settingsTileEncrypted": "암호화됨",
+  "settingsTileLocalCache": "로컬 캐시",
+  "settingsTileClearData": "모든 데이터 지우기",
+  "settingsTileLicenses": "오픈소스 라이선스",
+  "settingsTileReportIssue": "문제 신고",
+  "settingsFooter": "현대적인 워크플로우를 위한 SSH + AI 어시스턴트",
+
+  "settingsSecretsDialogTitle": "비밀 정보 및 암호화",
+  "settingsSecretsDialogBody": "자격 증명(서버 비밀번호, 개인 키, AI API 키)은 항상 플랫폼 키스토어(Android Keystore / iOS Keychain)를 사용해 저장 시 암호화됩니다. 이 보호는 설계상의 기능이며 끌 수 없습니다. 자격 증명을 변경하려면 서버 편집 페이지 또는 AI 설정에서 편집하거나 제거하세요.",
+  "settingsDialogOk": "확인",
+  "settingsDialogClose": "닫기",
+  "settingsCacheDialogTitle": "로컬 캐시",
+  "settingsCacheHiveData": "앱 데이터",
+  "settingsCacheDownloads": "다운로드된 업데이트",
+  "settingsCacheTotal": "합계",
+  "settingsCacheDialogHint": "다운로드 캐시를 지우면 다운로드된 업데이트 패키지(APK)가 제거됩니다. 서버, 키 및 채팅 기록은 유지됩니다.",
+  "settingsCacheClearDownloads": "다운로드 캐시 지우기",
+  "settingsCacheCleared": "{freed} 확보됨",
+  "@settingsCacheCleared": {
+    "placeholders": {
+      "freed": { "type": "String" }
+    }
+  },
+  "settingsClearDataTitle": "모든 데이터를 지우시겠습니까?",
+  "settingsClearDataMessage": "이 기기의 모든 서버, 저장된 자격 증명, AI 키, 채팅 기록 및 환경설정이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
+  "settingsClearDataConfirm": "모두 지우기",
+  "settingsDataCleared": "모든 데이터가 지워졌습니다",
+  "settingsClearDataFailed": "데이터를 지울 수 없습니다: {message}",
+  "@settingsClearDataFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "settingsIssueLinkCopied": "문제 링크가 클립보드에 복사되었습니다.",
+  "settingsAboutGithub": "GitHub 저장소",
+
+  "settingsHideIp": "IP 주소 숨기기",
+  "settingsHideIpDesc": "서버 목록 및 AI 페이지에서 IP 주소를 가립니다",
+  "serverMaskedAddress": "주소 숨김",
+
+  "aiSettingsApiKeyTitle": "{provider} API 키",
+  "@aiSettingsApiKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsKeySet": "설정됨",
+  "aiSettingsKeyNotConfigured": "구성되지 않음",
+  "aiSettingsGetApiKey": "API 키 받기",
+  "aiSettingsTemperature": "Temperature",
+  "aiSettingsRemoveKey": "키 제거",
+  "aiSettingsKeySaved": "{provider} API 키가 안전하게 저장되었습니다.",
+  "@aiSettingsKeySaved": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsRemoveKeyTitle": "{provider} 키를 제거하시겠습니까?",
+  "@aiSettingsRemoveKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsRemoveKeyMessage": "새 키가 추가될 때까지 이 제공자의 어시스턴트가 작동하지 않습니다.",
+  "aiSettingsRemoveKeyConfirm": "제거",
+  "aiSettingsGetKeyTitle": "{provider} 키 받기",
+  "@aiSettingsGetKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsGetKeyMessage": "브라우저에서 제공자 콘솔을 열어 API 키를 생성한 다음 여기에 붙여넣으세요.",
+  "aiSettingsClose": "닫기",
+  "aiSettingsLinkCopied": "링크가 클립보드에 복사되었습니다.",
+  "aiSettingsCopyLink": "링크 복사",
+  "aiSettingsKeyConfigured": "키 구성됨",
+  "aiSettingsNotConfigured": "구성되지 않음",
+  "aiSettingsUpdateKeyTitle": "{provider} 키 업데이트",
+  "@aiSettingsUpdateKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsAddKeyTitle": "{provider} 키 추가",
+  "@aiSettingsAddKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsKeyStorageNote": "이 기기에 암호화되어 저장됩니다. AI 제공자 호출에만 사용됩니다.",
+  "aiSettingsApiKeyHint": "API 키…",
+  "aiSettingsSave": "저장",
+
+  "modelDescFastAffordable": "빠르고 저렴함",
+  "modelDescMostCapable": "가장 뛰어남",
+  "modelDescLegacyFast": "레거시 빠름",
+  "modelDescGeneralConversation": "일반 대화",
+  "modelDescAdvancedReasoning": "고급 추론",
+  "modelDescFastResponse": "빠른 응답",
+  "modelDescBalanced": "균형 잡힘",
+  "modelDescFreeFast": "무료 및 빠름",
+  "modelDescEnhanced": "향상됨",
+  "modelDescStandard": "표준",
+  "modelDescLightweight": "경량",
+  "modelDescRlEnhanced": "RL 강화",
+
+   "aiModelsTitle": "모델",
+   "aiModelsRefresh": "모델 목록 새로고침",
+   "aiModelsAddCustom": "사용자 정의 모델 추가",
+   "aiModelsAddCustomHint": "모델 ID, 예: deepseek-chat",
+   "aiModelsAdd": "추가",
+   "aiModelsCustomBadge": "사용자 정의",
+   "aiModelsFetchFailed": "모델을 가져올 수 없습니다 — 내장 목록을 표시합니다.",
+   "aiModelsRemoveCustom": "사용자 정의 모델 제거",
+   "aiModelsEmpty": "모델 없음",
+   "aiModelsInvalidId": "모델 ID를 입력하세요.",
+   "aiModelsDuplicate": "이 모델은 이미 목록에 있습니다.",
+  "aiModelsPickerTitle": "모델 선택",
+  "aiModelsSearchHint": "모델 검색",
+  "aiModelsSearchEmpty": "검색과 일치하는 모델이 없습니다.",
+
+  "aiProvidersAddTile": "사용자 정의 제공자 추가",
+  "aiProvidersAddTitle": "사용자 정의 제공자 추가",
+  "aiProvidersFieldName": "이름",
+  "aiProvidersFieldNameHint": "예: SiliconFlow",
+  "aiProvidersFieldBaseUrl": "기본 URL",
+  "aiProvidersFieldBaseUrlHint": "https://api.example.com/v1",
+  "aiProvidersFieldModel": "기본 모델 (선택 사항)",
+  "aiProvidersFieldModelHint": "모델 ID, 예: deepseek-chat",
+  "aiProvidersAddConfirm": "추가",
+  "aiProvidersInvalidInput": "이름과 기본 URL을 입력하세요.",
+  "aiProvidersInvalidUrl": "기본 URL은 http:// 또는 https://로 시작해야 합니다",
+  "aiProvidersDuplicateName": "이 이름을 가진 제공자가 이미 존재합니다.",
+  "aiProvidersAdded": "사용자 정의 제공자가 추가되었습니다.",
+  "aiProvidersAddFailed": "제공자를 추가할 수 없습니다 — 입력값을 확인하세요.",
+  "aiProvidersDeleteTile": "사용자 정의 제공자 제거",
+  "aiProvidersDeleteTitle": "{provider}을(를) 제거하시겠습니까?",
+  "@aiProvidersDeleteTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiProvidersDeleteMessage": "저장된 API 키, 기억된 모델 및 사용자 정의 모델도 함께 제거됩니다. 내장 제공자는 삭제할 수 없습니다.",
+  "aiProvidersDeleteConfirm": "제거",
+  "aiProvidersPickerTitle": "제공자 선택",
+
+  "updateVersion": "버전",
+  "updateSoftwareUpdate": "소프트웨어 업데이트",
+  "updateChecking": "확인 중",
+  "updateUpToDate": "최신 상태",
+  "updateCheckAgain": "다시 확인",
+  "updateReady": "준비됨",
+  "updateNew": "신규",
+  "updateCheck": "확인",
+  "updateAwaitingResponse": "응답 대기 중",
+  "updateAlreadyLatest": "이미 최신 빌드입니다",
+  "updateCurrentVersionLatest": "v{version}은(는) GitHub에 게시된 최신 릴리스입니다.",
+  "@updateCurrentVersionLatest": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "updateRunningVersion": "v{current} 실행 중 — 원격 최신 버전은 v{latest}입니다.",
+  "@updateRunningVersion": {
+    "placeholders": {
+      "current": { "type": "String" },
+      "latest": { "type": "String" }
+    }
+  },
+  "updateCheckedAgo": "{timeAgo}에 확인됨",
+  "@updateCheckedAgo": {
+    "placeholders": {
+      "timeAgo": { "type": "String" }
+    }
+  },
+  "updateAvailable": "업데이트 사용 가능",
+  "updatePre": "프리",
+  "updateDownloadInstall": "다운로드 및 설치",
+  "updateLater": "나중에",
+  "updateApkHint": "APK 설치는 Android에서만 지원됩니다. 파일은 여기에서 다운로드할 수 있습니다.",
+  "updateDownloading": "{tag} 다운로드 중",
+  "@updateDownloading": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateSize": "크기",
+  "updateRate": "속도",
+  "updateEta": "예상 시간",
+  "updateElapsed": "경과 시간",
+  "updateCancel": "취소",
+  "updateKeepForeground": "앱을 전면에 유지하세요",
+  "updateDownloadComplete": "다운로드 완료",
+  "updateInstallHint": "Android에서 확인을 요청합니다. 설치 프로그램이 실행되는 동안 ShellMind가 종료되며, 서버와 기록은 유지됩니다.",
+  "updateLaunching": "실행 중...",
+  "updateInstallNow": "지금 설치",
+  "updateDelete": "삭제",
+  "updateInstallTitle": "{tag}을(를) 설치하시겠습니까?",
+  "@updateInstallTitle": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateInstallMessage": "시스템 패키지 설치 프로그램이 열립니다. 설치 중 ShellMind가 종료되고 새 버전에서 다시 열립니다.",
+  "updateNotNow": "지금은 아님",
+  "updateInstall": "설치",
+  "updateCheckFailed": "업데이트 확인에 실패했습니다.",
+  "updateErrorTitleNoReleases": "릴리스 없음",
+  "updateErrorTitleGeneric": "업데이트 확인 실패",
+  "updateErrNoReleases": "아직 ShellMind에 게시된 릴리스가 없습니다.",
+  "updateErrRateLimit": "GitHub의 API 속도 제한에 도달했습니다. 나중에 다시 시도하세요.",
+  "updateErrTimeout": "GitHub 요청이 시간 초과되었습니다. 연결을 확인하고 다시 시도하세요.",
+  "updateErrNetwork": "GitHub에 연결할 수 없습니다. 네트워크 연결을 확인하세요.",
+  "updateErrAuth": "GitHub가 업데이트 요청을 거부했습니다.",
+  "updateErrPermission": "업데이트 요청이 거부되었습니다.",
+  "updateErrStorage": "업데이트를 완료할 저장 공간이 부족합니다.",
+  "updateErrDigestMismatch": "다운로드한 업데이트가 SHA-256 무결성 검사에 실패하여 삭제되었습니다. 다운로드를 다시 시도하세요.",
+  "updateErrDigestMissing": "업데이트 패키지에 게시된 무결성 다이제스트가 없어 업데이트가 거부되었습니다. 나중에 다시 시도하세요.",
+  "updateRetry": "재시도",
+  "updateDismiss": "닫기",
+  "updateReleaseNotes": "릴리스 {tag}",
+  "@updateReleaseNotes": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateNotesLabel": "메모",
+  "updateNewVersionAvailable": "새 버전 사용 가능",
+  "updateRemindLater": "나중에 알림",
+  "updateCancelDownload": "다운로드 취소",
+  "updateInstallTag": "{tag} 설치",
+  "@updateInstallTag": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateInstallLaterFromSettings": "나중에 설정에서 설치",
+  "updateCouldNotComplete": "업데이트를 완료할 수 없습니다.",
+  "updateClose": "닫기",
+  "updatePromptInstallHint": "설치 프로그램이 실행되는 동안 Android가 ShellMind를 종료합니다. 서버, 키 및 채팅 기록은 유지됩니다.",
+
+  "commonCancel": "취소",
+  "commonDelete": "삭제",
+  "commonRetry": "재시도",
+  "commonLoading": "불러오는 중...",
+  "commonNoData": "데이터 없음",
+  "commonNothingToShow": "아직 표시할 내용이 없습니다.",
+  "commonOk": "확인",
+
+  "settingsAiAutoExecuteTitle": "명령 자동 실행",
+  "settingsAiAutoExecuteSubtitle": "AI 에이전트가 매번 묻지 않고 파싱된 명령을 실행하도록 허용합니다",
+  "settingsAiAutoConnectTitle": "AI 서버 자동 연결",
+  "settingsAiAutoConnectSubtitle": "AI 어시스턴트가 구성되었지만 오프라인인 서버에 자동으로 연결하여 명령을 실행하도록 허용합니다(저장된 자격 증명이 사용됩니다)",
+  "settingsAiMaxAutoLoopsTitle": "최대 자동 루프 반복 횟수",
+  "settingsAiMaxAutoLoopsSub": "응답당 자동 명령 실행 횟수를 제한합니다",
+  "settingsAiMaxAutoLoopsTileDesc": "AI가 작업당 실행할 수 있는 최대 명령 라운드",
+  "settingsAiMaxAutoLoopsHint": "AI 작업당 실행 라운드의 상한입니다 — SSH 재연결 시도 횟수가 아닙니다(이는 SSH 항목에 있습니다).",
+
+  "terminalAskAi": "AI에게 묻기",
+  "terminalAskAiSubtitle": "선택한 텍스트를 AI 어시스턴트에게 보냅니다",
+  "terminalTooltipAskAi": "AI에게 묻기",
+
+  "aiChatNoConnection": "먼저 서버 터미널에 연결하세요",
+  "aiChatAnalyzePrompt": "위 명령 출력을 분석하여 결과의 의미를 설명하고 필요한 경우 후속 제안을 해 주세요.",
+
+  "aiExecuteButton": "서버에서 실행",
+  "aiExecuteTitle": "명령 실행 확인",
+  "aiExecuteConfirmButton": "실행",
+  "aiExecuteConfirmAnyway": "그래도 실행",
+  "aiExecuteDangerWarning": "⚠ 위험한 명령",
+  "aiExecuteDangerText": "이 명령은 파괴적일 수 있으며 데이터 손실이나 시스템 손상을 일으킬 수 있습니다.",
+  "aiExecuteCommandLabel": "실행할 명령:",
+  "aiExecuteTargetServer": "대상 서버:",
+  "aiExecuteSelectServer": "대상 서버 선택",
+  "aiExecuteNoServer": "먼저 서버에 연결하세요",
+  "aiExecuteAtLeastOne": "서버를 하나 이상 선택하세요",
+  "aiExecuteSelectHint": "이 명령을 실행할 서버를 선택하세요",
+  "aiExecuteRunCount": "실행 ({count})",
+  "@aiExecuteRunCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiExecuteSelectAll": "전체 선택",
+  "aiExecuteClearSelection": "지우기",
+  "aiExecuteUptime": "{hours}시간 {minutes}분 온라인",
+  "@aiExecuteUptime": {
+    "placeholders": {
+      "hours": { "type": "int" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "aiExecuteSuccess": "명령이 성공적으로 실행되었습니다",
+  "aiExecuteFailed": "명령 실행 실패",
+
+  "aiServerManageTitle": "서버",
+  "aiServerManageSubtitle": "AI 어시스턴트가 작동할 서버를 연결하세요",
+  "aiServerOnlineCount": "{count}개 온라인",
+  "@aiServerOnlineCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiServerDone": "완료",
+  "aiServerConnecting": "연결 중…",
+  "aiServerOffline": "오프라인",
+  "aiServerNoCredential": "저장된 자격 증명 없음 — 먼저 서버 페이지에서 비밀번호 또는 키를 저장하세요",
+  "aiServerConnectFailed": "연결 실패",
+
+  "aiToolResultCommand": "명령",
+  "aiToolResultOutput": "명령 출력",
+  "aiToolResultExitCode": "종료 코드: {code}",
+  "@aiToolResultExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "aiToolResultElapsed": "경과 시간",
+  "aiToolResultAnalyzeButton": "AI가 출력 분석",
+  "aiToolResultCollapsedShow": "{total}줄 더 보기",
+  "@aiToolResultCollapsedShow": {
+    "placeholders": {
+      "total": { "type": "int" }
+    }
+  },
+  "aiToolResultExpandedHide": "출력 숨기기",
+  "aiToolResultStderrLabel": "오류 출력:",
+
+  "aiContextToggleAttach": "터미널 컨텍스트 첨부",
+  "aiContextToggleDetach": "터미널 컨텍스트 첨부됨",
+  "aiContextBadge": "컨텍스트",
+  "aiContextLines": "터미널에서 {lines}줄",
+  "@aiContextLines": {
+    "placeholders": {
+      "lines": { "type": "int" }
+    }
+  },
+
+  "aiAgentStop": "자동 모드 중지",
+  "aiAgentExecuting": "실행 중…",
+  "aiAgentDefaultServer": "서버",
+
+  "aiTimelineTitle": "실행 타임라인",
+  "aiTimelineOpen": "실행 타임라인",
+  "aiTimelineEmpty": "아직 실행된 명령이 없습니다",
+  "aiTimelineEmptyHint": "채팅 또는 자동 모드로 명령을 실행하면 전체 체인이 여기에 표시됩니다.",
+  "aiTimelineStatRounds": "{count} 라운드",
+  "@aiTimelineStatRounds": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatCommands": "명령 {count}개",
+  "@aiTimelineStatCommands": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatSuccess": "{count}개 성공",
+  "@aiTimelineStatSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatFailed": "{count}개 실패",
+  "@aiTimelineStatFailed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStarted": "{time} 시작됨",
+  "@aiTimelineStarted": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineEnded": "{time} 종료됨",
+  "@aiTimelineEnded": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineExitCode": "종료 코드: {code}",
+  "@aiTimelineExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "aiTimelineNoExitCode": "종료 코드 없음",
+  "aiTimelineOutput": "출력",
+  "aiTimelineOutputEmpty": "출력 없음",
+  "aiTimelineErrorOutput": "오류 출력",
+  "aiTimelineRunning": "실행 중…",
+  "aiTimelineClose": "닫기",
+
+  "sshReconnectToggle": "연결 해제 시 자동 재연결",
+  "sshReconnectToggleDesc": "지수 백오프로 끊어진 SSH 세션을 재시도합니다",
+  "sshReconnectMaxAttempts": "최대 재연결 시도 횟수",
+  "sshReconnectMaxAttemptsDesc": "연결 해제 후 최대 자동 재연결 시도 횟수 — 0은 성공할 때까지 재시도함을 의미합니다",
+  "sshReconnectMaxAttemptsValue": "{count}",
+  "@sshReconnectMaxAttemptsValue": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sshReconnectMaxAttemptsUnlimited": "무제한",
+  "sshReconnectStatusReconnecting": "재연결 중 (시도 {attempt})",
+  "@sshReconnectStatusReconnecting": {
+    "placeholders": {
+      "attempt": { "type": "int" }
+    }
+  },
+  "sshReconnectStatusReconnectingOf": "재연결 중 (시도 {attempt}/{max})",
+  "@sshReconnectStatusReconnectingOf": {
+    "placeholders": {
+      "attempt": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUp": "자동 재연결 포기",
+  "sshReconnectGaveUpMessage": "{max}회 시도 후에도 {name}에 연결할 수 없습니다.",
+  "@sshReconnectGaveUpMessage": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUpMessageUnlimited": "{name}에 연결할 수 없습니다.",
+  "@sshReconnectGaveUpMessageUnlimited": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sshReconnectRetryNow": "지금 재시도",
+  "sshReconnectStopAuto": "중지",
+  "sshReconnectReconnectedSnack": "{name}에 다시 연결됨",
+  "@sshReconnectReconnectedSnack": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "snippetsTitle": "명령 스니펫",
+  "snippetsSubtitle": "빠른 재사용을 위해 명령을 저장하세요",
+  "snippetsAddTooltip": "스니펫 추가",
+  "snippetsAddTitle": "새 스니펫",
+  "snippetsSave": "저장",
+  "snippetsCommandLabel": "명령",
+  "snippetsCommandHint": "예: docker ps -a",
+  "snippetsNameLabel": "이름 (선택 사항)",
+  "snippetsNameHint": "예: 모든 컨테이너 나열",
+  "snippetsCommandRequired": "명령 텍스트가 필요합니다",
+  "snippetsDeleteTooltip": "스니펫 삭제",
+  "snippetsEmptyTitle": "아직 스니펫이 없습니다",
+  "snippetsEmptyMessage": "자주 사용하는 명령을 저장하고 한 번의 탭으로 삽입하거나 실행하세요.",
+  "snippetsLoadFailed": "스니펫을 불러올 수 없습니다",
+
+  "healthTitle": "서버 그룹 상태",
+  "healthOnlineRatio": "{online}/{total} 온라인",
+  "@healthOnlineRatio": {
+    "placeholders": {
+      "online": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "healthProbing": "확인 중…",
+  "healthProbeTooltip": "상태 점검 실행",
+  "healthProbedAt": "{time}에 확인됨",
+  "@healthProbedAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "healthMoodAllOnline": "모든 시스템 정상",
+  "healthMoodDegraded": "일부 서버에 연결할 수 없습니다",
+  "healthMoodAllOffline": "모든 서버에 연결할 수 없습니다",
+  "healthOfflineServers": "오프라인: {names}",
+  "@healthOfflineServers": {
+    "placeholders": {
+      "names": { "type": "String" }
+    }
+  },
+  "healthNoData": "새로고침을 눌러 모든 서버를 확인하세요",
+  "healthUptime": "{brief} 가동",
+  "@healthUptime": {
+    "placeholders": {
+      "brief": { "type": "String" }
+    }
+  },
+  "healthLoad": "부하 {value}",
+  "@healthLoad": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "healthDiagIntro": "내 서버 그룹의 상태 보고서입니다:",
+  "healthDiagStats": "{total}개 서버 중 {online}개 온라인.",
+  "@healthDiagStats": {
+    "placeholders": {
+      "online": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "healthDiagOfflineItem": "- {name}: 오프라인",
+  "@healthDiagOfflineItem": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "healthDiagOnlineItem": "- {name}: 온라인 ({details})",
+  "@healthDiagOnlineItem": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "details": { "type": "String" }
+    }
+  },
+  "healthDiagOutro": "상태 데이터를 분석하고 비정상적인 항목(높은 부하, 최근 재부팅)을 표시한 후 다음에 확인할 사항을 제안해 주세요.",
+  "healthDiagnose": "AI 진단",
+  "healthStaleNote": "마지막 점검 이후 일부 서버가 오프라인 상태가 되었습니다.",
+
+  "auditTitle": "명령 감사 로그",
+  "auditTileDesc": "AI 에이전트가 실행한 명령",
+  "auditEmptyTitle": "아직 감사 항목이 없습니다",
+  "auditEmptyMessage": "AI 에이전트가 실행한 명령이 여기에 기록됩니다.",
+  "auditFilteredEmpty": "현재 필터와 일치하는 항목이 없습니다",
+  "auditFilterAllServers": "모든 서버",
+  "auditFilterAllModes": "모든 모드",
+  "auditFilterAllResults": "모든 결과",
+  "auditFilterConfirmed": "확인됨",
+  "auditFilterAuto": "자동",
+  "auditFilterSuccess": "성공",
+  "auditFilterFailed": "실패",
+  "auditModeConfirmed": "확인됨",
+  "auditModeAuto": "자동",
+  "auditStatusSuccess": "성공",
+  "auditStatusFailed": "실패",
+  "auditDangerousBadge": "위험",
+  "auditExitCode": "종료 코드 {code}",
+  "@auditExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "auditOutputSummary": "출력 요약",
+  "auditNoOutput": "출력 없음",
+  "auditClearTooltip": "감사 로그 지우기",
+  "auditClearConfirmTitle": "감사 로그 지우기",
+  "auditClearConfirmMessage": "{count}개의 감사 항목이 모두 영구적으로 제거됩니다.",
+  "@auditClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "auditClearAction": "지우기",
+  "auditCleared": "감사 로그가 지워졌습니다",
+  "auditEntriesCount": "항목 {count}개",
+  "@auditEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "serverActionDisconnect": "연결 해제",
+
+  "exportChatAction": "Markdown으로 내보내기",
+  "exportChatEmpty": "아직 내보낼 내용이 없습니다",
+  "exportChatSuccess": "대화가 {path}에 내보내졌습니다",
+  "@exportChatSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "exportChatFailed": "내보내기 실패: {error}",
+  "@exportChatFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "diagTitle": "진단",
+  "diagTileDesc": "앱 오류 및 진단 내보내기",
+  "diagEmptyTitle": "캡처된 오류 없음",
+  "diagEmptyMessage": "처리되지 않은 예외가 문제 보고에 도움이 되도록 여기에 기록됩니다.",
+  "diagEntriesCount": "오류 {count}개",
+  "@diagEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagSourceFlutter": "UI 오류",
+  "diagSourcePlatform": "런타임 오류",
+  "diagSourceZone": "비동기 작업",
+  "diagStackTrace": "스택 추적",
+  "diagNoStackTrace": "스택 추적 없음",
+  "diagExportAction": "진단 보고서 내보내기",
+  "diagExportEmpty": "보고할 내용 없음 — 기본 정보 내보내기",
+  "diagExportSuccess": "진단 보고서가 {path}에 내보내졌습니다",
+  "@diagExportSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "diagExportFailed": "내보내기 실패: {error}",
+  "@diagExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "diagPrivacyNote": "진단 내용은 마스킹 처리됩니다 — 비밀번호, 개인 키 또는 API 키는 포함되지 않습니다.",
+  "diagClearTooltip": "오류 기록 지우기",
+  "diagClearConfirmTitle": "오류 기록 지우기",
+  "diagClearConfirmMessage": "{count}개의 오류 기록이 모두 영구적으로 제거됩니다.",
+  "@diagClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagClearAction": "지우기",
+  "diagCleared": "오류 기록이 지워졌습니다",
+  "diagAppInfoTitle": "앱 정보",
+  "diagAppInfoVersion": "버전",
+  "diagAppInfoPlatform": "플랫폼",
+  "diagAppInfoLocale": "언어",
+  "diagAppInfoStorage": "로컬 데이터 크기",
+
+  "authLockToggleTitle": "생체 인식 잠금",
+  "authLockToggleDesc": "앱을 열 때 지문 또는 얼굴 잠금 해제를 요구합니다",
+  "authLockEnableFailed": "인증 실패 — 잠금이 꺼진 상태로 유지됩니다",
+  "authLockUnavailableDesc": "이 기기에 등록된 생체 인식이 없습니다",
+  "authLockScreenTitle": "ShellMind가 잠겨 있습니다",
+  "authLockScreenSubtitle": "계속하려면 인증하세요",
+  "authLockUnlockAction": "잠금 해제",
+
+  "authLockUnlockFailed": "인증 실패 — 다시 시도하세요",
+
+  "terminalTabPickerTitle": "터미널 전환",
+  "terminalTabPickerSubtitle": "터미널 탭으로 열 서버를 선택하세요 — 온라인 서버는 즉시 연결되고, 오프라인 서버는 먼저 전화를 겁니다",
+  "terminalTabPickerEmpty": "아직 구성된 서버가 없습니다",
+  "terminalTabNewTooltip": "새 터미널 탭",
+  "terminalTabCloseTooltip": "탭 닫기",
+
+  "hostKeyConfirmTitle": "이 호스트를 신뢰하시겠습니까?",
+  "hostKeyConfirmMessage": "이 서버에 대한 첫 연결입니다. 신뢰하기 전에 지문을 확인하세요 — 중간자 공격으로부터 보호합니다.",
+  "hostKeyEndpointLabel": "서버",
+  "hostKeyFingerprintLabel": "SHA-256 지문",
+  "hostKeySecurityNote": "서버 운영자로부터 대역 외로 받은 값과 지문을 비교하세요. 잘못된 지문을 신뢰하면 자격 증명이 노출됩니다.",
+  "hostKeyTrustAndConnect": "신뢰 및 연결",
+  "hostKeyReject": "거부",
+
+  "hostKeyAutoRejectCountdown": "{seconds}초 후 자동 거부 — 신뢰는 확인할 때만 기록됩니다.",
+  "@hostKeyAutoRejectCountdown": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+
+  "hostKeyMismatchTitle": "호스트 키 변경됨",
+  "hostKeyMismatchMessage": "{host}:{port}이(가) 제시한 키가 이전에 신뢰한 키와 다릅니다. 연결이 차단되었습니다 — 중간자 공격이거나 서버가 다시 설치되었을 수 있습니다. 새 키를 확인했다면 서버 편집 페이지에서 호스트 신뢰를 초기화하고 다시 연결하세요.",
+  "@hostKeyMismatchMessage": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "hostKeyRejectedMessage": "연결 취소됨 — 호스트 키가 신뢰되지 않았습니다. 지문을 검토하려면 다시 연결할 수 있습니다.",
+
+  "serverResetTrustAction": "호스트 신뢰 초기화",
+  "serverResetTrustDesc": "이 서버의 저장된 지문을 잊어 다음 연결에서 다시 확인을 요청합니다.",
+  "serverResetTrustConfirmTitle": "호스트 신뢰를 초기화하시겠습니까?",
+  "serverResetTrustConfirmMessage": "{identity}:{port}의 저장된 지문이 제거됩니다. 다음 연결에서 호스트 키를 다시 확인하라는 요청을 받게 됩니다.",
+  "@serverResetTrustConfirmMessage": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverResetTrustConfirmAction": "초기화",
+  "serverResetTrustDone": "호스트 신뢰 초기화됨 — 지문을 다시 확인하려면 다시 연결하세요.",
+
+  "agentErrorNoTargetServer": "대상 서버를 사용할 수 없습니다",
+  "agentErrorExecFailed": "명령 실행 실패",
+  "agentErrorConnectFailed": "서버에 자동으로 연결하지 못했습니다",
+  "agentErrorConnectAuthRequired": "이 서버에 저장된 자격 증명이 없습니다 — 자동 연결이 불가능합니다",
+  "agentErrorDangerSkipped": "위험한 명령 건너뜀: {command}",
+  "@agentErrorDangerSkipped": {
+    "placeholders": {
+      "command": { "type": "String" }
+    }
+  },
+  "agentErrorUnexpected": "예기치 않은 오류",
+
+  "exportDocChatTitle": "Shell-Mind 채팅 내보내기",
+  "exportDocExportedAt": "내보낸 시각: {time}",
+  "@exportDocExportedAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "exportDocMessageCount": "메시지: {count}",
+  "@exportDocMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocUserSection": "사용자",
+  "exportDocAssistantSection": "어시스턴트",
+  "exportDocToolSection": "도구 실행",
+  "exportDocNoContent": "_(내용 없음)_",
+  "exportDocUnknownServer": "알 수 없는 서버",
+  "exportDocExitCode": "종료 코드 {code}",
+  "@exportDocExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "exportDocCommand": "명령",
+  "exportDocOutput": "출력",
+  "exportDocErrorOutput": "오류 출력",
+
+  "exportDocDiagTitle": "Shell-Mind 진단 보고서",
+  "exportDocDiagCrashCount": "캡처된 오류: {count}",
+  "@exportDocDiagCrashCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocDiagCrashesSection": "캡처된 오류",
+  "exportDocDiagNone": "(없음)",
+  "exportDocDiagErrorMessage": "오류 요약: {message}",
+  "@exportDocDiagErrorMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "exportDocDiagAppVersion": "앱 버전: {version}",
+  "@exportDocDiagAppVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "exportDocDiagPlatform": "플랫폼: {platform}",
+  "@exportDocDiagPlatform": {
+    "placeholders": {
+      "platform": { "type": "String" }
+    }
+  },
+  "exportDocDiagLocale": "언어: {locale}",
+  "@exportDocDiagLocale": {
+    "placeholders": {
+      "locale": { "type": "String" }
+    }
+  },
+  "exportDocDiagStorage": "로컬 데이터 사용량: {value}",
+  "@exportDocDiagStorage": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "exportDocDiagAuditSection": "AI 명령 감사 (최근 {limit}개 요약)",
+  "@exportDocDiagAuditSection": {
+    "placeholders": {
+      "limit": { "type": "int" }
+    }
+  },
+  "exportDocDiagSuccess": "성공",
+  "exportDocDiagFailed": "실패",
+  "exportDocDiagExitCodeOf": "종료 코드 {code}",
+  "@exportDocDiagExitCodeOf": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+
+  "settingsTerminalScheme": "터미널 색상 구성",
+  "settingsTerminalSchemeDesc": "SSH 터미널의 ANSI 색상 팔레트를 선택하세요.",
+
+  "settingsSectionDataTransfer": "가져오기 및 내보내기",
+  "transferSnippetsTitle": "명령 스니펫",
+  "transferServersTitle": "서버 구성",
+  "transferExport": "내보내기",
+  "transferImport": "가져오기",
+  "transferExportImport": "내보내기 / 가져오기",
+  "transferExportTitle": "내보내기",
+  "transferCopyJson": "JSON 복사",
+  "transferCopied": "클립보드에 복사됨",
+  "transferImportHint": "내보낸 JSON을 여기에 붙여넣으세요…",
+  "transferSnippetsEmpty": "내보낼 명령 스니펫이 없습니다.",
+  "transferServersEmpty": "내보낼 서버가 없습니다.",
+  "transferImportNothing": "가져오기에서 유효한 항목을 찾지 못했습니다.",
+  "transferSnippetsImported": "명령 스니펫 {count}개 가져옴",
+  "@transferSnippetsImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferServersImported": "서버 {count}개 가져옴",
+  "@transferServersImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferImportFailed": "가져오기 실패: {message}",
+  "@transferImportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "transferExportFailed": "내보내기 실패: {message}",
+  "@transferExportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "sessionsTitle": "대화",
+  "sessionsNew": "새 대화",
+  "sessionsSearch": "대화 검색…",
+  "sessionsEmpty": "아직 대화가 없습니다",
+  "sessionsNoMatch": "일치하는 항목 없음: \"{query}\"",
+  "@sessionsNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "sessionsRename": "이름 바꾸기",
+  "sessionsRenameHint": "대화 제목",
+  "sessionsDelete": "삭제",
+  "sessionsDeleteConfirm": "\"{title}\"을(를) 삭제하시겠습니까? 되돌릴 수 없습니다.",
+  "@sessionsDeleteConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "sessionsMessageCount": "메시지 {count}개",
+  "@sessionsMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "settingsSectionNotifications": "알림",
+  "settingsNotificationsTitle": "백그라운드 알림",
+  "settingsNotificationsDesc": "앱이 백그라운드에 있는 동안 SSH 세션이 끊기거나 AI 작업이 완료되면 알립니다.",
+
+  "sftpTitle": "파일",
+  "sftpNotConnected": "이 서버에 연결되어 있지 않습니다.",
+  "sftpLoading": "파일 불러오는 중…",
+  "sftpEmpty": "이 폴더는 비어 있습니다.",
+  "sftpDownload": "다운로드",
+  "sftpDownloaded": "{path} 다운로드됨 ({size}바이트)",
+  "@sftpDownloaded": {
+    "placeholders": {
+      "path": { "type": "String" },
+      "size": { "type": "int" }
+    }
+  },
+  "sftpDownloadFailed": "다운로드 실패",
+  "sftpPreviewError": "미리보기 실패",
+  "sftpNewFolderName": "새 폴더",
+  "sftpRefresh": "새로고침",
+  "sftpDelete": "삭제",
+  "sftpDeleteConfirm": "\"{name}\"을(를) 삭제하시겠습니까?",
+  "@sftpDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sftpRename": "이름 바꾸기",
+  "sftpTooltip": "파일 탐색 (SFTP)",
+
+  "terminalMoreTooltip": "더 보기",
+  "tunnelsTitle": "포트 포워딩",
+  "tunnelsEmpty": "활성 터널이 없습니다.",
+  "tunnelsAddLocal": "로컬 포워딩",
+  "tunnelsAddRemote": "원격 포워딩",
+  "tunnelsLocalPort": "로컬 포트",
+  "tunnelsRemoteHost": "원격 호스트",
+  "tunnelsRemotePort": "원격 포트",
+  "tunnelsAdd": "추가",
+  "tunnelsClose": "닫기",
+  "tunnelsTooltip": "포트 포워딩 (SSH 터널)",
+  "tunnelsError": "터널 실패",
+  "tunnelsInvalidPort": "포트는 1에서 65535 사이여야 합니다.",
+
+  "settingsLanguageTitle": "언어"
+}

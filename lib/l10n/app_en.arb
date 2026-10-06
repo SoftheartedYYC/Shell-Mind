@@ -1053,5 +1053,118 @@
     "placeholders": {
       "code": { "type": "int" }
     }
-  }
+  },
+
+  "settingsTerminalScheme": "Terminal color scheme",
+  "settingsTerminalSchemeDesc": "Choose the ANSI color palette for SSH terminals.",
+
+  "settingsSectionDataTransfer": "Import & Export",
+  "transferSnippetsTitle": "Command snippets",
+  "transferServersTitle": "Server configurations",
+  "transferExport": "Export",
+  "transferImport": "Import",
+  "transferExportImport": "Export / Import",
+  "transferExportTitle": "Export",
+  "transferCopyJson": "Copy JSON",
+  "transferCopied": "Copied to clipboard",
+  "transferImportHint": "Paste the exported JSON here…",
+  "transferSnippetsEmpty": "No command snippets to export.",
+  "transferServersEmpty": "No servers to export.",
+  "transferImportNothing": "No valid items found in the import.",
+  "transferSnippetsImported": "{count, plural, =1{Imported 1 snippet} other{Imported {count} snippets}}",
+  "@transferSnippetsImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferServersImported": "{count, plural, =1{Imported 1 server} other{Imported {count} servers}}",
+  "@transferServersImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferImportFailed": "Import failed: {message}",
+  "@transferImportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "transferExportFailed": "Export failed: {message}",
+  "@transferExportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "sessionsTitle": "Conversations",
+  "sessionsNew": "New conversation",
+  "sessionsSearch": "Search conversations…",
+  "sessionsEmpty": "No conversations yet",
+  "sessionsNoMatch": "No match: \"{query}\"",
+  "@sessionsNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "sessionsRename": "Rename",
+  "sessionsRenameHint": "Conversation title",
+  "sessionsDelete": "Delete",
+  "sessionsDeleteConfirm": "Delete \"{title}\"? This cannot be undone.",
+  "@sessionsDeleteConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "sessionsMessageCount": "{count, plural, =1{1 message} other{{count} messages}}",
+  "@sessionsMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "settingsSectionNotifications": "Notifications",
+  "settingsNotificationsTitle": "Background alerts",
+  "settingsNotificationsDesc": "Notify when an SSH session drops or an AI task finishes while the app is in the background.",
+
+  "sftpTitle": "Files",
+  "sftpNotConnected": "Not connected to this server.",
+  "sftpLoading": "Loading files…",
+  "sftpEmpty": "This folder is empty.",
+  "sftpDownload": "Download",
+  "sftpDownloaded": "Downloaded {path} ({size} bytes)",
+  "@sftpDownloaded": {
+    "placeholders": {
+      "path": { "type": "String" },
+      "size": { "type": "int" }
+    }
+  },
+  "sftpDownloadFailed": "Download failed",
+  "sftpPreviewError": "Preview failed",
+  "sftpNewFolderName": "New folder",
+  "sftpRefresh": "Refresh",
+  "sftpDelete": "Delete",
+  "sftpDeleteConfirm": "Delete \"{name}\"?",
+  "@sftpDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sftpRename": "Rename",
+  "sftpTooltip": "Browse files (SFTP)",
+
+  "terminalMoreTooltip": "More",
+  "tunnelsTitle": "Port forwarding",
+  "tunnelsEmpty": "No active tunnels.",
+  "tunnelsAddLocal": "Local forward",
+  "tunnelsAddRemote": "Remote forward",
+  "tunnelsLocalPort": "Local port",
+  "tunnelsRemoteHost": "Remote host",
+  "tunnelsRemotePort": "Remote port",
+  "tunnelsAdd": "Add",
+  "tunnelsClose": "Close",
+  "tunnelsTooltip": "Port forwarding (SSH tunnel)",
+  "tunnelsError": "Tunnel failed",
+  "tunnelsInvalidPort": "Port must be between 1 and 65535.",
+
+  "settingsLanguageTitle": "Language"
 }

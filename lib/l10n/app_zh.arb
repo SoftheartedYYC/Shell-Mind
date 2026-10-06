@@ -830,5 +830,118 @@
     "placeholders": {
       "code": { "type": "int" }
     }
-  }
+  },
+
+  "settingsTerminalScheme": "终端配色方案",
+  "settingsTerminalSchemeDesc": "选择 SSH 终端的 ANSI 配色方案。",
+
+  "settingsSectionDataTransfer": "导入与导出",
+  "transferSnippetsTitle": "命令片段",
+  "transferServersTitle": "服务器配置",
+  "transferExport": "导出",
+  "transferImport": "导入",
+  "transferExportImport": "导出 / 导入",
+  "transferExportTitle": "导出",
+  "transferCopyJson": "复制 JSON",
+  "transferCopied": "已复制到剪贴板",
+  "transferImportHint": "在此粘贴导出的 JSON…",
+  "transferSnippetsEmpty": "没有可导出的命令片段。",
+  "transferServersEmpty": "没有可导出的服务器。",
+  "transferImportNothing": "导入内容中没有有效条目。",
+  "transferSnippetsImported": "已导入 {count} 个命令片段",
+  "@transferSnippetsImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferServersImported": "已导入 {count} 个服务器",
+  "@transferServersImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferImportFailed": "导入失败：{message}",
+  "@transferImportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "transferExportFailed": "导出失败：{message}",
+  "@transferExportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "sessionsTitle": "对话",
+  "sessionsNew": "新建对话",
+  "sessionsSearch": "搜索对话…",
+  "sessionsEmpty": "暂无对话",
+  "sessionsNoMatch": "未找到：\"{query}\"",
+  "@sessionsNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "sessionsRename": "重命名",
+  "sessionsRenameHint": "对话标题",
+  "sessionsDelete": "删除",
+  "sessionsDeleteConfirm": "删除\"{title}\"？此操作无法撤销。",
+  "@sessionsDeleteConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "sessionsMessageCount": "{count} 条消息",
+  "@sessionsMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "settingsSectionNotifications": "通知",
+  "settingsNotificationsTitle": "后台提醒",
+  "settingsNotificationsDesc": "当应用在后台时，SSH 会话断开或 AI 任务完成时发送通知。",
+
+  "sftpTitle": "文件",
+  "sftpNotConnected": "未连接到此服务器。",
+  "sftpLoading": "加载文件…",
+  "sftpEmpty": "此文件夹为空。",
+  "sftpDownload": "下载",
+  "sftpDownloaded": "已下载 {path}（{size} 字节）",
+  "@sftpDownloaded": {
+    "placeholders": {
+      "path": { "type": "String" },
+      "size": { "type": "int" }
+    }
+  },
+  "sftpDownloadFailed": "下载失败",
+  "sftpPreviewError": "预览失败",
+  "sftpNewFolderName": "新建文件夹",
+  "sftpRefresh": "刷新",
+  "sftpDelete": "删除",
+  "sftpDeleteConfirm": "删除\"{name}\"？",
+  "@sftpDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sftpRename": "重命名",
+  "sftpTooltip": "浏览文件（SFTP）",
+
+  "terminalMoreTooltip": "更多",
+  "tunnelsTitle": "端口转发",
+  "tunnelsEmpty": "暂无活动隧道。",
+  "tunnelsAddLocal": "本地转发",
+  "tunnelsAddRemote": "远程转发",
+  "tunnelsLocalPort": "本地端口",
+  "tunnelsRemoteHost": "远程主机",
+  "tunnelsRemotePort": "远程端口",
+  "tunnelsAdd": "添加",
+  "tunnelsClose": "关闭",
+  "tunnelsTooltip": "端口转发（SSH 隧道）",
+  "tunnelsError": "隧道创建失败",
+  "tunnelsInvalidPort": "端口必须在 1 到 65535 之间。",
+
+  "settingsLanguageTitle": "语言"
 }

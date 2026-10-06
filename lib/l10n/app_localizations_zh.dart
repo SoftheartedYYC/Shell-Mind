@@ -1863,4 +1863,202 @@ class AppLocalizationsZh extends AppLocalizations {
   String exportDocDiagExitCodeOf(int code) {
     return '退出码 $code';
   }
+
+  @override
+  String get settingsTerminalScheme => '终端配色方案';
+
+  @override
+  String get settingsTerminalSchemeDesc => '选择 SSH 终端的 ANSI 配色方案。';
+
+  @override
+  String get settingsSectionDataTransfer => '导入与导出';
+
+  @override
+  String get transferSnippetsTitle => '命令片段';
+
+  @override
+  String get transferServersTitle => '服务器配置';
+
+  @override
+  String get transferExport => '导出';
+
+  @override
+  String get transferImport => '导入';
+
+  @override
+  String get transferExportImport => '导出 / 导入';
+
+  @override
+  String get transferExportTitle => '导出';
+
+  @override
+  String get transferCopyJson => '复制 JSON';
+
+  @override
+  String get transferCopied => '已复制到剪贴板';
+
+  @override
+  String get transferImportHint => '在此粘贴导出的 JSON…';
+
+  @override
+  String get transferSnippetsEmpty => '没有可导出的命令片段。';
+
+  @override
+  String get transferServersEmpty => '没有可导出的服务器。';
+
+  @override
+  String get transferImportNothing => '导入内容中没有有效条目。';
+
+  @override
+  String transferSnippetsImported(int count) {
+    return '已导入 $count 个命令片段';
+  }
+
+  @override
+  String transferServersImported(int count) {
+    return '已导入 $count 个服务器';
+  }
+
+  @override
+  String transferImportFailed(String message) {
+    return '导入失败：$message';
+  }
+
+  @override
+  String transferExportFailed(String message) {
+    return '导出失败：$message';
+  }
+
+  @override
+  String get sessionsTitle => '对话';
+
+  @override
+  String get sessionsNew => '新建对话';
+
+  @override
+  String get sessionsSearch => '搜索对话…';
+
+  @override
+  String get sessionsEmpty => '暂无对话';
+
+  @override
+  String sessionsNoMatch(String query) {
+    return '未找到：\"$query\"';
+  }
+
+  @override
+  String get sessionsRename => '重命名';
+
+  @override
+  String get sessionsRenameHint => '对话标题';
+
+  @override
+  String get sessionsDelete => '删除';
+
+  @override
+  String sessionsDeleteConfirm(String title) {
+    return '删除\"$title\"？此操作无法撤销。';
+  }
+
+  @override
+  String sessionsMessageCount(int count) {
+    return '$count 条消息';
+  }
+
+  @override
+  String get settingsSectionNotifications => '通知';
+
+  @override
+  String get settingsNotificationsTitle => '后台提醒';
+
+  @override
+  String get settingsNotificationsDesc => '当应用在后台时，SSH 会话断开或 AI 任务完成时发送通知。';
+
+  @override
+  String get sftpTitle => '文件';
+
+  @override
+  String get sftpNotConnected => '未连接到此服务器。';
+
+  @override
+  String get sftpLoading => '加载文件…';
+
+  @override
+  String get sftpEmpty => '此文件夹为空。';
+
+  @override
+  String get sftpDownload => '下载';
+
+  @override
+  String sftpDownloaded(String path, int size) {
+    return '已下载 $path（$size 字节）';
+  }
+
+  @override
+  String get sftpDownloadFailed => '下载失败';
+
+  @override
+  String get sftpPreviewError => '预览失败';
+
+  @override
+  String get sftpNewFolderName => '新建文件夹';
+
+  @override
+  String get sftpRefresh => '刷新';
+
+  @override
+  String get sftpDelete => '删除';
+
+  @override
+  String sftpDeleteConfirm(String name) {
+    return '删除\"$name\"？';
+  }
+
+  @override
+  String get sftpRename => '重命名';
+
+  @override
+  String get sftpTooltip => '浏览文件（SFTP）';
+
+  @override
+  String get terminalMoreTooltip => '更多';
+
+  @override
+  String get tunnelsTitle => '端口转发';
+
+  @override
+  String get tunnelsEmpty => '暂无活动隧道。';
+
+  @override
+  String get tunnelsAddLocal => '本地转发';
+
+  @override
+  String get tunnelsAddRemote => '远程转发';
+
+  @override
+  String get tunnelsLocalPort => '本地端口';
+
+  @override
+  String get tunnelsRemoteHost => '远程主机';
+
+  @override
+  String get tunnelsRemotePort => '远程端口';
+
+  @override
+  String get tunnelsAdd => '添加';
+
+  @override
+  String get tunnelsClose => '关闭';
+
+  @override
+  String get tunnelsTooltip => '端口转发（SSH 隧道）';
+
+  @override
+  String get tunnelsError => '隧道创建失败';
+
+  @override
+  String get tunnelsInvalidPort => '端口必须在 1 到 65535 之间。';
+
+  @override
+  String get settingsLanguageTitle => '语言';
 }

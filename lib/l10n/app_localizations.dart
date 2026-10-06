@@ -5,7 +5,15 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_it.dart';
+import 'app_localizations_ja.dart';
+import 'app_localizations_ko.dart';
+import 'app_localizations_pt.dart';
+import 'app_localizations_ru.dart';
 import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
@@ -94,7 +102,15 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('de'),
     Locale('en'),
+    Locale('es'),
+    Locale('fr'),
+    Locale('it'),
+    Locale('ja'),
+    Locale('ko'),
+    Locale('pt'),
+    Locale('ru'),
     Locale('zh'),
   ];
 
@@ -3373,6 +3389,366 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'exit code {code}'**
   String exportDocDiagExitCodeOf(int code);
+
+  /// No description provided for @settingsTerminalScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminal color scheme'**
+  String get settingsTerminalScheme;
+
+  /// No description provided for @settingsTerminalSchemeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the ANSI color palette for SSH terminals.'**
+  String get settingsTerminalSchemeDesc;
+
+  /// No description provided for @settingsSectionDataTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Import & Export'**
+  String get settingsSectionDataTransfer;
+
+  /// No description provided for @transferSnippetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Command snippets'**
+  String get transferSnippetsTitle;
+
+  /// No description provided for @transferServersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Server configurations'**
+  String get transferServersTitle;
+
+  /// No description provided for @transferExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get transferExport;
+
+  /// No description provided for @transferImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get transferImport;
+
+  /// No description provided for @transferExportImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export / Import'**
+  String get transferExportImport;
+
+  /// No description provided for @transferExportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get transferExportTitle;
+
+  /// No description provided for @transferCopyJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy JSON'**
+  String get transferCopyJson;
+
+  /// No description provided for @transferCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get transferCopied;
+
+  /// No description provided for @transferImportHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the exported JSON here…'**
+  String get transferImportHint;
+
+  /// No description provided for @transferSnippetsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No command snippets to export.'**
+  String get transferSnippetsEmpty;
+
+  /// No description provided for @transferServersEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No servers to export.'**
+  String get transferServersEmpty;
+
+  /// No description provided for @transferImportNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'No valid items found in the import.'**
+  String get transferImportNothing;
+
+  /// No description provided for @transferSnippetsImported.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Imported 1 snippet} other{Imported {count} snippets}}'**
+  String transferSnippetsImported(int count);
+
+  /// No description provided for @transferServersImported.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Imported 1 server} other{Imported {count} servers}}'**
+  String transferServersImported(int count);
+
+  /// No description provided for @transferImportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {message}'**
+  String transferImportFailed(String message);
+
+  /// No description provided for @transferExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed: {message}'**
+  String transferExportFailed(String message);
+
+  /// No description provided for @sessionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversations'**
+  String get sessionsTitle;
+
+  /// No description provided for @sessionsNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New conversation'**
+  String get sessionsNew;
+
+  /// No description provided for @sessionsSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search conversations…'**
+  String get sessionsSearch;
+
+  /// No description provided for @sessionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet'**
+  String get sessionsEmpty;
+
+  /// No description provided for @sessionsNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No match: \"{query}\"'**
+  String sessionsNoMatch(String query);
+
+  /// No description provided for @sessionsRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get sessionsRename;
+
+  /// No description provided for @sessionsRenameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation title'**
+  String get sessionsRenameHint;
+
+  /// No description provided for @sessionsDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get sessionsDelete;
+
+  /// No description provided for @sessionsDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{title}\"? This cannot be undone.'**
+  String sessionsDeleteConfirm(String title);
+
+  /// No description provided for @sessionsMessageCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 message} other{{count} messages}}'**
+  String sessionsMessageCount(int count);
+
+  /// No description provided for @settingsSectionNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get settingsSectionNotifications;
+
+  /// No description provided for @settingsNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Background alerts'**
+  String get settingsNotificationsTitle;
+
+  /// No description provided for @settingsNotificationsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify when an SSH session drops or an AI task finishes while the app is in the background.'**
+  String get settingsNotificationsDesc;
+
+  /// No description provided for @sftpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get sftpTitle;
+
+  /// No description provided for @sftpNotConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not connected to this server.'**
+  String get sftpNotConnected;
+
+  /// No description provided for @sftpLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading files…'**
+  String get sftpLoading;
+
+  /// No description provided for @sftpEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder is empty.'**
+  String get sftpEmpty;
+
+  /// No description provided for @sftpDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get sftpDownload;
+
+  /// No description provided for @sftpDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded {path} ({size} bytes)'**
+  String sftpDownloaded(String path, int size);
+
+  /// No description provided for @sftpDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed'**
+  String get sftpDownloadFailed;
+
+  /// No description provided for @sftpPreviewError.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview failed'**
+  String get sftpPreviewError;
+
+  /// No description provided for @sftpNewFolderName.
+  ///
+  /// In en, this message translates to:
+  /// **'New folder'**
+  String get sftpNewFolderName;
+
+  /// No description provided for @sftpRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get sftpRefresh;
+
+  /// No description provided for @sftpDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get sftpDelete;
+
+  /// No description provided for @sftpDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String sftpDeleteConfirm(String name);
+
+  /// No description provided for @sftpRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get sftpRename;
+
+  /// No description provided for @sftpTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse files (SFTP)'**
+  String get sftpTooltip;
+
+  /// No description provided for @terminalMoreTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get terminalMoreTooltip;
+
+  /// No description provided for @tunnelsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Port forwarding'**
+  String get tunnelsTitle;
+
+  /// No description provided for @tunnelsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No active tunnels.'**
+  String get tunnelsEmpty;
+
+  /// No description provided for @tunnelsAddLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Local forward'**
+  String get tunnelsAddLocal;
+
+  /// No description provided for @tunnelsAddRemote.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote forward'**
+  String get tunnelsAddRemote;
+
+  /// No description provided for @tunnelsLocalPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Local port'**
+  String get tunnelsLocalPort;
+
+  /// No description provided for @tunnelsRemoteHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote host'**
+  String get tunnelsRemoteHost;
+
+  /// No description provided for @tunnelsRemotePort.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote port'**
+  String get tunnelsRemotePort;
+
+  /// No description provided for @tunnelsAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get tunnelsAdd;
+
+  /// No description provided for @tunnelsClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get tunnelsClose;
+
+  /// No description provided for @tunnelsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Port forwarding (SSH tunnel)'**
+  String get tunnelsTooltip;
+
+  /// No description provided for @tunnelsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Tunnel failed'**
+  String get tunnelsError;
+
+  /// No description provided for @tunnelsInvalidPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Port must be between 1 and 65535.'**
+  String get tunnelsInvalidPort;
+
+  /// No description provided for @settingsLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguageTitle;
 }
 
 class _AppLocalizationsDelegate
@@ -3385,8 +3761,18 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'de',
+    'en',
+    'es',
+    'fr',
+    'it',
+    'ja',
+    'ko',
+    'pt',
+    'ru',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -3395,8 +3781,24 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'de':
+      return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
+    case 'it':
+      return AppLocalizationsIt();
+    case 'ja':
+      return AppLocalizationsJa();
+    case 'ko':
+      return AppLocalizationsKo();
+    case 'pt':
+      return AppLocalizationsPt();
+    case 'ru':
+      return AppLocalizationsRu();
     case 'zh':
       return AppLocalizationsZh();
   }

@@ -1,0 +1,1170 @@
+{
+  "@@locale": "ru",
+
+  "appTitle": "ShellMind",
+
+  "navServers": "Серверы",
+  "navAiChat": "AI-чат",
+  "navSettings": "Настройки",
+
+  "pageNotFound": "Страница не найдена",
+  "backToServers": "Назад к серверам",
+
+  "serversTitle": "Серверы",
+  "serversHostCount": "{count, plural, one{1 хост} few{{count} хоста} many{{count} хостов} other{{count} хоста}}",
+  "@serversHostCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "serversSearch": "Поиск серверов…",
+  "serversAdd": "Добавить сервер",
+  "serversEmpty": "Пока нет серверов",
+  "serversEmptyHint": "Добавьте первый SSH-сервер, чтобы начать.",
+  "serversDeleteConfirmTitle": "Удалить сервер",
+  "serversDeleteConfirmMessage": "Удалить \"{name}\"?\n\n{identity}:{port} и его сохранённые учётные данные будут удалены навсегда.",
+  "@serversDeleteConfirmMessage": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serversDeleted": "Удалён {identity}",
+  "@serversDeleted": {
+    "placeholders": {
+      "identity": { "type": "String" }
+    }
+  },
+  "serversDeleteFailed": "Не удалось удалить: {message}",
+  "@serversDeleteFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "serversLoading": "Загрузка серверов",
+  "serversUngrouped": "Без группы",
+  "serversSortName": "а–я",
+  "serversSortRecent": "недавние",
+  "serversQuickStart": "Быстрый старт",
+  "serversQuickStep1Title": "Добавьте хост",
+  "serversQuickStep1Desc": "Зарегистрируйте SSH-узел с аутентификацией по паролю или ключу.",
+  "serversQuickStep2Title": "Проверьте соединение",
+  "serversQuickStep2Desc": "Проверьте порт перед сохранением — это быстро выявляет опечатки.",
+  "serversQuickStep3Title": "Подключитесь",
+  "serversQuickStep3Desc": "Откройте сеанс терминала — полный PTY, цвета и vim.",
+  "serversNoMatch": "Совпадений нет: \"{query}\"",
+  "@serversNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "serversClearFilter": "Сбросить фильтр",
+  "serversReadError": "Не удалось прочитать список серверов.",
+
+  "serverEditTitle": "Добавить сервер",
+  "serverEditTitleEdit": "Изменить сервер",
+  "serverNotFound": "Сервер не найден",
+  "serverValidationNameRequired": "Укажите имя",
+  "serverValidationHostRequired": "Укажите хост",
+  "serverValidationNoSpaces": "Пробелы не допускаются",
+  "serverValidationRequired": "Обязательно",
+  "serverValidationNumeric": "Число",
+  "serverValidationPortRange": "1–65535",
+  "serverValidationUsernameRequired": "Укажите имя пользователя",
+  "serverValidationPasswordRequired": "Укажите пароль",
+  "serverValidationPrivateKeyRequired": "Укажите закрытый ключ",
+  "serverAdded": "Сервер добавлен: {identity}:{port}",
+  "@serverAdded": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverSaved": "Сохранено: {identity}:{port}",
+  "@serverSaved": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverSaveFailed": "Не удалось сохранить: {message}",
+  "@serverSaveFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "serverTestEnterHost": "Сначала укажите адрес хоста",
+  "serverTestProbing": "Проверка {host}:{port}…",
+  "@serverTestProbing": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestReachable": "{host}:{port} — доступен",
+  "@serverTestReachable": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestTimedOut": "{host}:{port} — истекло время ожидания",
+  "@serverTestTimedOut": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestRefused": "{host}:{port} — отклонено / недоступно",
+  "@serverTestRefused": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestProbeFailed": "{host}:{port} — проверка не удалась",
+  "@serverTestProbeFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestHandshakeFailed": "{host}:{port} — ошибка рукопожатия SSH",
+  "@serverTestHandshakeFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverTestAuthFailed": "{host}:{port} — ошибка аутентификации: проверьте имя пользователя и учётные данные",
+  "@serverTestAuthFailed": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverLoading": "Загрузка",
+  "serverSaveChanges": "Сохранить изменения",
+  "serverSectionIdentity": "Идентификация",
+  "serverSectionConnection": "Соединение",
+  "serverSectionAuthentication": "Аутентификация",
+  "serverFieldLabel": "Метка",
+  "serverFieldLabelHint": "prod-web-01",
+  "serverFieldGroup": "Группа (необязательно)",
+  "serverFieldGroupHint": "production",
+  "serverFieldHost": "Хост",
+  "serverFieldHostHint": "10.0.0.5",
+  "serverFieldPort": "Порт",
+  "serverFieldUsername": "Имя пользователя",
+  "serverFieldUsernameHint": "root",
+  "serverFieldPassword": "Пароль",
+  "serverFieldPasswordStored": "Сохранён — оставьте пустым, чтобы не изменять",
+  "serverFieldPrivateKey": "Закрытый ключ (PEM)",
+  "serverFieldPassphrase": "Парольная фраза ключа (необязательно)",
+  "serverAuthPassword": "Пароль",
+  "serverAuthPrivateKey": "Закрытый ключ",
+  "serverTestIdle": "Нажмите \"Проверить\", чтобы проверить соединение",
+  "serverSecurityNote": "Учётные данные шифруются в хранилище ключей устройства — они не попадают в хранилище метаданных Hive и не покидают это устройство.",
+  "serverTesting": "Проверка…",
+  "serverTest": "Проверить",
+  "serverSaving": "Сохранение…",
+
+  "serverCopiedAddress": "Скопировано {address}",
+  "@serverCopiedAddress": {
+    "placeholders": {
+      "address": { "type": "String" }
+    }
+  },
+  "serverActions": "Действия с сервером",
+  "serverActionConnect": "Подключиться",
+  "serverActionEdit": "Изменить",
+  "serverActionEditDetails": "Изменить данные",
+  "serverActionCopySsh": "Копировать SSH-команду",
+  "serverActionDelete": "Удалить",
+  "serverActionDeleteServer": "Удалить сервер",
+  "serverOnline": "В сети",
+  "serverNeverConnected": "Не подключался",
+  "serverJustNow": "Только что",
+  "serverMinutesAgo": "{minutes} мин назад",
+  "@serverMinutesAgo": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "serverHoursAgo": "{hours} ч назад",
+  "@serverHoursAgo": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "serverDaysAgo": "{days} дн назад",
+  "@serverDaysAgo": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "terminalHostNotFound": "Хост не найден",
+  "terminalHostNotFoundMessage": "Нет сохранённого сервера с идентификатором \"{id}\". Возможно, он был удалён.",
+  "@terminalHostNotFoundMessage": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "terminalBackToServers": "Назад к серверам",
+  "terminalConnectionFailed": "Не удалось подключиться.",
+  "terminalSessionClosed": "Сеанс закрыт",
+  "terminalSessionClosedMessage": "Соединение с {name} было прервано.",
+  "@terminalSessionClosedMessage": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "terminalReconnect": "Переподключиться",
+  "terminalAuthenticating": "Аутентификация",
+  "terminalConnecting": "Подключение",
+  "terminalResolvingHost": "Разрешение имени хоста…",
+  "terminalTooltipDisconnectBack": "Отключиться и назад",
+  "terminalTooltipSmallerText": "Уменьшить текст",
+  "terminalTooltipLargerText": "Увеличить текст",
+  "terminalTooltipDisconnect": "Отключиться",
+  "terminalRetryAvailable": "Повтор доступен",
+  "terminalStatusConnected": "ПОДКЛЮЧЕНО",
+  "terminalStatusOffline": "НЕ В СЕТИ",
+  "terminalStatusError": "ОШИБКА",
+
+  "aiChatTitle": "AI-ассистент",
+  "aiChatStatusSetup": "НАСТРОЙКА",
+  "aiChatStatusStreaming": "ПОТОК",
+  "aiChatStatusReady": "ГОТОВО",
+  "aiChatClearConversation": "Очистить диалог",
+  "aiChatSuggestion1": "Объясните, что означает вывод команды ls -la",
+  "aiChatSuggestion2": "Как узнать, какой процесс занимает порт?",
+  "aiChatSuggestion3": "Покажите, как просматривать журналы и искать в них ошибки с помощью grep",
+  "aiChatSuggestion4": "Напишите однострочник на awk для суммирования столбца CSV",
+  "aiChatTryAsking": "Попробуйте спросить",
+  "aiChatIntroTitle": "Ваш помощник по терминалу",
+  "aiChatIntroBody": "Вставьте команду, ошибку или фрагмент вывода журнала. ShellMind объяснит, что произошло, подскажет следующий шаг и напишет команды за вас.",
+  "aiChatNoKeyTitle": "API-ключ не настроен",
+  "aiChatNoKeyMessage": "Добавьте API-ключ {provider}, чтобы активировать ассистента. Он хранится в зашифрованном виде на этом устройстве и не покидает его, кроме как для вызова модели.",
+  "@aiChatNoKeyMessage": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiChatOpenSettings": "Открыть настройки AI",
+  "aiChatCheckingCredentials": "Проверка учётных данных",
+  "aiChatInputHint": "Спросите о чём угодно…",
+  "aiChatInputDisabled": "Укажите API-ключ, чтобы начать",
+  "aiChatError": "Ошибка",
+  "aiChatAssistantName": "ShellMind",
+  "aiChatCopied": "Скопировано",
+  "aiChatCopy": "Копировать",
+  "aiChatThinking": "Обдумываю…",
+
+  "settingsTitle": "Настройки",
+  "settingsSearchTooltip": "Поиск по настройкам",
+  "settingsStable": "СТАБИЛЬНАЯ",
+  "settingsSectionAppearance": "Внешний вид и язык",
+  "settingsThemeSystem": "Системная",
+  "settingsThemeLight": "Светлая",
+  "settingsThemeDark": "Тёмная",
+  "settingsSectionLanguage": "Язык",
+  "settingsLanguageSystem": "Системный",
+  "settingsLanguageZh": "中文",
+  "settingsLanguageEn": "English",
+  "settingsSectionAiProvider": "Провайдер AI",
+  "settingsSectionAiAgent": "AI-агент",
+  "settingsSectionSsh": "SSH",
+  "settingsSectionServers": "Серверы",
+  "settingsSectionAboutUpdate": "О приложении и обновление",
+  "settingsSectionStoragePrivacy": "Хранилище и конфиденциальность",
+  "settingsSectionResources": "Ресурсы",
+  "settingsTileSecrets": "Секреты",
+  "settingsTileEncrypted": "Зашифровано",
+  "settingsTileLocalCache": "Локальный кэш",
+  "settingsTileClearData": "Удалить все данные",
+  "settingsTileLicenses": "Лицензии открытого ПО",
+  "settingsTileReportIssue": "Сообщить о проблеме",
+  "settingsFooter": "SSH + AI-ассистент для современных рабочих процессов",
+
+  "settingsSecretsDialogTitle": "Секреты и шифрование",
+  "settingsSecretsDialogBody": "Учётные данные — пароли серверов, закрытые ключи и API-ключи AI — всегда шифруются в состоянии хранения с помощью системного хранилища ключей (Android Keystore / iOS Keychain). Эта защита предусмотрена по умолчанию и не может быть отключена. Чтобы изменить учётные данные, отредактируйте или удалите их на странице редактирования сервера или в настройках AI.",
+  "settingsDialogOk": "OK",
+  "settingsDialogClose": "Закрыть",
+  "settingsCacheDialogTitle": "Локальный кэш",
+  "settingsCacheHiveData": "Данные приложения",
+  "settingsCacheDownloads": "Загруженные обновления",
+  "settingsCacheTotal": "Итого",
+  "settingsCacheDialogHint": "Очистка кэша загрузок удаляет загруженные пакеты обновлений (APK). Ваши серверы, ключи и история чата сохраняются.",
+  "settingsCacheClearDownloads": "Очистить кэш загрузок",
+  "settingsCacheCleared": "Освобождено {freed}",
+  "@settingsCacheCleared": {
+    "placeholders": {
+      "freed": { "type": "String" }
+    }
+  },
+  "settingsClearDataTitle": "Удалить все данные?",
+  "settingsClearDataMessage": "Это навсегда удалит все серверы, сохранённые учётные данные, ключи AI, историю чата и настройки на этом устройстве. Это действие необратимо.",
+  "settingsClearDataConfirm": "Удалить всё",
+  "settingsDataCleared": "Все данные удалены",
+  "settingsClearDataFailed": "Не удалось удалить данные: {message}",
+  "@settingsClearDataFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "settingsIssueLinkCopied": "Ссылка на проблему скопирована в буфер обмена.",
+  "settingsAboutGithub": "Репозиторий GitHub",
+
+  "settingsHideIp": "Скрывать IP-адреса",
+  "settingsHideIpDesc": "Скрывать IP-адреса в списке серверов и на страницах AI",
+  "serverMaskedAddress": "Адрес скрыт",
+
+  "aiSettingsApiKeyTitle": "API-ключ {provider}",
+  "@aiSettingsApiKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsKeySet": "задан",
+  "aiSettingsKeyNotConfigured": "не настроен",
+  "aiSettingsGetApiKey": "Получить API-ключ",
+  "aiSettingsTemperature": "Температура",
+  "aiSettingsRemoveKey": "Удалить ключ",
+  "aiSettingsKeySaved": "API-ключ {provider} сохранён безопасно.",
+  "@aiSettingsKeySaved": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsRemoveKeyTitle": "Удалить ключ {provider}?",
+  "@aiSettingsRemoveKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsRemoveKeyMessage": "Ассистент перестанет работать с этим провайдером, пока не будет добавлен новый ключ.",
+  "aiSettingsRemoveKeyConfirm": "Удалить",
+  "aiSettingsGetKeyTitle": "Получить ключ {provider}",
+  "@aiSettingsGetKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsGetKeyMessage": "Откройте консоль провайдера в браузере, чтобы создать API-ключ, затем вставьте его сюда.",
+  "aiSettingsClose": "Закрыть",
+  "aiSettingsLinkCopied": "Ссылка скопирована в буфер обмена.",
+  "aiSettingsCopyLink": "Копировать ссылку",
+  "aiSettingsKeyConfigured": "Ключ настроен",
+  "aiSettingsNotConfigured": "Не настроен",
+  "aiSettingsUpdateKeyTitle": "Обновить ключ {provider}",
+  "@aiSettingsUpdateKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsAddKeyTitle": "Добавить ключ {provider}",
+  "@aiSettingsAddKeyTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiSettingsKeyStorageNote": "Хранится в зашифрованном виде на этом устройстве. Используется только для вызова провайдера AI.",
+  "aiSettingsApiKeyHint": "API-ключ…",
+  "aiSettingsSave": "Сохранить",
+
+  "modelDescFastAffordable": "Быстрая и доступная",
+  "modelDescMostCapable": "Наиболее функциональная",
+  "modelDescLegacyFast": "Прежняя быстрая",
+  "modelDescGeneralConversation": "Обычный диалог",
+  "modelDescAdvancedReasoning": "Продвинутое рассуждение",
+  "modelDescFastResponse": "Быстрый отклик",
+  "modelDescBalanced": "Сбалансированная",
+  "modelDescFreeFast": "Бесплатная и быстрая",
+  "modelDescEnhanced": "Улучшенная",
+  "modelDescStandard": "Стандартная",
+  "modelDescLightweight": "Облегчённая",
+  "modelDescRlEnhanced": "Улучшенная RL",
+
+  "aiModelsTitle": "Модель",
+  "aiModelsRefresh": "Обновить список моделей",
+  "aiModelsAddCustom": "Добавить свою модель",
+  "aiModelsAddCustomHint": "Идентификатор модели, напр. deepseek-chat",
+  "aiModelsAdd": "Добавить",
+  "aiModelsCustomBadge": "Своя",
+  "aiModelsFetchFailed": "Не удалось загрузить модели — показан встроенный список.",
+  "aiModelsRemoveCustom": "Удалить свою модель",
+  "aiModelsEmpty": "Нет моделей",
+  "aiModelsInvalidId": "Укажите идентификатор модели.",
+  "aiModelsDuplicate": "Эта модель уже есть в списке.",
+  "aiModelsPickerTitle": "Выберите модель",
+  "aiModelsSearchHint": "Поиск моделей",
+  "aiModelsSearchEmpty": "Нет моделей, соответствующих поиску.",
+
+  "aiProvidersAddTile": "Добавить своего провайдера",
+  "aiProvidersAddTitle": "Добавить своего провайдера",
+  "aiProvidersFieldName": "Имя",
+  "aiProvidersFieldNameHint": "напр. SiliconFlow",
+  "aiProvidersFieldBaseUrl": "Базовый URL",
+  "aiProvidersFieldBaseUrlHint": "https://api.example.com/v1",
+  "aiProvidersFieldModel": "Модель по умолчанию (необязательно)",
+  "aiProvidersFieldModelHint": "Идентификатор модели, напр. deepseek-chat",
+  "aiProvidersAddConfirm": "Добавить",
+  "aiProvidersInvalidInput": "Укажите имя и базовый URL.",
+  "aiProvidersInvalidUrl": "Базовый URL должен начинаться с http:// или https://",
+  "aiProvidersDuplicateName": "Провайдер с таким именем уже существует.",
+  "aiProvidersAdded": "Свой провайдер добавлен.",
+  "aiProvidersAddFailed": "Не удалось добавить провайдера — проверьте введённые данные.",
+  "aiProvidersDeleteTile": "Удалить своего провайдера",
+  "aiProvidersDeleteTitle": "Удалить {provider}?",
+  "@aiProvidersDeleteTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "aiProvidersDeleteMessage": "Его сохранённый API-ключ, запомненная модель и свои модели также будут удалены. Встроенных провайдеров удалить нельзя.",
+  "aiProvidersDeleteConfirm": "Удалить",
+  "aiProvidersPickerTitle": "Выберите провайдера",
+
+  "updateVersion": "Версия",
+  "updateSoftwareUpdate": "Обновление ПО",
+  "updateChecking": "ПРОВЕРКА",
+  "updateUpToDate": "АКТУАЛЬНО",
+  "updateCheckAgain": "Проверить снова",
+  "updateReady": "ГОТОВО",
+  "updateNew": "НОВОЕ",
+  "updateCheck": "ПРОВЕРИТЬ",
+  "updateAwaitingResponse": "Ожидание ответа",
+  "updateAlreadyLatest": "Уже установлена последняя сборка",
+  "updateCurrentVersionLatest": "v{version} — это последний выпуск, опубликованный на GitHub.",
+  "@updateCurrentVersionLatest": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "updateRunningVersion": "Запущена v{current} — последняя удалённая версия v{latest}.",
+  "@updateRunningVersion": {
+    "placeholders": {
+      "current": { "type": "String" },
+      "latest": { "type": "String" }
+    }
+  },
+  "updateCheckedAgo": "Проверено {timeAgo}",
+  "@updateCheckedAgo": {
+    "placeholders": {
+      "timeAgo": { "type": "String" }
+    }
+  },
+  "updateAvailable": "Доступно обновление",
+  "updatePre": "ПРЕДРЕЛИЗ",
+  "updateDownloadInstall": "Скачать и установить",
+  "updateLater": "Позже",
+  "updateApkHint": "Установка APK поддерживается только на Android. Файл всё равно можно скачать здесь.",
+  "updateDownloading": "Загрузка {tag}",
+  "@updateDownloading": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateSize": "размер",
+  "updateRate": "скорость",
+  "updateEta": "осталось",
+  "updateElapsed": "прошло",
+  "updateCancel": "Отмена",
+  "updateKeepForeground": "Держать приложение на переднем плане",
+  "updateDownloadComplete": "Загрузка завершена",
+  "updateInstallHint": "Android попросит подтверждения. ShellMind закроется на время работы установщика; ваши серверы и история сохранятся.",
+  "updateLaunching": "Запуск...",
+  "updateInstallNow": "Установить сейчас",
+  "updateDelete": "Удалить",
+  "updateInstallTitle": "Установить {tag}?",
+  "@updateInstallTitle": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateInstallMessage": "Откроется системный установщик пакетов. ShellMind закроется во время установки и снова откроется в новой версии.",
+  "updateNotNow": "Не сейчас",
+  "updateInstall": "Установить",
+  "updateCheckFailed": "Не удалось проверить обновления.",
+  "updateErrorTitleNoReleases": "Нет выпусков",
+  "updateErrorTitleGeneric": "Не удалось проверить обновления",
+  "updateErrNoReleases": "Для ShellMind ещё не опубликовано ни одного выпуска.",
+  "updateErrRateLimit": "Достигнут лимит запросов API GitHub. Попробуйте позже.",
+  "updateErrTimeout": "Истекло время ожидания запроса к GitHub. Проверьте соединение и повторите.",
+  "updateErrNetwork": "Не удалось связаться с GitHub. Проверьте сетевое соединение.",
+  "updateErrAuth": "GitHub отклонил запрос обновления.",
+  "updateErrPermission": "В запросе обновления отказано.",
+  "updateErrStorage": "Недостаточно места для завершения обновления.",
+  "updateErrDigestMismatch": "Загруженное обновление не прошло проверку целостности SHA-256 и было удалено. Повторите загрузку.",
+  "updateErrDigestMissing": "У пакета обновления нет опубликованной контрольной суммы целостности, поэтому обновление было отклонено. Повторите позже.",
+  "updateRetry": "Повторить",
+  "updateDismiss": "Закрыть",
+  "updateReleaseNotes": "Выпуск {tag}",
+  "@updateReleaseNotes": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateNotesLabel": "примечания",
+  "updateNewVersionAvailable": "Доступна новая версия",
+  "updateRemindLater": "Напомнить позже",
+  "updateCancelDownload": "Отменить загрузку",
+  "updateInstallTag": "Установить {tag}",
+  "@updateInstallTag": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "updateInstallLaterFromSettings": "Установить позже из настроек",
+  "updateCouldNotComplete": "Не удалось завершить обновление.",
+  "updateClose": "Закрыть",
+  "updatePromptInstallHint": "Android закрывает ShellMind на время работы установщика. Серверы, ключи и история чата сохраняются.",
+
+  "commonCancel": "Отмена",
+  "commonDelete": "Удалить",
+  "commonRetry": "Повторить",
+  "commonLoading": "Загрузка...",
+  "commonNoData": "Нет данных",
+  "commonNothingToShow": "Здесь пока нечего показывать.",
+  "commonOk": "OK",
+
+  "settingsAiAutoExecuteTitle": "Автовыполнение команд",
+  "settingsAiAutoExecuteSubtitle": "Разрешить AI-агенту выполнять разобранные команды без запроса каждый раз",
+  "settingsAiAutoConnectTitle": "Автоподключение AI к серверам",
+  "settingsAiAutoConnectSubtitle": "Разрешить AI-ассистенту автоматически подключаться к настроенным, но офлайн-серверам и выполнять на них команды (будут использованы сохранённые учётные данные)",
+  "settingsAiMaxAutoLoopsTitle": "Макс. число итераций автоцикла",
+  "settingsAiMaxAutoLoopsSub": "Ограничить число автоматических выполнений команд на один ответ",
+  "settingsAiMaxAutoLoopsTileDesc": "Макс. число раундов команд, которые AI может выполнить на задачу",
+  "settingsAiMaxAutoLoopsHint": "Это верхний предел раундов выполнения на одну задачу AI — не число попыток переподключения SSH (оно настраивается в разделе SSH).",
+
+  "terminalAskAi": "Спросить AI",
+  "terminalAskAiSubtitle": "Отправить выделенный текст AI-ассистенту",
+  "terminalTooltipAskAi": "Спросить AI",
+
+  "aiChatNoConnection": "Сначала подключитесь к терминалу сервера",
+  "aiChatAnalyzePrompt": "Проанализируйте вывод команды выше, объясните, что означает результат, и при необходимости дайте дальнейшие рекомендации.",
+
+  "aiExecuteButton": "Выполнить на сервере",
+  "aiExecuteTitle": "Подтвердите выполнение команды",
+  "aiExecuteConfirmButton": "Выполнить",
+  "aiExecuteConfirmAnyway": "Всё равно выполнить",
+  "aiExecuteDangerWarning": "⚠ Опасная команда",
+  "aiExecuteDangerText": "Эта команда может быть разрушительной и привести к потере данных или повреждению системы.",
+  "aiExecuteCommandLabel": "Команда для выполнения:",
+  "aiExecuteTargetServer": "Целевой сервер(ы):",
+  "aiExecuteSelectServer": "Выберите целевой сервер(ы)",
+  "aiExecuteNoServer": "Сначала подключитесь к серверу",
+  "aiExecuteAtLeastOne": "Выберите хотя бы один сервер",
+  "aiExecuteSelectHint": "Выберите сервер(ы), на которых выполнить эту команду",
+  "aiExecuteRunCount": "Выполнить ({count})",
+  "@aiExecuteRunCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiExecuteSelectAll": "Выбрать все",
+  "aiExecuteClearSelection": "Сбросить",
+  "aiExecuteUptime": "{hours} ч {minutes} мин в сети",
+  "@aiExecuteUptime": {
+    "placeholders": {
+      "hours": { "type": "int" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "aiExecuteSuccess": "Команда выполнена успешно",
+  "aiExecuteFailed": "Не удалось выполнить команду",
+
+  "aiServerManageTitle": "Серверы",
+  "aiServerManageSubtitle": "Подключите серверы, чтобы AI-ассистент мог работать",
+  "aiServerOnlineCount": "{count} в сети",
+  "@aiServerOnlineCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiServerDone": "Готово",
+  "aiServerConnecting": "Подключение…",
+  "aiServerOffline": "Не в сети",
+  "aiServerNoCredential": "Нет сохранённых учётных данных — сначала сохраните пароль или ключ на странице сервера",
+  "aiServerConnectFailed": "Не удалось подключиться",
+
+  "aiToolResultCommand": "Команда",
+  "aiToolResultOutput": "Вывод команды",
+  "aiToolResultExitCode": "Код завершения: {code}",
+  "@aiToolResultExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "aiToolResultElapsed": "Затраченное время",
+  "aiToolResultAnalyzeButton": "Попросить AI проанализировать вывод",
+  "aiToolResultCollapsedShow": "Ещё {total} строк",
+  "@aiToolResultCollapsedShow": {
+    "placeholders": {
+      "total": { "type": "int" }
+    }
+  },
+  "aiToolResultExpandedHide": "Скрыть вывод",
+  "aiToolResultStderrLabel": "Вывод ошибок:",
+
+  "aiContextToggleAttach": "Прикрепить контекст терминала",
+  "aiContextToggleDetach": "Контекст терминала прикреплён",
+  "aiContextBadge": "Контекст",
+  "aiContextLines": "{lines} строк из терминала",
+  "@aiContextLines": {
+    "placeholders": {
+      "lines": { "type": "int" }
+    }
+  },
+
+  "aiAgentStop": "Остановить авторежим",
+  "aiAgentExecuting": "Выполнение…",
+  "aiAgentDefaultServer": "сервер",
+
+  "aiTimelineTitle": "Хронология выполнения",
+  "aiTimelineOpen": "Хронология выполнения",
+  "aiTimelineEmpty": "Команды ещё не выполнялись",
+  "aiTimelineEmptyHint": "Выполняйте команды через чат или авторежим, и вся цепочка появится здесь.",
+  "aiTimelineStatRounds": "{count, plural, one{1 раунд} few{{count} раунда} many{{count} раундов} other{{count} раунда}}",
+  "@aiTimelineStatRounds": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatCommands": "{count, plural, one{1 команда} few{{count} команды} many{{count} команд} other{{count} команды}}",
+  "@aiTimelineStatCommands": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatSuccess": "{count, plural, one{1 успешно} few{{count} успешно} many{{count} успешно} other{{count} успешно}}",
+  "@aiTimelineStatSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStatFailed": "{count, plural, one{1 с ошибкой} few{{count} с ошибкой} many{{count} с ошибкой} other{{count} с ошибкой}}",
+  "@aiTimelineStatFailed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "aiTimelineStarted": "Начато {time}",
+  "@aiTimelineStarted": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineEnded": "Завершено {time}",
+  "@aiTimelineEnded": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "aiTimelineExitCode": "Код завершения: {code}",
+  "@aiTimelineExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "aiTimelineNoExitCode": "Нет кода завершения",
+  "aiTimelineOutput": "Вывод",
+  "aiTimelineOutputEmpty": "Нет вывода",
+  "aiTimelineErrorOutput": "Вывод ошибок",
+  "aiTimelineRunning": "Выполняется…",
+  "aiTimelineClose": "Закрыть",
+
+  "sshReconnectToggle": "Автопереподключение при разрыве",
+  "sshReconnectToggleDesc": "Повторять оборванные SSH-сеансы с экспоненциальной задержкой",
+  "sshReconnectMaxAttempts": "Макс. число попыток переподключения",
+  "sshReconnectMaxAttemptsDesc": "Максимальное число автоматических попыток переподключения после разрыва — 0 означает повторять до успеха",
+  "sshReconnectMaxAttemptsValue": "{count}",
+  "@sshReconnectMaxAttemptsValue": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sshReconnectMaxAttemptsUnlimited": "Без ограничений",
+  "sshReconnectStatusReconnecting": "Переподключение (попытка {attempt})",
+  "@sshReconnectStatusReconnecting": {
+    "placeholders": {
+      "attempt": { "type": "int" }
+    }
+  },
+  "sshReconnectStatusReconnectingOf": "Переподключение (попытка {attempt} из {max})",
+  "@sshReconnectStatusReconnectingOf": {
+    "placeholders": {
+      "attempt": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUp": "Автопереподключение прекращено",
+  "sshReconnectGaveUpMessage": "Не удалось связаться с {name} после {max} попыток.",
+  "@sshReconnectGaveUpMessage": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "max": { "type": "int" }
+    }
+  },
+  "sshReconnectGaveUpMessageUnlimited": "Не удалось связаться с {name}.",
+  "@sshReconnectGaveUpMessageUnlimited": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sshReconnectRetryNow": "Повторить сейчас",
+  "sshReconnectStopAuto": "Остановить",
+  "sshReconnectReconnectedSnack": "Переподключено к {name}",
+  "@sshReconnectReconnectedSnack": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "snippetsTitle": "Сниппеты команд",
+  "snippetsSubtitle": "Сохраняйте команды для быстрого повторного использования",
+  "snippetsAddTooltip": "Добавить сниппет",
+  "snippetsAddTitle": "Новый сниппет",
+  "snippetsSave": "Сохранить",
+  "snippetsCommandLabel": "Команда",
+  "snippetsCommandHint": "напр. docker ps -a",
+  "snippetsNameLabel": "Имя (необязательно)",
+  "snippetsNameHint": "напр. Список всех контейнеров",
+  "snippetsCommandRequired": "Текст команды обязателен",
+  "snippetsDeleteTooltip": "Удалить сниппет",
+  "snippetsEmptyTitle": "Пока нет сниппетов",
+  "snippetsEmptyMessage": "Сохраняйте часто используемые команды и вставляйте или запускайте их одним касанием.",
+  "snippetsLoadFailed": "Не удалось загрузить сниппеты",
+
+  "healthTitle": "Состояние парка серверов",
+  "healthOnlineRatio": "{online}/{total} в сети",
+  "@healthOnlineRatio": {
+    "placeholders": {
+      "online": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "healthProbing": "Проверка…",
+  "healthProbeTooltip": "Запустить проверку состояния",
+  "healthProbedAt": "Проверено в {time}",
+  "@healthProbedAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "healthMoodAllOnline": "Все системы в норме",
+  "healthMoodDegraded": "Некоторые серверы недоступны",
+  "healthMoodAllOffline": "Все серверы недоступны",
+  "healthOfflineServers": "Не в сети: {names}",
+  "@healthOfflineServers": {
+    "placeholders": {
+      "names": { "type": "String" }
+    }
+  },
+  "healthNoData": "Нажмите «Обновить», чтобы проверить каждый сервер",
+  "healthUptime": "работает {brief}",
+  "@healthUptime": {
+    "placeholders": {
+      "brief": { "type": "String" }
+    }
+  },
+  "healthLoad": "нагрузка {value}",
+  "@healthLoad": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "healthDiagIntro": "Вот отчёт о состоянии моего парка серверов:",
+  "healthDiagStats": "{online} из {total} серверов в сети.",
+  "@healthDiagStats": {
+    "placeholders": {
+      "online": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "healthDiagOfflineItem": "- {name}: не в сети",
+  "@healthDiagOfflineItem": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "healthDiagOnlineItem": "- {name}: в сети ({details})",
+  "@healthDiagOnlineItem": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "details": { "type": "String" }
+    }
+  },
+  "healthDiagOutro": "Проанализируйте данные о состоянии, отметьте всё необычное (высокая нагрузка, недавние перезагрузки) и предложите, что проверить дальше.",
+  "healthDiagnose": "Диагностика AI",
+  "healthStaleNote": "Некоторые серверы ушли в офлайн с момента последней проверки.",
+
+  "auditTitle": "Журнал аудита команд",
+  "auditTileDesc": "Команды, выполненные AI-агентом",
+  "auditEmptyTitle": "Пока нет записей аудита",
+  "auditEmptyMessage": "Здесь будут записываться команды, выполненные AI-агентом.",
+  "auditFilteredEmpty": "Нет записей, соответствующих текущему фильтру",
+  "auditFilterAllServers": "Все серверы",
+  "auditFilterAllModes": "Все режимы",
+  "auditFilterAllResults": "Все результаты",
+  "auditFilterConfirmed": "Подтверждённые",
+  "auditFilterAuto": "Авто",
+  "auditFilterSuccess": "Успешно",
+  "auditFilterFailed": "С ошибкой",
+  "auditModeConfirmed": "Подтверждено",
+  "auditModeAuto": "Авто",
+  "auditStatusSuccess": "Успешно",
+  "auditStatusFailed": "С ошибкой",
+  "auditDangerousBadge": "Опасная",
+  "auditExitCode": "Код завершения {code}",
+  "@auditExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "auditOutputSummary": "Сводка вывода",
+  "auditNoOutput": "Нет вывода",
+  "auditClearTooltip": "Очистить журнал аудита",
+  "auditClearConfirmTitle": "Очистить журнал аудита",
+  "auditClearConfirmMessage": "Все {count} записей аудита будут удалены навсегда.",
+  "@auditClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "auditClearAction": "Очистить",
+  "auditCleared": "Журнал аудита очищен",
+  "auditEntriesCount": "{count} записей",
+  "@auditEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "serverActionDisconnect": "Отключиться",
+
+  "exportChatAction": "Экспортировать в Markdown",
+  "exportChatEmpty": "Пока нечего экспортировать",
+  "exportChatSuccess": "Диалог экспортирован в {path}",
+  "@exportChatSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "exportChatFailed": "Не удалось экспортировать: {error}",
+  "@exportChatFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "diagTitle": "Диагностика",
+  "diagTileDesc": "Ошибки приложения и экспорт диагностики",
+  "diagEmptyTitle": "Ошибок не зафиксировано",
+  "diagEmptyMessage": "Неперехваченные исключения записываются здесь, чтобы помочь с отчётами о проблемах.",
+  "diagEntriesCount": "{count} ошибок",
+  "@diagEntriesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagSourceFlutter": "Ошибка интерфейса",
+  "diagSourcePlatform": "Ошибка выполнения",
+  "diagSourceZone": "Асинхронная задача",
+  "diagStackTrace": "Трассировка стека",
+  "diagNoStackTrace": "Нет трассировки стека",
+  "diagExportAction": "Экспортировать диагностический отчёт",
+  "diagExportEmpty": "Нечего сообщать — экспортируются основные сведения",
+  "diagExportSuccess": "Диагностический отчёт экспортирован в {path}",
+  "@diagExportSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
+  "diagExportFailed": "Не удалось экспортировать: {error}",
+  "@diagExportFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "diagPrivacyNote": "Содержимое диагностики отредактировано — пароли, закрытые ключи и API-ключи не включаются.",
+  "diagClearTooltip": "Очистить записи об ошибках",
+  "diagClearConfirmTitle": "Очистить записи об ошибках",
+  "diagClearConfirmMessage": "Все {count} записей об ошибках будут удалены навсегда.",
+  "@diagClearConfirmMessage": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagClearAction": "Очистить",
+  "diagCleared": "Записи об ошибках очищены",
+  "diagAppInfoTitle": "Сведения о приложении",
+  "diagAppInfoVersion": "Версия",
+  "diagAppInfoPlatform": "Платформа",
+  "diagAppInfoLocale": "Язык",
+  "diagAppInfoStorage": "Размер локальных данных",
+
+  "authLockToggleTitle": "Биометрическая блокировка",
+  "authLockToggleDesc": "Требовать разблокировку по отпечатку пальца или лицу при открытии приложения",
+  "authLockEnableFailed": "Проверка не пройдена — блокировка остаётся выключенной",
+  "authLockUnavailableDesc": "На этом устройстве не зарегистрированы биометрические данные",
+  "authLockScreenTitle": "ShellMind заблокирован",
+  "authLockScreenSubtitle": "Подтвердите, чтобы продолжить",
+  "authLockUnlockAction": "Разблокировать",
+
+  "authLockUnlockFailed": "Проверка не пройдена — попробуйте снова",
+
+  "terminalTabPickerTitle": "Переключить терминал",
+  "terminalTabPickerSubtitle": "Выберите сервер, чтобы открыть его вкладкой терминала — серверы в сети подключаются сразу, офлайн-серверы сначала устанавливают соединение",
+  "terminalTabPickerEmpty": "Серверы ещё не настроены",
+  "terminalTabNewTooltip": "Новая вкладка терминала",
+  "terminalTabCloseTooltip": "Закрыть вкладку",
+
+  "hostKeyConfirmTitle": "Доверять этому хосту?",
+  "hostKeyConfirmMessage": "Это первое подключение к этому серверу. Проверьте его отпечаток, прежде чем доверять ему, — это защищает от атак типа «человек посередине».",
+  "hostKeyEndpointLabel": "СЕРВЕР",
+  "hostKeyFingerprintLabel": "ОТПЕЧАТОК SHA-256",
+  "hostKeySecurityNote": "Сравните отпечаток со значением, полученным от оператора сервера по отдельному каналу. Доверие неверному отпечатку раскроет ваши учётные данные.",
+  "hostKeyTrustAndConnect": "Доверять и подключиться",
+  "hostKeyReject": "Отклонить",
+
+  "hostKeyAutoRejectCountdown": "Автоотклонение через {seconds} с — доверие записывается только при подтверждении.",
+  "@hostKeyAutoRejectCountdown": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+
+  "hostKeyMismatchTitle": "Ключ хоста изменился",
+  "hostKeyMismatchMessage": "Ключ, предъявленный {host}:{port}, отличается от того, которому вы ранее доверяли. Подключение было заблокировано — возможно, это атака типа «человек посередине» либо сервер был переустановлен. Если вы проверили новый ключ, сбросьте доверие к хосту на странице редактирования сервера и подключитесь снова.",
+  "@hostKeyMismatchMessage": {
+    "placeholders": {
+      "host": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "hostKeyRejectedMessage": "Подключение отменено — ключу хоста не доверяли. Вы можете подключиться снова, чтобы просмотреть отпечаток.",
+
+  "serverResetTrustAction": "Сбросить доверие к хосту",
+  "serverResetTrustDesc": "Удалить сохранённый отпечаток этого сервера, чтобы при следующем подключении снова запрашивалось подтверждение.",
+  "serverResetTrustConfirmTitle": "Сбросить доверие к хосту?",
+  "serverResetTrustConfirmMessage": "Сохранённый отпечаток для {identity}:{port} будет удалён. При следующем подключении снова потребуется подтвердить ключ хоста.",
+  "@serverResetTrustConfirmMessage": {
+    "placeholders": {
+      "identity": { "type": "String" },
+      "port": { "type": "int" }
+    }
+  },
+  "serverResetTrustConfirmAction": "Сбросить",
+  "serverResetTrustDone": "Доверие к хосту сброшено — подключитесь снова, чтобы подтвердить отпечаток.",
+
+  "agentErrorNoTargetServer": "Нет доступного целевого сервера",
+  "agentErrorExecFailed": "Не удалось выполнить команду",
+  "agentErrorConnectFailed": "Не удалось автоматически подключиться к серверу",
+  "agentErrorConnectAuthRequired": "Нет сохранённых учётных данных для этого сервера — автоподключение невозможно",
+  "agentErrorDangerSkipped": "Пропущена опасная команда: {command}",
+  "@agentErrorDangerSkipped": {
+    "placeholders": {
+      "command": { "type": "String" }
+    }
+  },
+  "agentErrorUnexpected": "Непредвиденная ошибка",
+
+  "exportDocChatTitle": "Экспорт чата Shell-Mind",
+  "exportDocExportedAt": "Экспортировано: {time}",
+  "@exportDocExportedAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "exportDocMessageCount": "Сообщений: {count}",
+  "@exportDocMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocUserSection": "Пользователь",
+  "exportDocAssistantSection": "Ассистент",
+  "exportDocToolSection": "Выполнение инструмента",
+  "exportDocNoContent": "_(нет содержимого)_",
+  "exportDocUnknownServer": "Неизвестный сервер",
+  "exportDocExitCode": "Код завершения {code}",
+  "@exportDocExitCode": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+  "exportDocCommand": "Команда",
+  "exportDocOutput": "Вывод",
+  "exportDocErrorOutput": "Вывод ошибок",
+
+  "exportDocDiagTitle": "Диагностический отчёт Shell-Mind",
+  "exportDocDiagCrashCount": "Зафиксировано ошибок: {count}",
+  "@exportDocDiagCrashCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exportDocDiagCrashesSection": "Зафиксированные ошибки",
+  "exportDocDiagNone": "(нет)",
+  "exportDocDiagErrorMessage": "Сводка ошибки: {message}",
+  "@exportDocDiagErrorMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "exportDocDiagAppVersion": "Версия приложения: {version}",
+  "@exportDocDiagAppVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "exportDocDiagPlatform": "Платформа: {platform}",
+  "@exportDocDiagPlatform": {
+    "placeholders": {
+      "platform": { "type": "String" }
+    }
+  },
+  "exportDocDiagLocale": "Язык: {locale}",
+  "@exportDocDiagLocale": {
+    "placeholders": {
+      "locale": { "type": "String" }
+    }
+  },
+  "exportDocDiagStorage": "Использование локальных данных: {value}",
+  "@exportDocDiagStorage": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "exportDocDiagAuditSection": "Аудит команд AI (последние {limit} сводок)",
+  "@exportDocDiagAuditSection": {
+    "placeholders": {
+      "limit": { "type": "int" }
+    }
+  },
+  "exportDocDiagSuccess": "успешно",
+  "exportDocDiagFailed": "с ошибкой",
+  "exportDocDiagExitCodeOf": "код завершения {code}",
+  "@exportDocDiagExitCodeOf": {
+    "placeholders": {
+      "code": { "type": "int" }
+    }
+  },
+
+  "settingsTerminalScheme": "Цветовая схема терминала",
+  "settingsTerminalSchemeDesc": "Выберите палитру цветов ANSI для SSH-терминалов.",
+
+  "settingsSectionDataTransfer": "Импорт и экспорт",
+  "transferSnippetsTitle": "Сниппеты команд",
+  "transferServersTitle": "Конфигурации серверов",
+  "transferExport": "Экспорт",
+  "transferImport": "Импорт",
+  "transferExportImport": "Экспорт / импорт",
+  "transferExportTitle": "Экспорт",
+  "transferCopyJson": "Копировать JSON",
+  "transferCopied": "Скопировано в буфер обмена",
+  "transferImportHint": "Вставьте экспортированный JSON сюда…",
+  "transferSnippetsEmpty": "Нет сниппетов команд для экспорта.",
+  "transferServersEmpty": "Нет серверов для экспорта.",
+  "transferImportNothing": "В импорте не найдено допустимых элементов.",
+  "transferSnippetsImported": "{count, plural, one{Импортирован 1 сниппет} few{Импортировано {count} сниппета} many{Импортировано {count} сниппетов} other{Импортировано {count} сниппета}}",
+  "@transferSnippetsImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferServersImported": "{count, plural, one{Импортирован 1 сервер} few{Импортировано {count} сервера} many{Импортировано {count} серверов} other{Импортировано {count} сервера}}",
+  "@transferServersImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "transferImportFailed": "Не удалось импортировать: {message}",
+  "@transferImportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "transferExportFailed": "Не удалось экспортировать: {message}",
+  "@transferExportFailed": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "sessionsTitle": "Диалоги",
+  "sessionsNew": "Новый диалог",
+  "sessionsSearch": "Поиск диалогов…",
+  "sessionsEmpty": "Пока нет диалогов",
+  "sessionsNoMatch": "Совпадений нет: \"{query}\"",
+  "@sessionsNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "sessionsRename": "Переименовать",
+  "sessionsRenameHint": "Название диалога",
+  "sessionsDelete": "Удалить",
+  "sessionsDeleteConfirm": "Удалить \"{title}\"? Это действие необратимо.",
+  "@sessionsDeleteConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "sessionsMessageCount": "{count, plural, one{1 сообщение} few{{count} сообщения} many{{count} сообщений} other{{count} сообщения}}",
+  "@sessionsMessageCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "settingsSectionNotifications": "Уведомления",
+  "settingsNotificationsTitle": "Фоновые оповещения",
+  "settingsNotificationsDesc": "Уведомлять, когда SSH-сеанс прерывается или задача AI завершается, пока приложение работает в фоновом режиме.",
+
+  "sftpTitle": "Файлы",
+  "sftpNotConnected": "Нет подключения к этому серверу.",
+  "sftpLoading": "Загрузка файлов…",
+  "sftpEmpty": "Эта папка пуста.",
+  "sftpDownload": "Скачать",
+  "sftpDownloaded": "Скачано {path} ({size} байт)",
+  "@sftpDownloaded": {
+    "placeholders": {
+      "path": { "type": "String" },
+      "size": { "type": "int" }
+    }
+  },
+  "sftpDownloadFailed": "Не удалось скачать",
+  "sftpPreviewError": "Не удалось открыть предпросмотр",
+  "sftpNewFolderName": "Новая папка",
+  "sftpRefresh": "Обновить",
+  "sftpDelete": "Удалить",
+  "sftpDeleteConfirm": "Удалить \"{name}\"?",
+  "@sftpDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "sftpRename": "Переименовать",
+  "sftpTooltip": "Просмотр файлов (SFTP)",
+
+  "terminalMoreTooltip": "Ещё",
+  "tunnelsTitle": "Проброс портов",
+  "tunnelsEmpty": "Нет активных туннелей.",
+  "tunnelsAddLocal": "Локальный проброс",
+  "tunnelsAddRemote": "Удалённый проброс",
+  "tunnelsLocalPort": "Локальный порт",
+  "tunnelsRemoteHost": "Удалённый хост",
+  "tunnelsRemotePort": "Удалённый порт",
+  "tunnelsAdd": "Добавить",
+  "tunnelsClose": "Закрыть",
+  "tunnelsTooltip": "Проброс портов (SSH-туннель)",
+  "tunnelsError": "Не удалось создать туннель",
+  "tunnelsInvalidPort": "Порт должен быть в диапазоне от 1 до 65535.",
+
+  "settingsLanguageTitle": "Язык"
+}
