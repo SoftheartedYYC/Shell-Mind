@@ -872,6 +872,12 @@
       "message": { "type": "String" }
     }
   },
+  "transferExportSuccess": "已导出到 {path}",
+  "@transferExportSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
 
   "sessionsTitle": "对话",
   "sessionsNew": "新建对话",

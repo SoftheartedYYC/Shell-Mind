@@ -2017,6 +2017,11 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String transferExportSuccess(String path) {
+    return 'Exported to $path';
+  }
+
+  @override
   String get sessionsTitle => 'Conversaciones';
 
   @override

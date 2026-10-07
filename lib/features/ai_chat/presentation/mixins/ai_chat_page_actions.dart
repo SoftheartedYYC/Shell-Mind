@@ -1,11 +1,11 @@
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../../../app/router.dart';
+import '../../../../core/utils/export_saver.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/ssh/agent_controller.dart';
 import '../../../../shared/ssh/ssh_command_executor.dart';
@@ -164,10 +164,10 @@ mixin AiChatPageActions<T extends StatefulWidget> on State<T> {
 
   /// Exports the transcript to Markdown.
   ///
-  /// Renders via the pure [ChatExporter], writes to the app documents
-  /// directory (`exports/`), and surfaces the absolute path in a SnackBar.
-  /// Guarded against empty transcripts and streaming turns (a half-received
-  /// reply would freeze a truncated snapshot into the file).
+  /// Renders via the pure [ChatExporter], then opens the system "Save as"
+  /// dialog so the user picks the destination — nothing is written to a fixed
+  /// app directory. Guarded against empty transcripts and streaming turns (a
+  /// half-received reply would freeze a truncated snapshot into the file).
   Future<void> exportChat() async {
     final ChatState chat = actionsRef.read(chatMessagesProvider);
     final AppLocalizations l10n = AppLocalizations.of(context);
@@ -193,21 +193,15 @@ mixin AiChatPageActions<T extends StatefulWidget> on State<T> {
     final String fileName = 'shell-mind-chat-${ChatExporter.fileStamp(now)}.md';
 
     try {
-      final Directory dir = await getApplicationDocumentsDirectory();
-      final Directory exportDir = Directory(
-        '${dir.path}${Platform.pathSeparator}exports',
+      final String? saved = await saveBytesAsFile(
+        fileName: fileName,
+        bytes: utf8.encode(markdown),
+        allowedExtensions: const <String>['md'],
       );
-      if (!exportDir.existsSync()) {
-        await exportDir.create(recursive: true);
-      }
-      final File file = File(
-        '${exportDir.path}${Platform.pathSeparator}$fileName',
-      );
-      await file.writeAsString(markdown, flush: true);
-      if (!mounted) return;
+      if (!mounted || saved == null) return; // cancelled by the user
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(l10n.exportChatSuccess(file.path)),
+          content: Text(l10n.exportChatSuccess(saved)),
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 5),
         ),

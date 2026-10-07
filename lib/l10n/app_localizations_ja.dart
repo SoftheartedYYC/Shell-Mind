@@ -1921,6 +1921,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String transferExportSuccess(String path) {
+    return 'Exported to $path';
+  }
+
+  @override
   String get sessionsTitle => '会話';
 
   @override

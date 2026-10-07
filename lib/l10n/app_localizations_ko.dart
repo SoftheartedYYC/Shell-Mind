@@ -1920,6 +1920,11 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String transferExportSuccess(String path) {
+    return 'Exported to $path';
+  }
+
+  @override
   String get sessionsTitle => '대화';
 
   @override

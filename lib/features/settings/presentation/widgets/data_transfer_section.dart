@@ -1,10 +1,9 @@
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../../../core/utils/export_saver.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../command_snippets/domain/entities/command_snippet.dart';
 import '../../../command_snippets/domain/snippet_transfer.dart';
@@ -68,7 +67,7 @@ Future<void> _exportSnippets(BuildContext context, WidgetRef ref) async {
     return;
   }
   final String json = SnippetTransfer.encode(snippets);
-  await _writeAndPresent(context, json, prefix: 'snippets');
+  await _saveExport(context, json, fileName: 'shell-mind-snippets-${_stamp()}.json');
 }
 
 Future<void> _exportServers(BuildContext context, WidgetRef ref) async {
@@ -80,7 +79,28 @@ Future<void> _exportServers(BuildContext context, WidgetRef ref) async {
     return;
   }
   final String json = ServerTransfer.encode(servers);
-  await _writeAndPresent(context, json, prefix: 'servers');
+  await _saveExport(context, json, fileName: 'shell-mind-servers-${_stamp()}.json');
+}
+
+/// Runs the system "Save as" dialog and reports the outcome. The user picks
+/// the destination; nothing is written to a fixed app directory.
+Future<void> _saveExport(
+  BuildContext context,
+  String content, {
+  required String fileName,
+}) async {
+  final AppLocalizations l10n = AppLocalizations.of(context);
+  try {
+    final String? saved = await saveBytesAsFile(
+      fileName: fileName,
+      bytes: utf8.encode(content),
+      allowedExtensions: const <String>['json'],
+    );
+    if (!context.mounted || saved == null) return; // cancelled by the user
+    _toast(context, l10n.transferExportSuccess(saved));
+  } catch (e) {
+    if (context.mounted) _toast(context, l10n.transferExportFailed(e.toString()));
+  }
 }
 
 Future<void> _importSnippets(BuildContext context, WidgetRef ref) async {
@@ -162,77 +182,6 @@ Future<void> _showMenu(
           ),
         ],
       ),
-    ),
-  );
-}
-
-/// Writes [json] to `exports/` and presents a dialog with the path, a copy
-/// button and the JSON itself.
-Future<void> _writeAndPresent(
-  BuildContext context,
-  String json, {
-  required String prefix,
-}) async {
-  final AppLocalizations l10n = AppLocalizations.of(context);
-  try {
-    final Directory dir = await getApplicationDocumentsDirectory();
-    final Directory exportDir =
-        Directory('${dir.path}${Platform.pathSeparator}exports');
-    if (!exportDir.existsSync()) {
-      await exportDir.create(recursive: true);
-    }
-    final String fileName = 'shell-mind-$prefix-${_stamp()}.json';
-    final File file =
-        File('${exportDir.path}${Platform.pathSeparator}$fileName');
-    await file.writeAsString(json, flush: true);
-    if (!context.mounted) return;
-    await _showExportDialog(context, file.path, json);
-  } catch (e) {
-    if (context.mounted) _toast(context, l10n.transferExportFailed(e.toString()));
-  }
-}
-
-Future<void> _showExportDialog(
-  BuildContext context,
-  String path,
-  String json,
-) {
-  final AppLocalizations l10n = AppLocalizations.of(context);
-  return showDialog<void>(
-    context: context,
-    builder: (BuildContext ctx) => AlertDialog(
-      title: Text(l10n.transferExportTitle),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(path, style: const TextStyle(fontSize: 11)),
-          const SizedBox(height: 12),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 240),
-            child: SingleChildScrollView(
-              child: SelectableText(
-                json,
-                style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
-              ),
-            ),
-          ),
-        ],
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Clipboard.setData(ClipboardData(text: json));
-            Navigator.of(ctx).pop();
-            _toast(context, l10n.transferCopied);
-          },
-          child: Text(l10n.transferCopyJson),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: Text(l10n.commonOk),
-        ),
-      ],
     ),
   );
 }

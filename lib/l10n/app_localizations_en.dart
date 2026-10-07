@@ -1993,6 +1993,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String transferExportSuccess(String path) {
+    return 'Exported to $path';
+  }
+
+  @override
   String get sessionsTitle => 'Conversations';
 
   @override

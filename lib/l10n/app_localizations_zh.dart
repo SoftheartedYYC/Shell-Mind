@@ -1930,6 +1930,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String transferExportSuccess(String path) {
+    return '已导出到 $path';
+  }
+
+  @override
   String get sessionsTitle => '对话';
 
   @override

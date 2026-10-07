@@ -1095,6 +1095,12 @@
       "message": { "type": "String" }
     }
   },
+  "transferExportSuccess": "Exported to {path}",
+  "@transferExportSuccess": {
+    "placeholders": {
+      "path": { "type": "String" }
+    }
+  },
 
   "sessionsTitle": "Conversations",
   "sessionsNew": "New conversation",

@@ -33,6 +33,11 @@ dependencies:
   # ── Local notifications (session-disconnect / AI-completion alerts) ──────
   flutter_local_notifications: ^19.0.0
 
+  # ── "Save as" file export (Android SAF ACTION_CREATE_DOCUMENT) ────────────
+  # Pinned to 11.x: file_picker 13.x needs win32 ^6.3 which conflicts with
+  # flutter_secure_storage's win32 ^5 requirement.
+  file_picker: ^11.0.3
+
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.3

@@ -3504,6 +3504,12 @@ abstract class AppLocalizations {
   /// **'Export failed: {message}'**
   String transferExportFailed(String message);
 
+  /// No description provided for @transferExportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported to {path}'**
+  String transferExportSuccess(String path);
+
   /// No description provided for @sessionsTitle.
   ///
   /// In en, this message translates to:
