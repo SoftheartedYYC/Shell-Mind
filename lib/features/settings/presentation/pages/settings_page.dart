@@ -39,7 +39,6 @@ class SettingsPage extends ConsumerWidget {
           // headers (SafeArea already clears the status bar).
           padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
           children: <Widget>[
-            const _AppearanceSection(),
             _Section(
               label: l10n.settingsSectionAiProvider,
               children: <Widget>[
@@ -71,6 +70,7 @@ class SettingsPage extends ConsumerWidget {
                 const _NotificationsTile(),
               ],
             ),
+            const _AppearanceSection(),
             _Section(
               label: l10n.settingsSectionDataTransfer,
               children: <Widget>[
@@ -156,46 +156,41 @@ class _AppearanceSection extends ConsumerWidget {
 
     final String currentLanguage = locale?.languageCode ?? 'system';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          SectionHeader(label: l10n.settingsSectionAppearance),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SegmentedButton<ThemeMode>(
-              segments: <ButtonSegment<ThemeMode>>[
-                ButtonSegment<ThemeMode>(
-                  value: ThemeMode.system,
-                  icon: const Icon(Icons.brightness_auto_rounded),
-                  label: Text(l10n.settingsThemeSystem),
-                ),
-                ButtonSegment<ThemeMode>(
-                  value: ThemeMode.light,
-                  icon: const Icon(Icons.light_mode_rounded),
-                  label: Text(l10n.settingsThemeLight),
-                ),
-                ButtonSegment<ThemeMode>(
-                  value: ThemeMode.dark,
-                  icon: const Icon(Icons.dark_mode_rounded),
-                  label: Text(l10n.settingsThemeDark),
-                ),
-              ],
-              selected: <ThemeMode>{themeMode},
-              onSelectionChanged: (Set<ThemeMode> selection) {
-                themeNotifier.setThemeMode(selection.first);
-              },
-              showSelectedIcon: false,
-            ),
+    return _Section(
+      label: l10n.settingsSectionAppearance,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          child: SegmentedButton<ThemeMode>(
+            segments: <ButtonSegment<ThemeMode>>[
+              ButtonSegment<ThemeMode>(
+                value: ThemeMode.system,
+                icon: const Icon(Icons.brightness_auto_rounded),
+                label: Text(l10n.settingsThemeSystem),
+              ),
+              ButtonSegment<ThemeMode>(
+                value: ThemeMode.light,
+                icon: const Icon(Icons.light_mode_rounded),
+                label: Text(l10n.settingsThemeLight),
+              ),
+              ButtonSegment<ThemeMode>(
+                value: ThemeMode.dark,
+                icon: const Icon(Icons.dark_mode_rounded),
+                label: Text(l10n.settingsThemeDark),
+              ),
+            ],
+            selected: <ThemeMode>{themeMode},
+            onSelectionChanged: (Set<ThemeMode> selection) {
+              themeNotifier.setThemeMode(selection.first);
+            },
+            showSelectedIcon: false,
           ),
-          const SizedBox(height: 12),
-          _LanguageTile(
-            currentLanguage: currentLanguage,
-            onChanged: localeNotifier.setLocale,
-          ),
-        ],
-      ),
+        ),
+        _LanguageTile(
+          currentLanguage: currentLanguage,
+          onChanged: localeNotifier.setLocale,
+        ),
+      ],
     );
   }
 }
